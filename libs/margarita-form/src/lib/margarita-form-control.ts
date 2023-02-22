@@ -25,11 +25,13 @@ export class MargaritaFormControl<T = unknown>
   ) {
     if (field.initialValue) this.setValue(field.initialValue);
     const valueChangesSubscription = this.valueChanges.subscribe((value) => {
+      /*
       console.log({
         field,
         control: this,
         value,
       });
+      */
     });
 
     this._subscriptions = [valueChangesSubscription];
@@ -96,5 +98,21 @@ export class MargaritaFormControl<T = unknown>
         mutationObserver.observe(node.parentNode, { childList: true });
       }
     }
+  }
+
+  // Common
+  get controls() {
+    console.warn(
+      'Trying to access "controls" which is not available for MargaritaFormControl!',
+      { context: this }
+    );
+    return null;
+  }
+  get controlsArray() {
+    console.warn(
+      'Trying to access "controlsArray" which is not available for MargaritaFormControl!',
+      { context: this }
+    );
+    return null;
   }
 }

@@ -51,7 +51,7 @@ export interface MargaritaFormOptions {
   data?: Record<string, unknown>;
 }
 
-export interface MargaritaFormControlBase<T> {
+export interface MargaritaFormControlBase<T = unknown> {
   field: MargaritaFormField;
   valueChanges: Observable<T>;
   value: T;
@@ -61,6 +61,8 @@ export interface MargaritaFormControlBase<T> {
   setValue: (value: any) => void;
   setRef: (node: HTMLElement | null) => void;
   cleanup: () => void;
+  controls?: MargaritaFormControls | null;
+  controlsArray?: MargaritaFormControls[] | null;
 }
 
 export type MargaritaFormControlTypes<T = unknown> =
@@ -68,7 +70,7 @@ export type MargaritaFormControlTypes<T = unknown> =
   | MargaritaFormGroup<T>
   | MargaritaFormArray<T>;
 
-export type MargaritaFormControls<T> = Record<
+export type MargaritaFormControls<T = unknown> = Record<
   string,
   MargaritaFormControlTypes<T>
 >;

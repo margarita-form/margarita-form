@@ -206,4 +206,13 @@ export class MargaritaFormArray<T = CommonRecord[]>
   public setRef(node: HTMLElement | null) {
     this.ref = node;
   }
+
+  // Common
+  get controls() {
+    console.warn(
+      'Trying to access "controls" which is not available for MargaritaFormArray!',
+      { context: this }
+    );
+    return null;
+  }
 }
