@@ -1,27 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Observable } from 'rxjs';
-import type { MargaritaFormArray } from './margarita-form-array';
+import type {
+  MargaritaFormArray,
+  MargaritaFormArrayItem,
+} from './margarita-form-array';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaFormGroup } from './margarita-form-group';
 
-export interface MargaritaFormFieldValidatorContext<T = unknown> {
+export interface MargaritaFormFieldValidatorContext<T = unknown, P = any> {
   value: T;
   field: MargaritaFormField;
   control: MargaritaFormControlTypes<T>;
+  params: P;
 }
 
-export type MargaritaFormFieldValidatorOutput = boolean | string;
+export interface MargaritaFormFieldValidatorResult {
+  valid: boolean;
+  error?: unknown;
+}
+
+export type MargaritaFormFieldValidatorResultEntry = [
+  string,
+  MargaritaFormFieldValidatorResult
+];
+
+export type MargaritaFormFieldValidatorOutput<
+  T = MargaritaFormFieldValidatorResult
+> = T | Promise<T> | Observable<T>;
 
 export type MargaritaFormFieldValidatorFunction<T = unknown> = (
-  context: MargaritaFormFieldValidatorContext,
-  params: T
-) =>
-  | MargaritaFormFieldValidatorOutput
-  | Promise<MargaritaFormFieldValidatorOutput>
-  | Observable<MargaritaFormFieldValidatorOutput>;
+  context: MargaritaFormFieldValidatorContext<T>
+) => MargaritaFormFieldValidatorOutput;
 
 export interface MargaritaFormFieldValidators {
   [key: string]: MargaritaFormFieldValidatorFunction;
+}
+
+export interface MargaritaFormFieldValidationsState {
+  [key: string]: MargaritaFormFieldValidatorResult;
 }
 
 export interface MargaritaFormFieldValidation {
@@ -49,6 +65,7 @@ export type MargaritaFormFields = MargaritaFormField[];
 export interface MargaritaFormOptions {
   fields: MargaritaFormFields;
   data?: Record<string, unknown>;
+  validators?: MargaritaFormFieldValidators;
 }
 
 export interface MargaritaFormControlBase<T = unknown> {
@@ -62,13 +79,17 @@ export interface MargaritaFormControlBase<T = unknown> {
   setRef: (node: HTMLElement | null) => void;
   cleanup: () => void;
   controls?: MargaritaFormControls | null;
-  controlsArray?: MargaritaFormControls[] | null;
+  controlsArray?: MargaritaFormArrayItem[] | null;
 }
+
+export type MargaritaFormObjectControlTypes<T = unknown> =
+  | MargaritaFormGroup<T>
+  | MargaritaFormArray<T>
+  | MargaritaFormArrayItem<T>;
 
 export type MargaritaFormControlTypes<T = unknown> =
   | MargaritaFormControl<T>
-  | MargaritaFormGroup<T>
-  | MargaritaFormArray<T>;
+  | MargaritaFormObjectControlTypes<T>;
 
 export type MargaritaFormControls<T = unknown> = Record<
   string,

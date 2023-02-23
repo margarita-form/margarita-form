@@ -1,20 +1,36 @@
 import type {
   CommonRecord,
   MargaritaFormControlBase,
-  MargaritaFormControls,
   MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFields,
+  MargaritaFormFieldValidators,
+  MargaritaFormObjectControlTypes,
   MargaritaFormStatus,
 } from './margarita-form-types';
-import { map, Observable, Subscription, shareReplay, switchMap } from 'rxjs';
+import { Observable, Subscription, shareReplay, switchMap } from 'rxjs';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import _get from 'lodash.get';
-import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormGroup } from './margarita-form-group';
 import { defaultStatus } from './margarita-form-defaults';
+import { nanoid } from 'nanoid';
 
-type MargaritaFormArrayControls = MargaritaFormControls<unknown>[];
+export class MargaritaFormArrayItem<T = unknown> extends MargaritaFormGroup<T> {
+  public get index(): number {
+    if (this.parent instanceof MargaritaFormArray) {
+      return this.parent.findIndexForName(this.name);
+    }
+    return -1;
+  }
+
+  public remove() {
+    if (this.parent instanceof MargaritaFormArray) {
+      this.parent.removeControls(this.index);
+    }
+  }
+}
+
+type MargaritaFormArrayControls<T = unknown> = MargaritaFormArrayItem<T>[];
 
 export class MargaritaFormArray<T = CommonRecord[]>
   implements MargaritaFormControlBase<T>
@@ -27,7 +43,9 @@ export class MargaritaFormArray<T = CommonRecord[]>
 
   constructor(
     public field: MargaritaFormField,
-    public parent?: MargaritaFormControlTypes<unknown>
+    private _parent?: MargaritaFormObjectControlTypes<unknown> | null,
+    private _root?: MargaritaFormObjectControlTypes<unknown> | null,
+    private _validators?: MargaritaFormFieldValidators
   ) {
     const first = this.transformFieldsToControlArray(field.fields);
     const controlsArray = [first];
@@ -57,38 +75,45 @@ export class MargaritaFormArray<T = CommonRecord[]>
     });
   }
 
-  private transformFieldsToControlArray(fields?: MargaritaFormFields) {
-    if (!fields) return {};
-    const controls = fields.reduce((acc, field) => {
-      const { name } = field;
-      const control = this.fieldToControl(field);
-      acc[name] = control;
-      field.control = acc[name];
-      return acc;
-    }, {} as MargaritaFormControls<unknown>);
-    return controls;
+  public get name(): string {
+    return this.field.name;
   }
 
-  private fieldToControl(
-    field: MargaritaFormField
-  ): MargaritaFormControlTypes<unknown> {
-    const { fields, repeatable } = field;
-    if (fields && repeatable) return new MargaritaFormArray(field, this);
-    else if (fields) return new MargaritaFormGroup(field, this);
-    return new MargaritaFormControl(field, this);
+  public get parent(): MargaritaFormObjectControlTypes<unknown> {
+    if (!this._parent) {
+      console.warn('Root of controls reached!', this);
+    }
+    return this._parent || this;
+  }
+
+  public get root(): MargaritaFormObjectControlTypes<unknown> {
+    if (!this._root) {
+      console.warn('Root of controls already reached!', this);
+    }
+    return this._root || this;
+  }
+
+  public get validators(): MargaritaFormFieldValidators {
+    return this._validators || this.root.validators;
+  }
+
+  private transformFieldsToControlArray(
+    fields?: MargaritaFormFields
+  ): MargaritaFormArrayItem {
+    const name = nanoid(4);
+    const controlsItem = new MargaritaFormArrayItem(
+      { name, fields },
+      this,
+      this.root
+    );
+    return controlsItem;
   }
 
   public register(field: MargaritaFormField, index?: number) {
     const controlsArray = this.controlsArray;
     if (index !== undefined && typeof index === 'number') {
       const controls = controlsArray[index];
-      const newControls = this.transformFieldsToControlArray([field]);
-      Object.entries(newControls).forEach(([key, control]) => {
-        controls[key] = control;
-      });
-      const { name } = field;
-      const control = this.fieldToControl(field);
-      controls[name] = control;
+      controls.register(field);
     }
   }
 
@@ -102,11 +127,12 @@ export class MargaritaFormArray<T = CommonRecord[]>
     this._controlsArray.next(controlsArray);
 
     values.map((value, index) => {
-      let controls = this.controlsArray[index];
-      if (!controls) {
-        controls = this.transformFieldsToControlArray(this.field.fields);
-        this.controlsArray.push(controls);
+      let controlsItem = this.controlsArray[index];
+      if (!controlsItem) {
+        controlsItem = this.transformFieldsToControlArray(this.field.fields);
+        this.controlsArray.push(controlsItem);
       }
+      const { controls } = controlsItem;
       Object.values(controls).forEach((control) => {
         const { name } = control.field;
         if (value && typeof value === 'object') {
@@ -124,12 +150,15 @@ export class MargaritaFormArray<T = CommonRecord[]>
     return this._controlsArray.value;
   }
 
+  public findIndexForName(name: string) {
+    if (!name) return -1;
+    const index = this.controlsArray.findIndex((group) => group.name === name);
+    return index;
+  }
+
   public get value(): T {
     return this.controlsArray.map((controls) => {
-      return Object.entries(controls).reduce((acc, [key, control]) => {
-        acc[key] = control.value;
-        return acc;
-      }, {} as CommonRecord);
+      return controls.value;
     }) as T;
   }
 
@@ -150,7 +179,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
     index: number,
     name: string
   ) {
-    return this.controlsArray[index][name] as T;
+    return this.controlsArray[index].getControl(name) as T;
   }
 
   public addControls(fields = this.field.fields) {
@@ -174,26 +203,8 @@ export class MargaritaFormArray<T = CommonRecord[]>
             resolve(undefined as T)
           ) as Promise<T>;
 
-        const valueChangesEntriesArray = controlsArray.map((controls) => {
-          const valueChangesEntries = Object.entries(controls).map(
-            ([key, control]) => {
-              return control.valueChanges.pipe(
-                map((value) => {
-                  return { key, value };
-                })
-              );
-            }
-          );
-
-          return combineLatest(valueChangesEntries).pipe(
-            map((values) => {
-              return values.reduce((acc: CommonRecord, { key, value }) => {
-                acc[key] = value;
-                return acc;
-              }, {});
-            }),
-            shareReplay(1)
-          );
+        const valueChangesEntriesArray = controlsArray.map((group) => {
+          return group.valueChanges;
         });
 
         return combineLatest(valueChangesEntriesArray).pipe(

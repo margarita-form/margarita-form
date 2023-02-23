@@ -2,9 +2,10 @@ import type {
   CommonRecord,
   MargaritaFormControlBase,
   MargaritaFormControls,
-  MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFields,
+  MargaritaFormFieldValidators,
+  MargaritaFormObjectControlTypes,
   MargaritaFormStatus,
 } from './margarita-form-types';
 import type { Observable, Subscription } from 'rxjs';
@@ -31,8 +32,9 @@ export class MargaritaFormGroup<T = CommonRecord>
 
   constructor(
     public field: MargaritaFormField,
-    public parent?: MargaritaFormControlTypes<unknown>,
-    public root?: MargaritaFormGroup<unknown>
+    private _parent?: MargaritaFormObjectControlTypes<unknown> | null,
+    private _root?: MargaritaFormObjectControlTypes<unknown> | null,
+    private _validators?: MargaritaFormFieldValidators
   ) {
     const controls = this.transformFieldsToControls(field.fields);
     this._controls.next(controls);
@@ -59,14 +61,37 @@ export class MargaritaFormGroup<T = CommonRecord>
     });
   }
 
+  public get name(): string {
+    return this.field.name;
+  }
+
+  public get parent(): MargaritaFormObjectControlTypes<unknown> {
+    if (!this._parent) {
+      console.warn('Root of controls reached!', this);
+    }
+    return this._parent || this;
+  }
+
+  public get root(): MargaritaFormObjectControlTypes<unknown> {
+    if (!this._root) {
+      console.warn('Root of controls already reached!', this);
+    }
+    return this._root || this;
+  }
+
+  public get validators(): MargaritaFormFieldValidators {
+    return this._validators || this.root.validators;
+  }
+
   private transformFieldsToControls(fields?: MargaritaFormFields) {
     if (!fields) return {};
     const controls = fields.reduce((acc, field) => {
       const { name, fields, repeatable } = field;
       const isArray = fields && repeatable;
-      if (isArray) acc[name] = new MargaritaFormArray(field, this);
-      else if (fields) acc[name] = new MargaritaFormGroup(field, this);
-      else acc[name] = new MargaritaFormControl(field, this);
+      if (isArray) acc[name] = new MargaritaFormArray(field, this, this.root);
+      else if (fields)
+        acc[name] = new MargaritaFormGroup(field, this, this.root);
+      else acc[name] = new MargaritaFormControl(field, this, this.root);
       field.control = acc[name];
       return acc;
     }, {} as MargaritaFormControls<unknown>);
@@ -79,9 +104,11 @@ export class MargaritaFormGroup<T = CommonRecord>
     const { name, fields, repeatable } = field;
     const isArray = fields && repeatable;
     const controls = this.controls;
-    if (isArray) controls[name] = new MargaritaFormArray(field);
-    else if (fields) controls[name] = new MargaritaFormGroup(field);
-    else controls[name] = new MargaritaFormControl(field);
+    if (isArray)
+      controls[name] = new MargaritaFormArray(field, this, this.root);
+    else if (fields)
+      controls[name] = new MargaritaFormGroup(field, this, this.root);
+    else controls[name] = new MargaritaFormControl(field, this, this.root);
     this._controls.next(controls);
   }
 

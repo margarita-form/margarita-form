@@ -1,46 +1,69 @@
-import type { Observable, Subscription } from 'rxjs';
+import {
+  combineLatest,
+  interval,
+  Observable,
+  ObservableInput,
+  Subscription,
+} from 'rxjs';
 import type {
   MargaritaFormControlBase,
-  MargaritaFormControlTypes,
   MargaritaFormField,
+  MargaritaFormFieldValidation,
+  MargaritaFormFieldValidationsState,
+  MargaritaFormFieldValidatorOutput,
+  MargaritaFormFieldValidatorResultEntry,
+  MargaritaFormFieldValidators,
+  MargaritaFormObjectControlTypes,
   MargaritaFormStatus,
 } from './margarita-form-types';
 import { BehaviorSubject, fromEvent } from 'rxjs';
-import { debounceTime, shareReplay } from 'rxjs/operators';
-import { MargaritaFormGroup } from './margarita-form-group';
+import { debounceTime, map, shareReplay, switchMap } from 'rxjs/operators';
 import { defaultStatus } from './margarita-form-defaults';
+
+const validators: MargaritaFormFieldValidators = {
+  function: ({ value }) => ({ valid: Boolean(value) }),
+  asPromise: async ({ value }) => ({ valid: Boolean(value) }),
+  asObservable: ({ params: intervalMs }) =>
+    interval(intervalMs).pipe(
+      map((i) => {
+        const valid = i % 2 === 0;
+        if (!valid) {
+          return { valid, error: 'No zero!' };
+        }
+        return { valid };
+      })
+    ),
+};
 
 export class MargaritaFormControl<T = unknown>
   implements MargaritaFormControlBase<T>
 {
+  private _subscriptions: Subscription[];
   private _value = new BehaviorSubject<unknown>(undefined);
   private _status = new BehaviorSubject<MargaritaFormStatus>(defaultStatus);
-  private _subscriptions: Subscription[];
+  private _validationsState =
+    new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
   public ref: HTMLElement | null = null;
   constructor(
     public field: MargaritaFormField,
-    public parent?: MargaritaFormControlTypes<unknown>,
-    public root?: MargaritaFormGroup<unknown>
+    public parent: MargaritaFormObjectControlTypes<unknown>,
+    public root: MargaritaFormObjectControlTypes<unknown>,
+    public validators?: MargaritaFormFieldValidators
   ) {
     if (field.initialValue) this.setValue(field.initialValue);
-    const valueChangesSubscription = this.valueChanges.subscribe((value) => {
-      /*
-      console.log({
-        field,
-        control: this,
-        value,
-      });
-      */
-    });
-
-    this._subscriptions = [valueChangesSubscription];
+    const validationsStateSubscription = this._createValidationsState();
+    this._subscriptions = [validationsStateSubscription];
   }
 
   public cleanup() {
     this._subscriptions.forEach((subscription) => {
       subscription.unsubscribe();
     });
+  }
+
+  public get name(): string {
+    return this.field.name;
   }
 
   public get statusChanges(): Observable<MargaritaFormStatus> {
@@ -114,5 +137,81 @@ export class MargaritaFormControl<T = unknown>
       { context: this }
     );
     return null;
+  }
+
+  // Internal
+
+  private _createValidationsState() {
+    return this.valueChanges
+      .pipe(
+        debounceTime(10),
+        switchMap((value) => {
+          const validation: MargaritaFormFieldValidation = {
+            function: true,
+            asPromise: true,
+            // asObservable: 1500,
+          };
+          const activeValidatorEntries = Object.entries(validation).reduce(
+            (acc, [key, params]) => {
+              const validatorFn = validators[key];
+              if (typeof validatorFn !== 'undefined') {
+                const validatorOutput = validatorFn({
+                  value,
+                  params,
+                  field: this.field,
+                  control: this,
+                });
+
+                const longTime = setTimeout(() => {
+                  console.warn('Validator is taking long time to finish!', {
+                    key,
+                    params,
+                    value,
+                    field: this.field,
+                    control: this,
+                  });
+                }, 2000);
+
+                if (validatorOutput instanceof Observable) {
+                  const observable = validatorOutput.pipe(
+                    map((result) => {
+                      clearTimeout(longTime);
+                      return [key, result];
+                    })
+                  ) as Observable<MargaritaFormFieldValidatorResultEntry>;
+
+                  acc.push([key, observable]);
+                } else {
+                  const promise = Promise.resolve(validatorOutput).then(
+                    (result) => {
+                      clearTimeout(longTime);
+                      return [key, result];
+                    }
+                  ) as Promise<MargaritaFormFieldValidatorResultEntry>;
+                  acc.push([key, promise]);
+                }
+              }
+              return acc;
+            },
+            [] as [
+              string,
+              MargaritaFormFieldValidatorOutput<MargaritaFormFieldValidatorResultEntry>
+            ][]
+          );
+
+          const activeValidators = activeValidatorEntries.map(
+            (entry) => entry[1]
+          ) as ObservableInput<MargaritaFormFieldValidatorResultEntry>[];
+
+          return combineLatest(activeValidators).pipe(
+            map((values: MargaritaFormFieldValidatorResultEntry[]) => {
+              return Object.fromEntries(values);
+            })
+          );
+        })
+      )
+      .subscribe((validationState) => {
+        this._validationsState.next(validationState);
+      });
   }
 }

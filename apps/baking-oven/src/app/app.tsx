@@ -3,6 +3,7 @@ import {
   MargaritaFormControl,
   useMargaritaForm,
   MargaritaFormArray,
+  MargaritaFormGroup,
 } from 'margarita-form';
 
 const StyledApp = styled.div`
@@ -15,6 +16,11 @@ export function App() {
       { name: 'hello', initialValue: 'initial value' },
       {
         name: 'world',
+        fields: [
+          {
+            name: 'asd',
+          },
+        ],
       },
       {
         name: 'others',
@@ -37,8 +43,9 @@ export function App() {
   });
 
   const helloControl = form.getControl<MargaritaFormControl>('hello');
-  const worldControl = form.getControl<MargaritaFormControl>('world');
+  const worldControl = form.getControl<MargaritaFormGroup>('world');
   const othersControl = form.getControl<MargaritaFormArray>('others');
+  const asdControl = worldControl.getControl<MargaritaFormControl>('asd');
 
   return (
     <StyledApp>
@@ -69,9 +76,19 @@ export function App() {
       <input type="text" ref={(node) => worldControl.setRef(node)} />
 
       {othersControl.controlsArray.map((controls, i) => {
-        const firstNameControl = controls['firstname'] as MargaritaFormControl;
-        const lastNameControl = controls['lastname'] as MargaritaFormControl;
-        const muunameControl = controls['muuname'] as MargaritaFormControl;
+        const firstNameControl = controls.getControl(
+          'firstname'
+        ) as MargaritaFormControl;
+
+        const lastNameControl = controls.getControl(
+          'lastname'
+        ) as MargaritaFormControl;
+
+        const muunameControl = controls.getControl(
+          'muuname'
+        ) as MargaritaFormControl;
+
+        console.log(firstNameControl);
 
         return (
           <div key={i + 1}>
