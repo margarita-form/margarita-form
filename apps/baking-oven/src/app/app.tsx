@@ -71,7 +71,9 @@ export function App() {
           add field
         </button>
       </div>
-      <input type="text" ref={(node) => helloControl.setRef(node)} />
+      {helloControl && (
+        <input type="text" ref={(node) => helloControl.setRef(node)} />
+      )}
 
       <input type="text" ref={(node) => worldControl.setRef(node)} />
 
@@ -126,6 +128,7 @@ export function App() {
       <button onClick={() => othersControl.removeControls(0)}>
         Delete first
       </button>
+      <button onClick={() => form.unregister('hello')}>Delete hello</button>
     </StyledApp>
   );
 }

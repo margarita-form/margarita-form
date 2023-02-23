@@ -19,6 +19,8 @@ import type {
 import { BehaviorSubject, fromEvent } from 'rxjs';
 import { debounceTime, map, shareReplay, switchMap } from 'rxjs/operators';
 import { defaultStatus } from './margarita-form-defaults';
+import { MargaritaFormArray } from './margarita-form-array';
+import { MargaritaFormGroup } from './margarita-form-group';
 
 const validators: MargaritaFormFieldValidators = {
   function: ({ value }) => ({ valid: Boolean(value) }),
@@ -86,6 +88,22 @@ export class MargaritaFormControl<T = unknown>
 
   public setValue(value: unknown) {
     this._value.next(value);
+  }
+
+  public get index(): number {
+    if (this.parent instanceof MargaritaFormArray) {
+      return this.parent.findIndexForName(this.name);
+    }
+    return -1;
+  }
+
+  public remove() {
+    if (this.parent instanceof MargaritaFormArray) {
+      this.parent.removeControls(this.index);
+    }
+    if (this.parent instanceof MargaritaFormGroup) {
+      this.parent.unregister(this.name);
+    }
   }
 
   public setRef(node: HTMLElement | null) {

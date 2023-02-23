@@ -11,26 +11,11 @@ import type {
 import { Observable, Subscription, shareReplay, switchMap } from 'rxjs';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import _get from 'lodash.get';
-import { MargaritaFormGroup } from './margarita-form-group';
 import { defaultStatus } from './margarita-form-defaults';
 import { nanoid } from 'nanoid';
+import { MargaritaFormGroup } from './margarita-form-group';
 
-export class MargaritaFormArrayItem<T = unknown> extends MargaritaFormGroup<T> {
-  public get index(): number {
-    if (this.parent instanceof MargaritaFormArray) {
-      return this.parent.findIndexForName(this.name);
-    }
-    return -1;
-  }
-
-  public remove() {
-    if (this.parent instanceof MargaritaFormArray) {
-      this.parent.removeControls(this.index);
-    }
-  }
-}
-
-type MargaritaFormArrayControls<T = unknown> = MargaritaFormArrayItem<T>[];
+type MargaritaFormArrayControls<T = unknown> = MargaritaFormGroup<T>[];
 
 export class MargaritaFormArray<T = CommonRecord[]>
   implements MargaritaFormControlBase<T>
@@ -97,11 +82,18 @@ export class MargaritaFormArray<T = CommonRecord[]>
     return this._validators || this.root.validators;
   }
 
+  public get index(): number {
+    if (this.parent instanceof MargaritaFormArray) {
+      return this.parent.findIndexForName(this.name);
+    }
+    return -1;
+  }
+
   private transformFieldsToControlArray(
     fields?: MargaritaFormFields
-  ): MargaritaFormArrayItem {
+  ): MargaritaFormGroup {
     const name = nanoid(4);
-    const controlsItem = new MargaritaFormArrayItem(
+    const controlsItem = new MargaritaFormGroup(
       { name, fields },
       this,
       this.root
@@ -114,6 +106,19 @@ export class MargaritaFormArray<T = CommonRecord[]>
     if (index !== undefined && typeof index === 'number') {
       const controls = controlsArray[index];
       controls.register(field);
+    }
+  }
+
+  public unregister(name: string, index?: number) {
+    throw 'not yet implemented';
+  }
+
+  public remove() {
+    if (this.parent instanceof MargaritaFormArray) {
+      this.parent.removeControls(this.index);
+    }
+    if (this.parent instanceof MargaritaFormGroup) {
+      this.parent.unregister(this.name);
     }
   }
 

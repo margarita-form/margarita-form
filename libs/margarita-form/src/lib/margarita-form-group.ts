@@ -83,6 +83,13 @@ export class MargaritaFormGroup<T = CommonRecord>
     return this._validators || this.root.validators;
   }
 
+  public get index(): number {
+    if (this.parent instanceof MargaritaFormArray) {
+      return this.parent.findIndexForName(this.name);
+    }
+    return -1;
+  }
+
   private transformFieldsToControls(fields?: MargaritaFormFields) {
     if (!fields) return {};
     const controls = fields.reduce((acc, field) => {
@@ -110,6 +117,28 @@ export class MargaritaFormGroup<T = CommonRecord>
       controls[name] = new MargaritaFormGroup(field, this, this.root);
     else controls[name] = new MargaritaFormControl(field, this, this.root);
     this._controls.next(controls);
+  }
+
+  public unregister(name: string) {
+    const control = this.getControl(name);
+    if (control) {
+      control.cleanup();
+      delete this.controls[name];
+      this._controls.next(this.controls);
+    } else {
+      console.warn(`Could not find control named "${name}"!`, {
+        controls: this.controls,
+      });
+    }
+  }
+
+  public remove() {
+    if (this.parent instanceof MargaritaFormArray) {
+      this.parent.removeControls(this.index);
+    }
+    if (this.parent instanceof MargaritaFormGroup) {
+      this.parent.unregister(this.name);
+    }
   }
 
   public setValue(value: unknown) {
