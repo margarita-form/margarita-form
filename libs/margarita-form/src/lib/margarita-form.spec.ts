@@ -47,6 +47,7 @@ describe('margaritaForm', () => {
       'arrayName',
       'controlsArray',
       '0',
+      'controls',
       'fieldName',
     ]);
     expect(form.value).toHaveProperty(

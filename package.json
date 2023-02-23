@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx run baking-oven:serve"
+    "dev": "nx run baking-oven:serve",
+    "test": "nx run margarita-form:test"
   },
   "private": true,
   "devDependencies": {
