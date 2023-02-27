@@ -96,10 +96,27 @@ export class MargaritaFormGroup<T = CommonRecord>
     const controls = fields.reduce((acc, field) => {
       const { name, fields, grouping = 'group' } = field;
       const isArray = fields && arrayGroupings.includes(grouping);
-      if (isArray) acc[name] = new MargaritaFormArray(field, this, this.root);
+      if (isArray)
+        acc[name] = new MargaritaFormArray(
+          field,
+          this,
+          this.root,
+          this.validators
+        );
       else if (fields)
-        acc[name] = new MargaritaFormGroup(field, this, this.root);
-      else acc[name] = new MargaritaFormControl(field, this, this.root);
+        acc[name] = new MargaritaFormGroup(
+          field,
+          this,
+          this.root,
+          this.validators
+        );
+      else
+        acc[name] = new MargaritaFormControl(
+          field,
+          this,
+          this.root,
+          this.validators
+        );
       field.control = acc[name];
       return acc;
     }, {} as MargaritaFormControls<unknown>);
@@ -113,10 +130,26 @@ export class MargaritaFormGroup<T = CommonRecord>
     const isArray = fields && arrayGroupings.includes(grouping);
     const controls = this.controls;
     if (isArray)
-      controls[name] = new MargaritaFormArray(field, this, this.root);
+      controls[name] = new MargaritaFormArray(
+        field,
+        this,
+        this.root,
+        this.validators
+      );
     else if (fields)
-      controls[name] = new MargaritaFormGroup(field, this, this.root);
-    else controls[name] = new MargaritaFormControl(field, this, this.root);
+      controls[name] = new MargaritaFormGroup(
+        field,
+        this,
+        this.root,
+        this.validators
+      );
+    else
+      controls[name] = new MargaritaFormControl(
+        field,
+        this,
+        this.root,
+        this.validators
+      );
     this._controls.next(controls);
   }
 

@@ -105,7 +105,8 @@ export class MargaritaFormArray<T = CommonRecord[]>
     const controlsItem = new MargaritaFormGroup(
       { name, fields },
       this,
-      this.root
+      this.root,
+      this.validators
     );
     return [controlsItem];
   }
@@ -113,9 +114,11 @@ export class MargaritaFormArray<T = CommonRecord[]>
   private getControlType(field: MargaritaFormField): MargaritaFormControlTypes {
     const { fields, grouping = 'group' } = field;
     const isArray = fields && arrayGroupings.includes(grouping);
-    if (isArray) return new MargaritaFormArray(field, this, this.root);
-    if (fields) return new MargaritaFormGroup(field, this, this.root);
-    return new MargaritaFormControl(field, this, this.root);
+    if (isArray)
+      return new MargaritaFormArray(field, this, this.root, this.validators);
+    if (fields)
+      return new MargaritaFormGroup(field, this, this.root, this.validators);
+    return new MargaritaFormControl(field, this, this.root, this.validators);
   }
 
   public register(field: MargaritaFormField, index?: number) {
@@ -127,7 +130,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
       }
     }
     if (this.field.grouping === 'repeat-group') {
-      console.log('Not yet implemented');
+      throw 'Not yet implemented';
     }
   }
 

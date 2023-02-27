@@ -49,7 +49,7 @@ export interface MargaritaFormField {
   fields?: MargaritaFormFields;
   grouping?: groupings;
   initialValue?: unknown;
-  validation?: MargaritaFormFieldValidators;
+  validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators;
   control?: MargaritaFormControlTypes;
 }
