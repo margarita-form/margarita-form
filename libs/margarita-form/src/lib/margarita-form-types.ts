@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Observable } from 'rxjs';
-import type {
-  MargaritaFormArray,
-  MargaritaFormArrayItem,
-} from './margarita-form-array';
+import type { MargaritaFormArray } from './margarita-form-array';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaFormGroup } from './margarita-form-group';
 
@@ -44,10 +41,13 @@ export interface MargaritaFormFieldValidation {
   [key: string]: unknown;
 }
 
+export type groupings = 'group' | 'repeat-group' | 'array';
+export const arrayGroupings: groupings[] = ['array', 'repeat-group'];
+
 export interface MargaritaFormField {
   name: string;
   fields?: MargaritaFormFields;
-  repeatable?: boolean;
+  grouping?: groupings;
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidators;
   validators?: MargaritaFormFieldValidators;
@@ -75,17 +75,16 @@ export interface MargaritaFormControlBase<T = unknown> {
   status: MargaritaFormStatus;
   statusChanges: Observable<MargaritaFormStatus>;
   parent?: MargaritaFormControlTypes<unknown>;
+  controls?: MargaritaFormControls | null;
+  controlsArray?: MargaritaFormControlTypes[] | null;
   setValue: (value: any) => void;
   setRef: (node: HTMLElement | null) => void;
   cleanup: () => void;
-  controls?: MargaritaFormControls | null;
-  controlsArray?: MargaritaFormArrayItem[] | null;
 }
 
 export type MargaritaFormObjectControlTypes<T = unknown> =
   | MargaritaFormGroup<T>
-  | MargaritaFormArray<T>
-  | MargaritaFormArrayItem<T>;
+  | MargaritaFormArray<T>;
 
 export type MargaritaFormControlTypes<T = unknown> =
   | MargaritaFormControl<T>

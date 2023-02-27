@@ -24,7 +24,7 @@ export function App() {
       },
       {
         name: 'others',
-        repeatable: true,
+        grouping: 'repeat-group',
         initialValue: [
           {
             lastname: 'asd',
@@ -39,13 +39,38 @@ export function App() {
           },
         ],
       },
+      {
+        name: 'array',
+        grouping: 'array',
+        fields: [
+          {
+            name: 'test1',
+            initialValue: 1,
+          },
+          {
+            name: 'test1',
+            initialValue: 2,
+          },
+          {
+            name: 'test2',
+            initialValue: 3,
+          },
+          {
+            name: 'invalidi',
+            initialValue: 4,
+          },
+        ],
+      },
     ],
   });
 
   const helloControl = form.getControl<MargaritaFormControl>('hello');
   const worldControl = form.getControl<MargaritaFormGroup>('world');
-  const othersControl = form.getControl<MargaritaFormArray>('others');
   const asdControl = worldControl.getControl<MargaritaFormControl>('asd');
+  const othersControl = form.getControl<MargaritaFormArray>('others');
+  const arrayControl = form.getControl<MargaritaFormArray>('array');
+
+  console.log(othersControl);
 
   return (
     <StyledApp>
@@ -75,18 +100,22 @@ export function App() {
         <input type="text" ref={(node) => helloControl.setRef(node)} />
       )}
 
-      <input type="text" ref={(node) => worldControl.setRef(node)} />
+      <input
+        type="text"
+        ref={(node) => asdControl.setRef(node)}
+        placeholder="asd"
+      />
 
-      {othersControl.controlsArray.map((controls, i) => {
-        const firstNameControl = controls.getControl(
-          'firstname'
-        ) as MargaritaFormControl;
+      {othersControl.controlsArray.map((control, i) => {
+        const group = control as MargaritaFormGroup;
+        const firstNameControl =
+          group.getControl<MargaritaFormControl>('firstname');
 
-        const lastNameControl = controls.getControl(
+        const lastNameControl = group.getControl(
           'lastname'
         ) as MargaritaFormControl;
 
-        const muunameControl = controls.getControl(
+        const muunameControl = group.getControl(
           'muuname'
         ) as MargaritaFormControl;
 
@@ -119,6 +148,47 @@ export function App() {
         );
       })}
 
+      {arrayControl.controlsArray.map((control, i) => {
+        if (control.name === 'test1') {
+          return (
+            <div key={i + 1}>
+              {control && (
+                <input
+                  type="text"
+                  placeholder="test1"
+                  ref={(node) => control.setRef(node)}
+                />
+              )}
+            </div>
+          );
+        }
+        if (control.name === 'test2') {
+          return (
+            <div key={i + 1}>
+              {control && (
+                <input
+                  type="text"
+                  placeholder="test2"
+                  ref={(node) => control.setRef(node)}
+                />
+              )}
+            </div>
+          );
+        }
+
+        return (
+          <div key={i + 1}>
+            {control && (
+              <input
+                type="text"
+                placeholder="joku muu"
+                ref={(node) => control.setRef(node)}
+              />
+            )}
+          </div>
+        );
+      })}
+
       <pre>{JSON.stringify(value, null, 2)}</pre>
 
       <button onClick={() => othersControl.addControls()}>Add</button>
@@ -128,6 +198,7 @@ export function App() {
       <button onClick={() => othersControl.removeControls(0)}>
         Delete first
       </button>
+
       <button onClick={() => form.unregister('hello')}>Delete hello</button>
     </StyledApp>
   );

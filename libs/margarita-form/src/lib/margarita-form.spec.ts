@@ -15,7 +15,7 @@ const groupField: MargaritaFormField = {
 
 const arrayField: MargaritaFormField = {
   name: 'arrayName',
-  repeatable: true,
+  grouping: 'repeat-group',
   fields: [commonField],
 };
 

@@ -1,4 +1,5 @@
-import type {
+import {
+  arrayGroupings,
   CommonRecord,
   MargaritaFormControlBase,
   MargaritaFormControls,
@@ -93,8 +94,8 @@ export class MargaritaFormGroup<T = CommonRecord>
   private transformFieldsToControls(fields?: MargaritaFormFields) {
     if (!fields) return {};
     const controls = fields.reduce((acc, field) => {
-      const { name, fields, repeatable } = field;
-      const isArray = fields && repeatable;
+      const { name, fields, grouping = 'group' } = field;
+      const isArray = fields && arrayGroupings.includes(grouping);
       if (isArray) acc[name] = new MargaritaFormArray(field, this, this.root);
       else if (fields)
         acc[name] = new MargaritaFormGroup(field, this, this.root);
@@ -108,8 +109,8 @@ export class MargaritaFormGroup<T = CommonRecord>
   public register(field: MargaritaFormField) {
     if (!this.field.fields) throw 'Could not register new field';
     this.field.fields.push(field);
-    const { name, fields, repeatable } = field;
-    const isArray = fields && repeatable;
+    const { name, fields, grouping = 'group' } = field;
+    const isArray = fields && arrayGroupings.includes(grouping);
     const controls = this.controls;
     if (isArray)
       controls[name] = new MargaritaFormArray(field, this, this.root);

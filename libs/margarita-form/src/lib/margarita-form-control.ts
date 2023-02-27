@@ -149,10 +149,19 @@ export class MargaritaFormControl<T = unknown>
     );
     return null;
   }
+
   get controlsArray() {
     console.warn(
       'Trying to access "controlsArray" which is not available for MargaritaFormControl!',
       { context: this }
+    );
+    return null;
+  }
+
+  public getControl(name: string) {
+    console.warn(
+      'Trying to use method "getControl" which is not available for MargaritaFormControl!',
+      { name, context: this }
     );
     return null;
   }

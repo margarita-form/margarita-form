@@ -1,4 +1,5 @@
-import type {
+import {
+  arrayGroupings,
   CommonRecord,
   MargaritaFormControlBase,
   MargaritaFormControlTypes,
@@ -14,8 +15,9 @@ import _get from 'lodash.get';
 import { defaultStatus } from './margarita-form-defaults';
 import { nanoid } from 'nanoid';
 import { MargaritaFormGroup } from './margarita-form-group';
+import { MargaritaFormControl } from './margarita-form-control';
 
-type MargaritaFormArrayControls<T = unknown> = MargaritaFormGroup<T>[];
+type MargaritaFormArrayControls<T = unknown> = MargaritaFormControlTypes<T>[];
 
 export class MargaritaFormArray<T = CommonRecord[]>
   implements MargaritaFormControlBase<T>
@@ -32,9 +34,8 @@ export class MargaritaFormArray<T = CommonRecord[]>
     private _root?: MargaritaFormObjectControlTypes<unknown> | null,
     private _validators?: MargaritaFormFieldValidators
   ) {
-    const first = this.transformFieldsToControlArray(field.fields);
-    const controlsArray = [first];
-    this._controlsArray.next(controlsArray);
+    const controlsArrayItem = this.transformFieldsToControlArray(field.fields);
+    this._controlsArray.next(controlsArrayItem);
     if (field.initialValue) this.setValue(field.initialValue as T[]);
     const valueChangesSubscription = this.valueChanges.subscribe((value) => {
       /*
@@ -91,21 +92,42 @@ export class MargaritaFormArray<T = CommonRecord[]>
 
   private transformFieldsToControlArray(
     fields?: MargaritaFormFields
-  ): MargaritaFormGroup {
+  ): MargaritaFormControlTypes[] {
+    if (!fields) return [];
     const name = nanoid(4);
+    if (this.field.grouping === 'array') {
+      return fields.map((field) => {
+        const control = this.getControlType(field);
+        field.control = control;
+        return control;
+      });
+    }
     const controlsItem = new MargaritaFormGroup(
       { name, fields },
       this,
       this.root
     );
-    return controlsItem;
+    return [controlsItem];
+  }
+
+  private getControlType(field: MargaritaFormField): MargaritaFormControlTypes {
+    const { fields, grouping = 'group' } = field;
+    const isArray = fields && arrayGroupings.includes(grouping);
+    if (isArray) return new MargaritaFormArray(field, this, this.root);
+    if (fields) return new MargaritaFormGroup(field, this, this.root);
+    return new MargaritaFormControl(field, this, this.root);
   }
 
   public register(field: MargaritaFormField, index?: number) {
     const controlsArray = this.controlsArray;
-    if (index !== undefined && typeof index === 'number') {
-      const controls = controlsArray[index];
-      controls.register(field);
+    if (this.field.grouping === 'repeat-group') {
+      if (index !== undefined && typeof index === 'number') {
+        const controls = controlsArray[index] as MargaritaFormGroup;
+        controls.register(field);
+      }
+    }
+    if (this.field.grouping === 'repeat-group') {
+      console.log('Not yet implemented');
     }
   }
 
@@ -134,20 +156,17 @@ export class MargaritaFormArray<T = CommonRecord[]>
     values.map((value, index) => {
       let controlsItem = this.controlsArray[index];
       if (!controlsItem) {
-        controlsItem = this.transformFieldsToControlArray(this.field.fields);
-        this.controlsArray.push(controlsItem);
-      }
-      const { controls } = controlsItem;
-      Object.values(controls).forEach((control) => {
-        const { name } = control.field;
-        if (value && typeof value === 'object') {
-          const updatedValue = _get(value, [name], control.value);
-          control.setValue(updatedValue);
-        } else {
-          // control.setValue(null);
-          throw 'Not yet implemented';
+        if (this.field.grouping === 'repeat-group') {
+          const [group] = this.transformFieldsToControlArray(
+            this.field.fields
+          ) as [MargaritaFormGroup];
+          controlsItem = group;
+          this.controlsArray[index] === controlsItem;
         }
-      });
+      }
+      if (controlsItem instanceof MargaritaFormGroup) {
+        controlsItem.setValue(value);
+      }
     });
   }
 
@@ -182,15 +201,25 @@ export class MargaritaFormArray<T = CommonRecord[]>
 
   public getControl<T = MargaritaFormControlTypes>(
     index: number,
-    name: string
+    name?: string
   ) {
-    return this.controlsArray[index].getControl(name) as T;
+    const item = this.controlsArray[index];
+    if (!name) return item;
+    if (item instanceof MargaritaFormGroup) {
+      return item.getControl(name) as T;
+    }
+    throw 'Not yet implemented';
   }
 
   public addControls(fields = this.field.fields) {
     const controlsArray = this.controlsArray;
-    const controls = this.transformFieldsToControlArray(fields);
-    controlsArray.push(controls);
+    const controlItems = this.transformFieldsToControlArray(fields);
+    if (this.field.grouping === 'repeat-group') {
+      controlsArray.push(...controlItems);
+    }
+    if (this.field.grouping === 'array') {
+      throw 'Not yet implemented';
+    }
     this._controlsArray.next(controlsArray);
   }
 
