@@ -1,6 +1,6 @@
 import type { MargaritaFormOptions } from '../margarita-form-types';
 import { useEffect, useId, useMemo, useState } from 'react';
-import { MargaritaForm } from '../margarita-form';
+import { createMargaritaForm, MargaritaForm } from '../margarita-form';
 
 declare global {
   interface Window {
@@ -14,7 +14,7 @@ export const useMargaritaForm = (options: MargaritaFormOptions) => {
   const form = useMemo(() => {
     const hasWindow = typeof window !== 'undefined';
     if (hasWindow && formId in window) return window[formId];
-    const newForm = new MargaritaForm(options);
+    const newForm = createMargaritaForm(options);
     if (hasWindow) window[formId] = newForm;
     return newForm;
   }, [options]);

@@ -64,7 +64,7 @@ export type MargaritaFormFields = MargaritaFormField[];
 
 export interface MargaritaFormOptions {
   fields: MargaritaFormFields;
-  data?: Record<string, unknown>;
+  initialValue?: Record<string, unknown>;
   validators?: MargaritaFormFieldValidators;
 }
 

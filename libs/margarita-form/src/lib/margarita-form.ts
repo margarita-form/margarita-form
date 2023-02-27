@@ -1,10 +1,27 @@
 import type { MargaritaFormOptions } from './margarita-form-types';
 import { MargaritaFormGroup } from './margarita-form-group';
+import { MargaritaFormArray } from './margarita-form-array';
 
-export class MargaritaForm<T = unknown> extends MargaritaFormGroup<T> {
-  constructor(public options: MargaritaFormOptions) {
-    if (!options) throw 'No options provided!';
-    const { fields, validators } = options;
-    super({ name: 'root', fields }, null, null, validators);
-  }
-}
+export type MargaritaForm = MargaritaFormGroup;
+
+const createMargaritaFormFn = (options: MargaritaFormOptions) => {
+  const { fields, validators, initialValue } = options;
+  return new MargaritaFormGroup(
+    { name: 'root', fields, initialValue },
+    null,
+    null,
+    validators
+  );
+};
+
+createMargaritaFormFn.asArray = (options: MargaritaFormOptions) => {
+  const { fields, validators, initialValue } = options;
+  return new MargaritaFormArray(
+    { name: 'root', fields, initialValue },
+    null,
+    null,
+    validators
+  );
+};
+
+export const createMargaritaForm = createMargaritaFormFn;
