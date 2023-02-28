@@ -53,11 +53,17 @@ export interface MargaritaFormField {
   validators?: MargaritaFormFieldValidators;
   control?: MargaritaFormControlTypes;
 }
+
+export type MargaritaFormStatusErrors = Record<string, unknown>;
+export type MargaritaFormStatusChildren = Record<string, MargaritaFormStatus>;
+
 export interface MargaritaFormStatus {
   valid: boolean;
-  errors: { [key: string]: string };
+  errors: MargaritaFormStatusErrors;
   touched: boolean;
   dirty: boolean;
+  control: MargaritaFormControlTypes | null;
+  children?: Record<string, MargaritaFormStatus>;
 }
 
 export type MargaritaFormFields = MargaritaFormField[];

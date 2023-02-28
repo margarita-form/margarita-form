@@ -9,8 +9,10 @@ import {
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
   MargaritaFormStatus,
+  MargaritaFormStatusChildren,
+  MargaritaFormStatusErrors,
 } from './margarita-form-types';
-import type { Observable, Subscription } from 'rxjs';
+import { debounceTime, Observable, Subscription } from 'rxjs';
 import {
   BehaviorSubject,
   shareReplay,
@@ -21,14 +23,15 @@ import {
 import _get from 'lodash.get';
 import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormArray } from './margarita-form-array';
-import { defaultStatus } from './margarita-form-defaults';
+import { getDefaultStatus } from './margarita-form-defaults';
 import { _createValidationsState } from './core/margarita-form-validation';
 
 export class MargaritaFormGroup<T = CommonRecord>
   implements MargaritaFormControlBase<T>
 {
   private _controls = new BehaviorSubject<MargaritaFormControls<unknown>>({});
-  private _status = new BehaviorSubject<MargaritaFormStatus>(defaultStatus);
+  private _status: BehaviorSubject<MargaritaFormStatus>;
+
   private _subscriptions: Subscription[];
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
@@ -41,11 +44,14 @@ export class MargaritaFormGroup<T = CommonRecord>
     private _root?: MargaritaFormObjectControlTypes<unknown> | null,
     private _validators?: MargaritaFormFieldValidators
   ) {
+    const defaultStatus = getDefaultStatus(this);
+    this._status = new BehaviorSubject<MargaritaFormStatus>(defaultStatus);
     const controls = this.transformFieldsToControls(field.fields);
     this._controls.next(controls);
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._setValidationsState();
-    this._subscriptions = [validationsStateSubscription];
+    const stateSubscription = this._setState();
+    this._subscriptions = [validationsStateSubscription, stateSubscription];
   }
 
   public cleanup() {
@@ -266,5 +272,48 @@ export class MargaritaFormGroup<T = CommonRecord>
     return _createValidationsState(this).subscribe((validationState) => {
       this._validationsState.next(validationState);
     });
+  }
+
+  private _getChildStates() {
+    return Object.values(this.controls).map((control) => control.statusChanges);
+  }
+
+  private _setState() {
+    const childStates = combineLatest(this._getChildStates());
+
+    return combineLatest([this._validationsState, childStates])
+      .pipe(debounceTime(10))
+      .subscribe(([validationStates, childStates]) => {
+        const currentState = this.status;
+        const currentIsValid = Object.values(validationStates).every(
+          (state) => state.valid
+        );
+        const childrenAreValid = childStates.every((child) => child.valid);
+
+        const errors = Object.entries(validationStates).reduce(
+          (acc, [key, { error }]) => {
+            if (error) acc[key] = error;
+            return acc;
+          },
+          {} as MargaritaFormStatusErrors
+        );
+
+        const children = childStates.reduce((acc, child) => {
+          if (!child.control) return acc;
+          const { name } = child.control;
+          return {
+            ...acc,
+            [name]: child,
+          };
+        }, {} as MargaritaFormStatusChildren);
+
+        const newState = {
+          ...currentState,
+          valid: currentIsValid && childrenAreValid,
+          errors,
+          children,
+        };
+        this._status.next(newState);
+      });
   }
 }

@@ -7,7 +7,7 @@ import { MargaritaFormArray } from './margarita-form-array';
 import { requiredValidator } from './validators';
 import { MargaritaFormControl } from './margarita-form-control';
 
-export type MargaritaForm = MargaritaFormGroup;
+export type MargaritaForm<T> = MargaritaFormGroup<T>;
 
 const defaultValidators: MargaritaFormFieldValidators = {
   required: requiredValidator(),

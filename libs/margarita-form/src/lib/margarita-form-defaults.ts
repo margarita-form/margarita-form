@@ -1,8 +1,21 @@
-import type { MargaritaFormStatus } from './margarita-form-types';
+import type {
+  MargaritaFormControlTypes,
+  MargaritaFormStatus,
+} from './margarita-form-types';
 
-export const defaultStatus: MargaritaFormStatus = {
+const defaultStatus: MargaritaFormStatus = {
   valid: true,
   errors: {},
   touched: false,
   dirty: false,
+  control: null,
+};
+
+export const getDefaultStatus = (
+  control: MargaritaFormControlTypes
+): MargaritaFormStatus => {
+  return {
+    ...defaultStatus,
+    control,
+  };
 };
