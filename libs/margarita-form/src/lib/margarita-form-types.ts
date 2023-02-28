@@ -70,6 +70,7 @@ export interface MargaritaFormOptions {
 
 export interface MargaritaFormControlBase<T = unknown> {
   field: MargaritaFormField;
+  validators: MargaritaFormFieldValidators;
   valueChanges: Observable<T>;
   value: T;
   status: MargaritaFormStatus;

@@ -5,6 +5,7 @@ import {
   MargaritaFormControls,
   MargaritaFormField,
   MargaritaFormFields,
+  MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
   MargaritaFormStatus,
@@ -21,6 +22,7 @@ import _get from 'lodash.get';
 import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormArray } from './margarita-form-array';
 import { defaultStatus } from './margarita-form-defaults';
+import { _createValidationsState } from './core/margarita-form-validation';
 
 export class MargaritaFormGroup<T = CommonRecord>
   implements MargaritaFormControlBase<T>
@@ -28,6 +30,8 @@ export class MargaritaFormGroup<T = CommonRecord>
   private _controls = new BehaviorSubject<MargaritaFormControls<unknown>>({});
   private _status = new BehaviorSubject<MargaritaFormStatus>(defaultStatus);
   private _subscriptions: Subscription[];
+  private _validationsState =
+    new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
   public ref: HTMLElement | null = null;
 
@@ -40,16 +44,8 @@ export class MargaritaFormGroup<T = CommonRecord>
     const controls = this.transformFieldsToControls(field.fields);
     this._controls.next(controls);
     if (field.initialValue) this.setValue(field.initialValue);
-    const valueChangesSubscription = this.valueChanges.subscribe((value) => {
-      /*
-      console.log({
-        field,
-        control: this,
-        value,
-      });
-      */
-    });
-    this._subscriptions = [valueChangesSubscription];
+    const validationsStateSubscription = this._setValidationsState();
+    this._subscriptions = [validationsStateSubscription];
   }
 
   public cleanup() {
@@ -77,6 +73,10 @@ export class MargaritaFormGroup<T = CommonRecord>
     if (!this._root) {
       console.warn('Root of controls already reached!', this);
     }
+    return this.__root;
+  }
+
+  private get __root(): MargaritaFormObjectControlTypes<unknown> {
     return this._root || this;
   }
 
@@ -100,21 +100,21 @@ export class MargaritaFormGroup<T = CommonRecord>
         acc[name] = new MargaritaFormArray(
           field,
           this,
-          this.root,
+          this.__root,
           this.validators
         );
       else if (fields)
         acc[name] = new MargaritaFormGroup(
           field,
           this,
-          this.root,
+          this.__root,
           this.validators
         );
       else
         acc[name] = new MargaritaFormControl(
           field,
           this,
-          this.root,
+          this.__root,
           this.validators
         );
       field.control = acc[name];
@@ -133,21 +133,21 @@ export class MargaritaFormGroup<T = CommonRecord>
       controls[name] = new MargaritaFormArray(
         field,
         this,
-        this.root,
+        this.__root,
         this.validators
       );
     else if (fields)
       controls[name] = new MargaritaFormGroup(
         field,
         this,
-        this.root,
+        this.__root,
         this.validators
       );
     else
       controls[name] = new MargaritaFormControl(
         field,
         this,
-        this.root,
+        this.__root,
         this.validators
       );
     this._controls.next(controls);
@@ -251,11 +251,20 @@ export class MargaritaFormGroup<T = CommonRecord>
   }
 
   // Common
+
   get controlsArray() {
     console.warn(
       'Trying to access "controlsArray" which is not available for MargaritaFormGroup!',
       { context: this }
     );
     return null;
+  }
+
+  // Internal
+
+  private _setValidationsState(): Subscription {
+    return _createValidationsState(this).subscribe((validationState) => {
+      this._validationsState.next(validationState);
+    });
   }
 }
