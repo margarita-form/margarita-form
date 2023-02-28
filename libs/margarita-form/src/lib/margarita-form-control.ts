@@ -1,6 +1,7 @@
 import { combineLatest, Observable, ObservableInput, Subscription } from 'rxjs';
 import type {
   MargaritaFormControlBase,
+  MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidatorOutput,
@@ -27,9 +28,9 @@ export class MargaritaFormControl<T = unknown>
   public ref: HTMLElement | null = null;
   constructor(
     public field: MargaritaFormField,
-    public parent: MargaritaFormObjectControlTypes<unknown>,
-    public root: MargaritaFormObjectControlTypes<unknown>,
-    public validators: MargaritaFormFieldValidators = {}
+    public _parent?: MargaritaFormObjectControlTypes<unknown> | null,
+    public _root?: MargaritaFormObjectControlTypes<unknown> | null,
+    public _validators?: MargaritaFormFieldValidators
   ) {
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._createValidationsState();
@@ -44,6 +45,24 @@ export class MargaritaFormControl<T = unknown>
 
   public get name(): string {
     return this.field.name;
+  }
+
+  public get parent(): MargaritaFormControlTypes<unknown> {
+    if (!this._parent) {
+      console.warn('Root of controls reached!', this);
+    }
+    return this._parent || this;
+  }
+
+  public get root(): MargaritaFormControlTypes<unknown> {
+    if (!this._root) {
+      console.warn('Root of controls already reached!', this);
+    }
+    return this._root || this;
+  }
+
+  public get validators(): MargaritaFormFieldValidators {
+    return this._validators || this.root.validators;
   }
 
   public get statusChanges(): Observable<MargaritaFormStatus> {
