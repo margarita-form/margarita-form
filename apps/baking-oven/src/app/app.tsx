@@ -11,20 +11,32 @@ const StyledApp = styled.div`
 `;
 
 export function App() {
-  const { form, value } = useMargaritaForm({
+  const { form, value, state } = useMargaritaForm({
     fields: [
-      { name: 'hello', initialValue: 'initial value' },
+      {
+        name: 'hello',
+        initialValue: 'initial value',
+        validation: {
+          required: true,
+        },
+      },
       {
         name: 'world',
         fields: [
           {
             name: 'asd',
+            validation: {
+              required: true,
+            },
           },
         ],
       },
       {
         name: 'others',
         grouping: 'repeat-group',
+        validation: {
+          required: true,
+        },
         initialValue: [
           {
             lastname: 'asd',
@@ -70,7 +82,7 @@ export function App() {
   const othersControl = form.getControl<MargaritaFormArray>('others');
   const arrayControl = form.getControl<MargaritaFormArray>('array');
 
-  console.log(othersControl);
+  console.log(form.state);
 
   return (
     <StyledApp>
@@ -96,10 +108,11 @@ export function App() {
           add field
         </button>
       </div>
-      {helloControl && (
-        <input type="text" ref={(node) => helloControl.setRef(node)} />
-      )}
-
+      <div>
+        {helloControl && (
+          <input type="text" ref={(node) => helloControl.setRef(node)} />
+        )}
+      </div>
       <input
         type="text"
         ref={(node) => asdControl.setRef(node)}
@@ -118,8 +131,6 @@ export function App() {
         const muunameControl = group.getControl(
           'muuname'
         ) as MargaritaFormControl;
-
-        console.log(firstNameControl);
 
         return (
           <div key={i + 1}>
@@ -189,6 +200,12 @@ export function App() {
         );
       })}
 
+      <h2>State</h2>
+      <p>
+        <strong>Valid: </strong>
+        {state?.valid ? 'valid' : 'invalid'}
+      </p>
+      <h2>Value</h2>
       <pre>{JSON.stringify(value, null, 2)}</pre>
 
       <button onClick={() => othersControl.addControls()}>Add</button>

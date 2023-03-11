@@ -6,12 +6,12 @@ import type {
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
-  MargaritaFormStatus,
-  MargaritaFormStatusErrors,
+  MargaritaFormState,
+  MargaritaFormStateErrors,
 } from './margarita-form-types';
 import { BehaviorSubject, fromEvent } from 'rxjs';
 import { debounceTime, shareReplay } from 'rxjs/operators';
-import { getDefaultStatus } from './margarita-form-defaults';
+import { getDefaultState } from './margarita-form-defaults';
 import { MargaritaFormArray } from './margarita-form-array';
 import { MargaritaFormGroup } from './margarita-form-group';
 import { _createValidationsState } from './core/margarita-form-validation';
@@ -21,7 +21,7 @@ export class MargaritaFormControl<T = unknown>
 {
   private _subscriptions: Subscription[];
   private _value = new BehaviorSubject<unknown>(undefined);
-  private _status: BehaviorSubject<MargaritaFormStatus>;
+  private _state: BehaviorSubject<MargaritaFormState>;
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
@@ -32,8 +32,8 @@ export class MargaritaFormControl<T = unknown>
     public _root?: MargaritaFormObjectControlTypes<unknown> | null,
     public _validators?: MargaritaFormFieldValidators
   ) {
-    const defaultStatus = getDefaultStatus(this);
-    this._status = new BehaviorSubject<MargaritaFormStatus>(defaultStatus);
+    const defaultState = getDefaultState(this);
+    this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._setValidationsState();
     const stateSubscription = this._setState();
@@ -68,13 +68,13 @@ export class MargaritaFormControl<T = unknown>
     return this._validators || this.root.validators;
   }
 
-  public get statusChanges(): Observable<MargaritaFormStatus> {
-    const observable = this._status.pipe(shareReplay(1));
+  public get stateChanges(): Observable<MargaritaFormState> {
+    const observable = this._state.pipe(shareReplay(1));
     return observable;
   }
 
-  public get status(): MargaritaFormStatus {
-    return this._status.getValue();
+  public get state(): MargaritaFormState {
+    return this._state.getValue();
   }
 
   public get valueChanges(): Observable<T> {
@@ -178,7 +178,7 @@ export class MargaritaFormControl<T = unknown>
     return combineLatest([this._validationsState])
       .pipe(debounceTime(10))
       .subscribe(([validationStates]) => {
-        const currentState = this.status;
+        const currentState = this.state;
         const valid = Object.values(validationStates).every(
           (state) => state.valid
         );
@@ -187,14 +187,14 @@ export class MargaritaFormControl<T = unknown>
             if (error) acc[key] = error;
             return acc;
           },
-          {} as MargaritaFormStatusErrors
+          {} as MargaritaFormStateErrors
         );
         const newState = {
           ...currentState,
           valid,
           errors,
         };
-        this._status.next(newState);
+        this._state.next(newState);
       });
   }
 }

@@ -1,6 +1,6 @@
 import type {
   MargaritaFormOptions,
-  MargaritaFormStatus,
+  MargaritaFormState,
 } from '../margarita-form-types';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { createMargaritaForm, MargaritaForm } from '../margarita-form';
@@ -26,16 +26,16 @@ export const useMargaritaForm = <T = unknown>(
   }, [options]);
 
   const [value, setValue] = useState<T>({} as T);
-  const [status, setStatus] = useState<MargaritaFormStatus | null>(null);
+  const [state, setState] = useState<MargaritaFormState | null>(null);
 
   useEffect(() => {
     const valueChangesSubscription = form.valueChanges.subscribe(setValue);
-    const statusChangesSubscription = form.statusChanges.subscribe(setStatus);
+    const stateChangesSubscription = form.stateChanges.subscribe(setState);
     return () => {
       valueChangesSubscription.unsubscribe();
-      statusChangesSubscription.unsubscribe();
+      stateChangesSubscription.unsubscribe();
     };
   }, []);
 
-  return { form, value, status };
+  return { form, value, state };
 };

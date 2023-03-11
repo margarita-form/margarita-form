@@ -54,16 +54,16 @@ export interface MargaritaFormField {
   control?: MargaritaFormControlTypes;
 }
 
-export type MargaritaFormStatusErrors = Record<string, unknown>;
-export type MargaritaFormStatusChildren = Record<string, MargaritaFormStatus>;
+export type MargaritaFormStateErrors = Record<string, unknown>;
+export type MargaritaFormStateChildren = Record<string, MargaritaFormState>;
 
-export interface MargaritaFormStatus {
+export interface MargaritaFormState {
   valid: boolean;
-  errors: MargaritaFormStatusErrors;
+  errors: MargaritaFormStateErrors;
   touched: boolean;
   dirty: boolean;
   control: MargaritaFormControlTypes | null;
-  children?: Record<string, MargaritaFormStatus>;
+  children?: Record<string, MargaritaFormState>;
 }
 
 export type MargaritaFormFields = MargaritaFormField[];
@@ -79,8 +79,8 @@ export interface MargaritaFormControlBase<T = unknown> {
   validators: MargaritaFormFieldValidators;
   valueChanges: Observable<T>;
   value: T;
-  status: MargaritaFormStatus;
-  statusChanges: Observable<MargaritaFormStatus>;
+  state: MargaritaFormState;
+  stateChanges: Observable<MargaritaFormState>;
   parent?: MargaritaFormControlTypes<unknown>;
   controls?: MargaritaFormControls | null;
   controlsArray?: MargaritaFormControlTypes[] | null;
