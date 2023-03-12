@@ -6,21 +6,16 @@ import {
   MargaritaFormState,
   MargaritaFormStaticStateKeys,
 } from '../margarita-form-types';
-import { addRef } from './margarita-form-add-ref';
+import { nanoid } from 'nanoid';
 
 export class MargaritaFormBase {
+  public syncId: string = nanoid();
   public refs: MargaritaFormBaseElement[] = [];
   private _state!: BehaviorSubject<MargaritaFormState>;
 
   constructor() {
     const defaultState = getDefaultState(this);
     this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
-  }
-
-  get setRef() {
-    return (ref: unknown) => {
-      return addRef(ref as MargaritaFormBaseElement, this as any);
-    };
   }
 
   public get state(): MargaritaFormState {
@@ -42,5 +37,9 @@ export class MargaritaFormBase {
     const currentState = this.state;
     currentState[key] = value;
     this._state.next(currentState);
+  }
+
+  public updateSyncId() {
+    this.syncId = nanoid();
   }
 }

@@ -1,5 +1,6 @@
-import {
+import type {
   CommonRecord,
+  MargaritaFormBaseElement,
   MargaritaFormControlBase,
   MargaritaFormControls,
   MargaritaFormField,
@@ -7,7 +8,6 @@ import {
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
-  MargaritaFormState,
   MargaritaFormStateChildren,
   MargaritaFormStateErrors,
 } from './margarita-form-types';
@@ -22,11 +22,10 @@ import {
 import _get from 'lodash.get';
 import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormArray } from './margarita-form-array';
-import { getDefaultState } from './core/margarita-form-create-state';
 import { _createValidationsState } from './core/margarita-form-validation';
-import { nanoid } from 'nanoid';
 import { createControlFromField } from './core/margarita-form-create-control';
 import { MargaritaFormBase } from './core/margarita-form-base-class';
+import { addRef } from './core/margarita-form-add-ref';
 
 export class MargaritaFormGroup<T = CommonRecord>
   extends MargaritaFormBase
@@ -38,7 +37,6 @@ export class MargaritaFormGroup<T = CommonRecord>
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
-  public syncId: string = nanoid();
   constructor(
     public field: MargaritaFormField,
     private _parent?: MargaritaFormObjectControlTypes<unknown> | null,
@@ -224,11 +222,13 @@ export class MargaritaFormGroup<T = CommonRecord>
     return null;
   }
 
-  // Internal
-
-  public updateSyncId() {
-    this.syncId = nanoid();
+  get setRef() {
+    return (ref: unknown) => {
+      return addRef(ref as MargaritaFormBaseElement, this);
+    };
   }
+
+  // Internal
 
   private _setValidationsState(): Subscription {
     return _createValidationsState(this).subscribe((validationState) => {

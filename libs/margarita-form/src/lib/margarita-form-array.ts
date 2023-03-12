@@ -1,6 +1,6 @@
 import {
-  arrayGroupings,
   CommonRecord,
+  MargaritaFormBaseElement,
   MargaritaFormControlBase,
   MargaritaFormControlTypes,
   MargaritaFormField,
@@ -21,9 +21,10 @@ import {
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { nanoid } from 'nanoid';
 import { MargaritaFormGroup } from './margarita-form-group';
-import { MargaritaFormControl } from './margarita-form-control';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { MargaritaFormBase } from './core/margarita-form-base-class';
+import { createControlFromField } from './core/margarita-form-create-control';
+import { addRef } from './core/margarita-form-add-ref';
 
 type MargaritaFormArrayControls<T = unknown> = MargaritaFormControlTypes<T>[];
 
@@ -104,7 +105,12 @@ export class MargaritaFormArray<T = CommonRecord[]>
     const name = nanoid(4);
     if (this.field.grouping === 'array') {
       return fields.map((field) => {
-        const control = this.getControlType(field);
+        const control = createControlFromField(
+          field,
+          this,
+          this.__root,
+          this.validators
+        );
         field.control = control;
         return control;
       });
@@ -116,16 +122,6 @@ export class MargaritaFormArray<T = CommonRecord[]>
       this.validators
     );
     return [controlsItem];
-  }
-
-  private getControlType(field: MargaritaFormField): MargaritaFormControlTypes {
-    const { fields, grouping = 'group' } = field;
-    const isArray = fields && arrayGroupings.includes(grouping);
-    if (isArray)
-      return new MargaritaFormArray(field, this, this.__root, this.validators);
-    if (fields)
-      return new MargaritaFormGroup(field, this, this.__root, this.validators);
-    return new MargaritaFormControl(field, this, this.__root, this.validators);
   }
 
   public register(field: MargaritaFormField, index?: number) {
@@ -257,6 +253,12 @@ export class MargaritaFormArray<T = CommonRecord[]>
       { context: this }
     );
     return null;
+  }
+
+  get setRef() {
+    return (ref: unknown) => {
+      return addRef(ref as MargaritaFormBaseElement, this);
+    };
   }
 
   // Internal

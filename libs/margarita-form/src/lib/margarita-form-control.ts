@@ -1,5 +1,6 @@
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import type {
+  MargaritaFormBaseElement,
   MargaritaFormControlBase,
   MargaritaFormControlTypes,
   MargaritaFormField,
@@ -14,6 +15,7 @@ import { MargaritaFormArray } from './margarita-form-array';
 import { MargaritaFormGroup } from './margarita-form-group';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { MargaritaFormBase } from './core/margarita-form-base-class';
+import { addRef } from './core/margarita-form-add-ref';
 
 export class MargaritaFormControl<T = unknown>
   extends MargaritaFormBase
@@ -122,6 +124,12 @@ export class MargaritaFormControl<T = unknown>
       { name, context: this }
     );
     return null;
+  }
+
+  get setRef() {
+    return (ref: unknown) => {
+      return addRef(ref as MargaritaFormBaseElement, this);
+    };
   }
 
   // Internal
