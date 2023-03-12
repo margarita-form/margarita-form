@@ -8,9 +8,10 @@ import type {
   MargaritaFormObjectControlTypes,
   MargaritaFormState,
   MargaritaFormStateErrors,
+  MargaritaFormStaticStateKeys,
 } from './margarita-form-types';
 import { BehaviorSubject, fromEvent } from 'rxjs';
-import { debounceTime, shareReplay } from 'rxjs/operators';
+import { debounceTime, shareReplay, skip } from 'rxjs/operators';
 import { getDefaultState } from './margarita-form-defaults';
 import { MargaritaFormArray } from './margarita-form-array';
 import { MargaritaFormGroup } from './margarita-form-group';
@@ -36,8 +37,13 @@ export class MargaritaFormControl<T = unknown>
     this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._setValidationsState();
+    const dirtyStateSubscription = this._setDirtyState();
     const stateSubscription = this._setState();
-    this._subscriptions = [validationsStateSubscription, stateSubscription];
+    this._subscriptions = [
+      validationsStateSubscription,
+      dirtyStateSubscription,
+      stateSubscription,
+    ];
   }
 
   public cleanup() {
@@ -106,31 +112,69 @@ export class MargaritaFormControl<T = unknown>
     }
   }
 
-  public setRef(node: HTMLElement | null) {
+  public setState(key: MargaritaFormStaticStateKeys, value: boolean) {
+    const currentState = this.state;
+    currentState[key] = value;
+    this._state.next(currentState);
+  }
+
+  get setRef() {
+    return (ref: HTMLElement | null) => {
+      this._setRef(ref);
+    };
+  }
+
+  private _setRef(node: HTMLElement | null) {
     const isSame = this.ref === node;
+    if (this.ref && node && !isSame) {
+      console.warn('Overriding ref!', {
+        prev: this.ref,
+        current: node,
+        control: this,
+      });
+    }
     if (node && !isSame) {
       this.ref = node;
-      const updateValue = this.valueChanges.subscribe((value) => {
+
+      Object.defineProperty(node, 'control', {
+        get: () => {
+          return this;
+        },
+      });
+
+      const handleSetValue = this.valueChanges.subscribe((value) => {
         if ('value' in node) {
-          node.value = value || '';
+          node.value = value;
         }
       });
 
-      const handleChange = fromEvent(node, 'keydown')
-        .pipe(debounceTime(50))
-        .subscribe(() => {
+      const handleChange = fromEvent<InputEvent>(node, 'input').subscribe(
+        () => {
           if ('value' in node) {
             this.setValue(node.value);
           }
-        });
+        }
+      );
+
+      const handleBlur = fromEvent<InputEvent>(node, 'blur').subscribe(() => {
+        this.setState('touched', true);
+        this.setState('focus', false);
+      });
+
+      const handleFocus = fromEvent<InputEvent>(node, 'focus').subscribe(() => {
+        this.setState('focus', true);
+      });
 
       const mutationObserver = new MutationObserver((events) => {
         events.forEach((event) => {
           event.removedNodes.forEach((removedNode) => {
             if (removedNode === node) {
-              updateValue.unsubscribe();
+              handleSetValue.unsubscribe();
               handleChange.unsubscribe();
+              handleBlur.unsubscribe();
+              handleFocus.unsubscribe();
               mutationObserver.disconnect();
+              this.ref = null;
             }
           });
         });
@@ -175,6 +219,14 @@ export class MargaritaFormControl<T = unknown>
     });
   }
 
+  private _setDirtyState() {
+    return this.valueChanges
+      .pipe(skip(this.field.initialValue ? 1 : 0))
+      .subscribe(() => {
+        this.setState('dirty', true);
+      });
+  }
+
   private _setState() {
     return combineLatest([this._validationsState])
       .pipe(debounceTime(5))
@@ -191,11 +243,11 @@ export class MargaritaFormControl<T = unknown>
           {} as MargaritaFormStateErrors
         );
         const newState = {
-          ...currentState,
           valid,
           errors,
         };
-        this._state.next(newState);
+        Object.assign(newState, currentState);
+        this._state.next(currentState);
       });
   }
 }

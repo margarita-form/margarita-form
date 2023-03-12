@@ -62,11 +62,25 @@ export interface MargaritaFormField {
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = Record<string, MargaritaFormState>;
 
-export interface MargaritaFormState {
+export type MargaritaFormStaticStateKeys =
+  | 'pristine'
+  | 'dirty'
+  | 'untouched'
+  | 'focus'
+  | 'touched'
+  | 'enabled'
+  | 'disabled'
+  | 'editable'
+  | 'readonly';
+
+export type MargaritaFormStaticState = Record<
+  MargaritaFormStaticStateKeys,
+  boolean
+>;
+
+export interface MargaritaFormState extends MargaritaFormStaticState {
   valid: boolean;
   errors: MargaritaFormStateErrors;
-  touched: boolean;
-  dirty: boolean;
   control: MargaritaFormControlTypes | null;
   children?: Record<string, MargaritaFormState>;
 }
