@@ -41,10 +41,6 @@ export interface MargaritaFormFieldValidation {
   [key: string]: unknown;
 }
 
-export interface MargaritaFormFieldState {
-  [key: string]: unknown | MargaritaFormFieldFunction<unknown>;
-}
-
 export type groupings = 'group' | 'repeat-group' | 'array';
 export const arrayGroupings: groupings[] = ['array', 'repeat-group'];
 
@@ -55,7 +51,6 @@ export interface MargaritaFormField {
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators;
-  state?: MargaritaFormFieldState;
   control?: MargaritaFormControlTypes;
 }
 
@@ -103,8 +98,9 @@ export interface MargaritaFormControlBase<T = unknown> {
   parent?: MargaritaFormControlTypes<unknown>;
   controls?: MargaritaFormControls | null;
   controlsArray?: MargaritaFormControlTypes[] | null;
+  refs: MargaritaFormBaseElement[];
   setValue: (value: any) => void;
-  setRef: (node: HTMLElement | null) => void;
+  setRef: <E = HTMLElement>(ref: E) => void;
   cleanup: () => void;
 }
 
@@ -122,3 +118,8 @@ export type MargaritaFormControls<T = unknown> = Record<
 >;
 
 export type CommonRecord = Record<string | number | symbol, unknown>;
+
+export type MargaritaFormBaseElement<
+  T = HTMLElement,
+  C = MargaritaFormControls<unknown>
+> = (T & { controls?: C[] }) | null;

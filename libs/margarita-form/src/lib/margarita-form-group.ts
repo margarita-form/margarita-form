@@ -1,5 +1,4 @@
 import {
-  arrayGroupings,
   CommonRecord,
   MargaritaFormControlBase,
   MargaritaFormControls,
@@ -23,21 +22,22 @@ import {
 import _get from 'lodash.get';
 import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormArray } from './margarita-form-array';
-import { getDefaultState } from './margarita-form-defaults';
+import { getDefaultState } from './core/margarita-form-create-state';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { nanoid } from 'nanoid';
+import { createControlFromField } from './core/margarita-form-create-control';
+import { MargaritaFormBase } from './core/margarita-form-base-class';
 
 export class MargaritaFormGroup<T = CommonRecord>
+  extends MargaritaFormBase
   implements MargaritaFormControlBase<T>
 {
   private _controls = new BehaviorSubject<MargaritaFormControls<unknown>>({});
-  private _state: BehaviorSubject<MargaritaFormState>;
 
   private _subscriptions: Subscription[];
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
-  public ref: HTMLElement | null = null;
   public syncId: string = nanoid();
   constructor(
     public field: MargaritaFormField,
@@ -45,8 +45,8 @@ export class MargaritaFormGroup<T = CommonRecord>
     private _root?: MargaritaFormObjectControlTypes<unknown> | null,
     private _validators?: MargaritaFormFieldValidators
   ) {
-    const defaultState = getDefaultState(this);
-    this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
+    super();
+
     const controls = this.transformFieldsToControls(field.fields);
     this._controls.next(controls);
     if (field.initialValue) this.setValue(field.initialValue);
@@ -101,30 +101,15 @@ export class MargaritaFormGroup<T = CommonRecord>
   private transformFieldsToControls(fields?: MargaritaFormFields) {
     if (!fields) return {};
     const controls = fields.reduce((acc, field) => {
-      const { name, fields, grouping = 'group' } = field;
-      const isArray = fields && arrayGroupings.includes(grouping);
-      if (isArray)
-        acc[name] = new MargaritaFormArray(
-          field,
-          this,
-          this.__root,
-          this.validators
-        );
-      else if (fields)
-        acc[name] = new MargaritaFormGroup(
-          field,
-          this,
-          this.__root,
-          this.validators
-        );
-      else
-        acc[name] = new MargaritaFormControl(
-          field,
-          this,
-          this.__root,
-          this.validators
-        );
-      field.control = acc[name];
+      const { name } = field;
+      const control = createControlFromField(
+        field,
+        this,
+        this.__root,
+        this.validators
+      );
+      acc[name] = control;
+      field.control = control;
       return acc;
     }, {} as MargaritaFormControls<unknown>);
     return controls;
@@ -133,30 +118,15 @@ export class MargaritaFormGroup<T = CommonRecord>
   public register(field: MargaritaFormField) {
     if (!this.field.fields) throw 'Could not register new field';
     this.field.fields.push(field);
-    const { name, fields, grouping = 'group' } = field;
-    const isArray = fields && arrayGroupings.includes(grouping);
+    const { name } = field;
     const controls = this.controls;
-    if (isArray)
-      controls[name] = new MargaritaFormArray(
-        field,
-        this,
-        this.__root,
-        this.validators
-      );
-    else if (fields)
-      controls[name] = new MargaritaFormGroup(
-        field,
-        this,
-        this.__root,
-        this.validators
-      );
-    else
-      controls[name] = new MargaritaFormControl(
-        field,
-        this,
-        this.__root,
-        this.validators
-      );
+    const control = createControlFromField(
+      field,
+      this,
+      this.__root,
+      this.validators
+    );
+    controls[name] = control;
     this._controls.next(controls);
   }
 
@@ -206,15 +176,6 @@ export class MargaritaFormGroup<T = CommonRecord>
     return this.controls[name] as T;
   }
 
-  public get stateChanges(): Observable<MargaritaFormState> {
-    const observable = this._state.pipe(shareReplay(1));
-    return observable;
-  }
-
-  public get state(): MargaritaFormState {
-    return this._state.getValue();
-  }
-
   public get value(): T {
     return Object.entries(this.controls).reduce(
       (acc: CommonRecord, [key, control]) => {
@@ -253,10 +214,6 @@ export class MargaritaFormGroup<T = CommonRecord>
     );
   }
 
-  public setRef(node: HTMLElement | null) {
-    this.ref = node;
-  }
-
   // Common
 
   get controlsArray() {
@@ -289,7 +246,6 @@ export class MargaritaFormGroup<T = CommonRecord>
     return combineLatest([this._validationsState, childStates])
       .pipe(debounceTime(5))
       .subscribe(([validationStates, childStates]) => {
-        const currentState = this.state;
         const currentIsValid = Object.values(validationStates).every(
           (state) => state.valid
         );
@@ -312,13 +268,13 @@ export class MargaritaFormGroup<T = CommonRecord>
           };
         }, {} as MargaritaFormStateChildren);
 
-        const newState = {
-          ...currentState,
-          valid: currentIsValid && childrenAreValid,
+        const valid = currentIsValid && childrenAreValid;
+        const changes = {
+          valid,
           errors,
           children,
         };
-        this._state.next(newState);
+        this.updateState(changes);
       });
   }
 }

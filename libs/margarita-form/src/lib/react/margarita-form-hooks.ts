@@ -1,5 +1,5 @@
 import type { MargaritaFormOptions } from '../margarita-form-types';
-import { useId, useLayoutEffect, useSyncExternalStore } from 'react';
+import { useId, useSyncExternalStore } from 'react';
 import { createMargaritaForm, MargaritaForm } from '../margarita-form';
 import { combineLatest, debounceTime } from 'rxjs';
 

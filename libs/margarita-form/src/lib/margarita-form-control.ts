@@ -6,35 +6,31 @@ import type {
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
-  MargaritaFormState,
   MargaritaFormStateErrors,
-  MargaritaFormStaticStateKeys,
 } from './margarita-form-types';
-import { BehaviorSubject, fromEvent } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { debounceTime, shareReplay, skip } from 'rxjs/operators';
-import { getDefaultState } from './margarita-form-defaults';
 import { MargaritaFormArray } from './margarita-form-array';
 import { MargaritaFormGroup } from './margarita-form-group';
 import { _createValidationsState } from './core/margarita-form-validation';
+import { MargaritaFormBase } from './core/margarita-form-base-class';
 
 export class MargaritaFormControl<T = unknown>
+  extends MargaritaFormBase
   implements MargaritaFormControlBase<T>
 {
   private _subscriptions: Subscription[];
   private _value = new BehaviorSubject<unknown>(undefined);
-  private _state: BehaviorSubject<MargaritaFormState>;
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
-
-  public ref: HTMLElement | null = null;
   constructor(
     public field: MargaritaFormField,
     public _parent?: MargaritaFormObjectControlTypes<unknown> | null,
     public _root?: MargaritaFormObjectControlTypes<unknown> | null,
     public _validators?: MargaritaFormFieldValidators
   ) {
-    const defaultState = getDefaultState(this);
-    this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
+    super();
+
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._setValidationsState();
     const dirtyStateSubscription = this._setDirtyState();
@@ -74,15 +70,6 @@ export class MargaritaFormControl<T = unknown>
     return this._validators || this.root.validators;
   }
 
-  public get stateChanges(): Observable<MargaritaFormState> {
-    const observable = this._state.pipe(shareReplay(1));
-    return observable;
-  }
-
-  public get state(): MargaritaFormState {
-    return this._state.getValue();
-  }
-
   public get valueChanges(): Observable<T> {
     const observable = this._value.pipe(shareReplay(1));
     return observable as Observable<T>;
@@ -109,80 +96,6 @@ export class MargaritaFormControl<T = unknown>
     }
     if (this.parent instanceof MargaritaFormGroup) {
       this.parent.unregister(this.name);
-    }
-  }
-
-  public setState(key: MargaritaFormStaticStateKeys, value: boolean) {
-    const currentState = this.state;
-    currentState[key] = value;
-    this._state.next(currentState);
-  }
-
-  get setRef() {
-    return (ref: HTMLElement | null) => {
-      this._setRef(ref);
-    };
-  }
-
-  private _setRef(node: HTMLElement | null) {
-    const isSame = this.ref === node;
-    if (this.ref && node && !isSame) {
-      console.warn('Overriding ref!', {
-        prev: this.ref,
-        current: node,
-        control: this,
-      });
-    }
-    if (node && !isSame) {
-      this.ref = node;
-
-      Object.defineProperty(node, 'control', {
-        get: () => {
-          return this;
-        },
-      });
-
-      const handleSetValue = this.valueChanges.subscribe((value) => {
-        if ('value' in node) {
-          node.value = value;
-        }
-      });
-
-      const handleChange = fromEvent<InputEvent>(node, 'input').subscribe(
-        () => {
-          if ('value' in node) {
-            this.setValue(node.value);
-          }
-        }
-      );
-
-      const handleBlur = fromEvent<InputEvent>(node, 'blur').subscribe(() => {
-        this.setState('touched', true);
-        this.setState('focus', false);
-      });
-
-      const handleFocus = fromEvent<InputEvent>(node, 'focus').subscribe(() => {
-        this.setState('focus', true);
-      });
-
-      const mutationObserver = new MutationObserver((events) => {
-        events.forEach((event) => {
-          event.removedNodes.forEach((removedNode) => {
-            if (removedNode === node) {
-              handleSetValue.unsubscribe();
-              handleChange.unsubscribe();
-              handleBlur.unsubscribe();
-              handleFocus.unsubscribe();
-              mutationObserver.disconnect();
-              this.ref = null;
-            }
-          });
-        });
-      });
-
-      if (node.parentNode) {
-        mutationObserver.observe(node.parentNode, { childList: true });
-      }
     }
   }
 
@@ -223,7 +136,7 @@ export class MargaritaFormControl<T = unknown>
     return this.valueChanges
       .pipe(skip(this.field.initialValue ? 1 : 0))
       .subscribe(() => {
-        this.setState('dirty', true);
+        this.updateStateValue('dirty', true);
       });
   }
 
@@ -231,10 +144,10 @@ export class MargaritaFormControl<T = unknown>
     return combineLatest([this._validationsState])
       .pipe(debounceTime(5))
       .subscribe(([validationStates]) => {
-        const currentState = this.state;
         const valid = Object.values(validationStates).every(
           (state) => state.valid
         );
+
         const errors = Object.entries(validationStates).reduce(
           (acc, [key, { error }]) => {
             if (error) acc[key] = error;
@@ -242,12 +155,13 @@ export class MargaritaFormControl<T = unknown>
           },
           {} as MargaritaFormStateErrors
         );
-        const newState = {
+
+        const changes = {
           valid,
           errors,
         };
-        Object.assign(newState, currentState);
-        this._state.next(currentState);
+
+        this.updateState(changes);
       });
   }
 }
