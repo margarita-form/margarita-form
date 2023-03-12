@@ -4,7 +4,7 @@ import type { MargaritaFormArray } from './margarita-form-array';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaFormGroup } from './margarita-form-group';
 
-export interface MargaritaFormFieldValidatorContext<T = unknown, P = any> {
+export interface MargaritaFormFieldContext<T = unknown, P = any> {
   value: T;
   field: MargaritaFormField;
   control: MargaritaFormControlTypes<T>;
@@ -21,16 +21,16 @@ export type MargaritaFormFieldValidatorResultEntry = [
   MargaritaFormFieldValidatorResult
 ];
 
-export type MargaritaFormFieldValidatorOutput<
+export type MargaritaFormFieldFunctionOutput<
   T = MargaritaFormFieldValidatorResult
 > = T | Promise<T> | Observable<T>;
 
-export type MargaritaFormFieldValidatorFunction<T = unknown> = (
-  context: MargaritaFormFieldValidatorContext<T>
-) => MargaritaFormFieldValidatorOutput;
+export type MargaritaFormFieldFunction<T = unknown> = (
+  context: MargaritaFormFieldContext<T>
+) => MargaritaFormFieldFunctionOutput;
 
 export interface MargaritaFormFieldValidators {
-  [key: string]: MargaritaFormFieldValidatorFunction;
+  [key: string]: MargaritaFormFieldFunction;
 }
 
 export interface MargaritaFormFieldValidationsState {
@@ -39,6 +39,10 @@ export interface MargaritaFormFieldValidationsState {
 
 export interface MargaritaFormFieldValidation {
   [key: string]: unknown;
+}
+
+export interface MargaritaFormFieldState {
+  [key: string]: unknown | MargaritaFormFieldFunction<unknown>;
 }
 
 export type groupings = 'group' | 'repeat-group' | 'array';
@@ -51,6 +55,7 @@ export interface MargaritaFormField {
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators;
+  state?: MargaritaFormFieldState;
   control?: MargaritaFormControlTypes;
 }
 

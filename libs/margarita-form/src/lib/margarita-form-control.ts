@@ -107,8 +107,9 @@ export class MargaritaFormControl<T = unknown>
   }
 
   public setRef(node: HTMLElement | null) {
-    this.ref = node;
-    if (node) {
+    const isSame = this.ref === node;
+    if (node && !isSame) {
+      this.ref = node;
       const updateValue = this.valueChanges.subscribe((value) => {
         if ('value' in node) {
           node.value = value || '';
@@ -176,7 +177,7 @@ export class MargaritaFormControl<T = unknown>
 
   private _setState() {
     return combineLatest([this._validationsState])
-      .pipe(debounceTime(10))
+      .pipe(debounceTime(5))
       .subscribe(([validationStates]) => {
         const currentState = this.state;
         const valid = Object.values(validationStates).every(

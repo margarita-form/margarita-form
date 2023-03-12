@@ -291,7 +291,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
     const childStates = combineLatest(this._getChildStates());
 
     return combineLatest([this._validationsState, childStates])
-      .pipe(debounceTime(10))
+      .pipe(debounceTime(5))
       .subscribe(([validationStates, childStates]) => {
         const currentState = this.state;
         const currentIsValid = Object.values(validationStates).every(

@@ -25,6 +25,7 @@ import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormArray } from './margarita-form-array';
 import { getDefaultState } from './margarita-form-defaults';
 import { _createValidationsState } from './core/margarita-form-validation';
+import { nanoid } from 'nanoid';
 
 export class MargaritaFormGroup<T = CommonRecord>
   implements MargaritaFormControlBase<T>
@@ -37,7 +38,7 @@ export class MargaritaFormGroup<T = CommonRecord>
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
   public ref: HTMLElement | null = null;
-
+  public syncId: string = nanoid();
   constructor(
     public field: MargaritaFormField,
     private _parent?: MargaritaFormObjectControlTypes<unknown> | null,
@@ -268,6 +269,10 @@ export class MargaritaFormGroup<T = CommonRecord>
 
   // Internal
 
+  public updateSyncId() {
+    this.syncId = nanoid();
+  }
+
   private _setValidationsState(): Subscription {
     return _createValidationsState(this).subscribe((validationState) => {
       this._validationsState.next(validationState);
@@ -282,7 +287,7 @@ export class MargaritaFormGroup<T = CommonRecord>
     const childStates = combineLatest(this._getChildStates());
 
     return combineLatest([this._validationsState, childStates])
-      .pipe(debounceTime(10))
+      .pipe(debounceTime(5))
       .subscribe(([validationStates, childStates]) => {
         const currentState = this.state;
         const currentIsValid = Object.values(validationStates).every(
