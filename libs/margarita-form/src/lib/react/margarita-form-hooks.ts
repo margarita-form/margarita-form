@@ -1,7 +1,7 @@
 import type { MargaritaFormOptions } from '../margarita-form-types';
 import { useId, useSyncExternalStore } from 'react';
 import { createMargaritaForm, MargaritaForm } from '../margarita-form';
-import { combineLatest, debounceTime } from 'rxjs';
+import { combineLatest, debounceTime, skip } from 'rxjs';
 
 const forms: Record<string, MargaritaForm<unknown>> = {};
 
@@ -28,10 +28,12 @@ const createFormStore = <T>(
 
   const subscribe = (listener: () => void) => {
     const changes = combineLatest([form.valueChanges, form.stateChanges]);
-    const subscription = changes.pipe(debounceTime(50)).subscribe(() => {
-      form.updateSyncId();
-      listener();
-    });
+    const subscription = changes
+      .pipe(debounceTime(50), skip(1))
+      .subscribe(() => {
+        form.updateSyncId();
+        listener();
+      });
     return () => subscription.unsubscribe();
   };
 

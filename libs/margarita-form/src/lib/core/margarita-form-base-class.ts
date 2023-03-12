@@ -9,7 +9,8 @@ import {
 import { nanoid } from 'nanoid';
 
 export class MargaritaFormBase {
-  public syncId: string = nanoid();
+  public key: string = nanoid(4);
+  public syncId: string = nanoid(4);
   public refs: MargaritaFormBaseElement[] = [];
   private _state!: BehaviorSubject<MargaritaFormState>;
 
@@ -40,6 +41,6 @@ export class MargaritaFormBase {
   }
 
   public updateSyncId() {
-    this.syncId = nanoid();
+    this.syncId = nanoid(4);
   }
 }

@@ -97,7 +97,6 @@ export interface MargaritaFormControlBase<T = unknown> {
   stateChanges: Observable<MargaritaFormState>;
   parent?: MargaritaFormControlTypes<unknown>;
   controls?: MargaritaFormControls | null;
-  controlsArray?: MargaritaFormControlTypes[] | null;
   refs: MargaritaFormBaseElement[];
   setValue: (value: any) => void;
   setRef: <E = HTMLElement>(ref: E) => void;
@@ -112,10 +111,15 @@ export type MargaritaFormControlTypes<T = unknown> =
   | MargaritaFormControl<T>
   | MargaritaFormObjectControlTypes<T>;
 
-export type MargaritaFormControls<T = unknown> = Record<
+export type MargaritaFormControlsGroup<T> = Record<
   string,
   MargaritaFormControlTypes<T>
 >;
+export type MargaritaFormControlsArray<T> = MargaritaFormControlTypes<T>[];
+
+export type MargaritaFormControls<T = unknown> =
+  | MargaritaFormControlsGroup<T>
+  | MargaritaFormControlsArray<T>;
 
 export type CommonRecord = Record<string | number | symbol, unknown>;
 

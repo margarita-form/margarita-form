@@ -12,7 +12,6 @@ import type {
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime, shareReplay, skip } from 'rxjs/operators';
 import { MargaritaFormArray } from './margarita-form-array';
-import { MargaritaFormGroup } from './margarita-form-group';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { MargaritaFormBase } from './core/margarita-form-base-class';
 import { addRef } from './core/margarita-form-add-ref';
@@ -93,12 +92,7 @@ export class MargaritaFormControl<T = unknown>
   }
 
   public remove() {
-    if (this.parent instanceof MargaritaFormArray) {
-      this.parent.removeControls(this.index);
-    }
-    if (this.parent instanceof MargaritaFormGroup) {
-      this.parent.unregister(this.name);
-    }
+    this.parent.removeControl(this.key);
   }
 
   // Common
@@ -110,18 +104,18 @@ export class MargaritaFormControl<T = unknown>
     return null;
   }
 
-  get controlsArray() {
-    console.warn(
-      'Trying to access "controlsArray" which is not available for MargaritaFormControl!',
-      { context: this }
-    );
-    return null;
-  }
-
   public getControl(name: string) {
     console.warn(
       'Trying to use method "getControl" which is not available for MargaritaFormControl!',
       { name, context: this }
+    );
+    return null;
+  }
+
+  public removeControl(identifier: string) {
+    console.warn(
+      'Trying to use method "removeControl" which is not available for MargaritaFormControl!',
+      { identifier, context: this }
     );
     return null;
   }
