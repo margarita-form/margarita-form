@@ -1,6 +1,7 @@
 import {
   arrayGroupings,
   CommonRecord,
+  MargaritaFormGroupings,
   MargaritaFormBaseElement,
   MargaritaFormControlTypes,
   MargaritaFormField,
@@ -8,6 +9,7 @@ import {
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
   MargaritaFormStateErrors,
+  MargaritaFormState,
 } from './margarita-form-types';
 import { debounceTime, Observable, skip, Subscription } from 'rxjs';
 import {
@@ -19,12 +21,12 @@ import {
 } from 'rxjs';
 import _get from 'lodash.get';
 import { _createValidationsState } from './core/margarita-form-validation';
-import { createControlsController } from './core/margarita-form-create-control';
+import { ControlsController } from './core/margarita-form-create-controls';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 
 export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
-  public controlsController = createControlsController();
+  public controlsController: ControlsController;
   private _subscriptions: Subscription[];
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
@@ -37,7 +39,14 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
   ) {
     super();
 
-    this.controlsController.init(this, this.__root, this.validators, true);
+    const _requireUniqueNames = this.grouping === 'group';
+    this.controlsController = new ControlsController(
+      this,
+      this.__root,
+      this.validators,
+      _requireUniqueNames,
+      field.fields
+    );
     this.controlsController.addControls(field.fields);
 
     if (field.initialValue) this.setValue(field.initialValue);
@@ -66,6 +75,10 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
       const index = controls.findIndex((control) => control === this);
       if (index > -1) ref.controls.splice(index, 1);
     });
+  }
+
+  private get grouping(): MargaritaFormGroupings {
+    return this.field.grouping || 'group';
   }
 
   public get name(): string {
@@ -240,17 +253,17 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
   }
 
   private _setDirtyState() {
-    return this.valueChanges
-      .pipe(skip(this.field.initialValue ? 1 : 0))
-      .subscribe(() => {
-        this.updateStateValue('dirty', true);
-      });
+    return this.valueChanges.pipe(skip(1)).subscribe(() => {
+      this.updateStateValue('dirty', true);
+    });
   }
 
   private _setState() {
     const childStates = this.controlsController.controlChanges.pipe(
       switchMap((controls) => {
-        const stateChanges = controls.map((control) => control.stateChanges);
+        const stateChanges: Observable<MargaritaFormState>[] = controls.map(
+          (control) => control.stateChanges
+        );
         return combineLatest(stateChanges);
       })
     );

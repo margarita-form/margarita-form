@@ -40,13 +40,16 @@ export interface MargaritaFormFieldValidation {
   [key: string]: unknown;
 }
 
-export type groupings = 'group' | 'repeat-group' | 'array';
-export const arrayGroupings: groupings[] = ['array', 'repeat-group'];
+export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array';
+export const arrayGroupings: MargaritaFormGroupings[] = [
+  'array',
+  'repeat-group',
+];
 
 export interface MargaritaFormField {
   name: string;
   fields?: MargaritaFormFields;
-  grouping?: groupings;
+  grouping?: MargaritaFormGroupings;
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators;

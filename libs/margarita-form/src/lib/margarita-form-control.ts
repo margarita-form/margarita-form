@@ -119,11 +119,9 @@ export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
   }
 
   private _setDirtyState() {
-    return this.valueChanges
-      .pipe(skip(this.field.initialValue ? 1 : 0))
-      .subscribe(() => {
-        this.updateStateValue('dirty', true);
-      });
+    return this.valueChanges.pipe(skip(1)).subscribe(() => {
+      this.updateStateValue('dirty', true);
+    });
   }
 
   private _setState() {
