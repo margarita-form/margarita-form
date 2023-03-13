@@ -10,6 +10,7 @@ import {
   MargaritaFormObjectControlTypes,
   MargaritaFormStateErrors,
   MargaritaFormState,
+  MargaritaForm,
 } from './margarita-form-types';
 import { debounceTime, Observable, skip, Subscription } from 'rxjs';
 import {
@@ -34,7 +35,7 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
   constructor(
     public field: MargaritaFormField,
     private _parent?: MargaritaFormObjectControlTypes<unknown> | null,
-    private _root?: MargaritaFormObjectControlTypes<unknown> | null,
+    private _root?: MargaritaForm | null,
     private _validators?: MargaritaFormFieldValidators
   ) {
     super();
@@ -42,7 +43,7 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
     const _requireUniqueNames = this.grouping === 'group';
     this.controlsController = new ControlsController(
       this,
-      this.__root,
+      this.root,
       this.validators,
       _requireUniqueNames,
       field.fields
@@ -92,15 +93,8 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
     return this._parent || this;
   }
 
-  public get root(): MargaritaFormObjectControlTypes<unknown> {
-    if (!this._root) {
-      console.warn('Root of controls already reached!', this);
-    }
-    return this.__root;
-  }
-
-  private get __root(): MargaritaFormObjectControlTypes<unknown> {
-    return this._root || this;
+  public get root(): MargaritaForm {
+    return this._root || (this as unknown as MargaritaForm);
   }
 
   public get validators(): MargaritaFormFieldValidators {
@@ -214,7 +208,7 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
         });
 
         values.forEach((value, index) => {
-          const control = controlsArray[index];
+          const control = this.controlsController.getControl(index);
           if (control) return control.setValue(value);
           if (grouping === 'repeat-group') {
             this.controlsController.appendRepeatingControlGroup(
@@ -259,14 +253,15 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
   }
 
   private _setState() {
-    const childStates = this.controlsController.controlChanges.pipe(
-      switchMap((controls) => {
-        const stateChanges: Observable<MargaritaFormState>[] = controls.map(
-          (control) => control.stateChanges
-        );
-        return combineLatest(stateChanges);
-      })
-    );
+    const childStates: Observable<MargaritaFormState[]> =
+      this.controlsController.controlChanges.pipe(
+        switchMap((controls) => {
+          const stateChanges: Observable<MargaritaFormState>[] = controls.map(
+            (control) => control.stateChanges
+          );
+          return combineLatest(stateChanges);
+        })
+      );
 
     return combineLatest([this._validationsState, childStates])
       .pipe(debounceTime(5))

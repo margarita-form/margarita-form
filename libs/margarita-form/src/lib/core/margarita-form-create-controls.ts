@@ -4,6 +4,7 @@ import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { MargaritaFormGroup } from '../margarita-form-control-group';
 import {
+  MargaritaForm,
   MargaritaFormControlsArray,
   MargaritaFormControlsGroup,
   MargaritaFormControlTypes,
@@ -15,7 +16,7 @@ import {
 export const createControlFromField = (
   field: MargaritaFormField,
   parent: MargaritaFormObjectControlTypes,
-  root: MargaritaFormObjectControlTypes<unknown>,
+  root: MargaritaForm,
   validators: MargaritaFormFieldValidators
 ): MargaritaFormControlTypes => {
   const { fields } = field;
@@ -28,7 +29,7 @@ export class ControlsController {
 
   constructor(
     private _parent: MargaritaFormObjectControlTypes<unknown>,
-    private _root: MargaritaFormObjectControlTypes<unknown>,
+    private _root: MargaritaForm,
     private _validators: MargaritaFormFieldValidators,
     private _requireUniqueNames = false,
     private _initialFields?: MargaritaFormField[]
@@ -40,7 +41,7 @@ export class ControlsController {
     if (!this._parent) throw 'Invalid parent!';
     return this._parent;
   }
-  get root(): MargaritaFormObjectControlTypes<unknown> {
+  get root(): MargaritaForm {
     if (!this._root) throw 'Invalid root!';
     return this._root;
   }

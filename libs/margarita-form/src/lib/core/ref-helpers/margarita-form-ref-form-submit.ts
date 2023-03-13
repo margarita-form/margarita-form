@@ -6,6 +6,7 @@ import {
 
 export const handleFormElementSubmit = ({
   node,
+  control,
 }: {
   node: MargaritaFormBaseElement;
   control: MargaritaFormControlTypes;
@@ -14,5 +15,6 @@ export const handleFormElementSubmit = ({
   if (!isForm) return null;
   return fromEvent<SubmitEvent>(node, 'submit').subscribe((e) => {
     e.preventDefault();
+    control.root.submit();
   });
 };

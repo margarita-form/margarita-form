@@ -84,10 +84,14 @@ export interface MargaritaFormState extends MargaritaFormStaticState {
 
 export type MargaritaFormFields = MargaritaFormField[];
 
-export interface MargaritaFormOptions {
+export interface MargaritaFormOptions<T> {
   fields: MargaritaFormFields;
   initialValue?: Record<string, unknown>;
   validators?: MargaritaFormFieldValidators;
+  handleSubmit?: {
+    valid: (value: T) => void | Promise<void>;
+    invalid?: (value: T) => void | Promise<void>;
+  };
 }
 
 export type MargaritaFormObjectControlTypes<T = unknown> =
@@ -101,6 +105,11 @@ export type MargaritaFormControlsGroup<T> = Record<
   string,
   MargaritaFormControlTypes<T>
 >;
+
+export type MargaritaForm<T = unknown, C = MargaritaFormGroup<T>> = C & {
+  submit: () => void;
+};
+
 export type MargaritaFormControlsArray<T> = MargaritaFormControlTypes<T>[];
 
 export type CommonRecord = Record<string | number | symbol, unknown>;

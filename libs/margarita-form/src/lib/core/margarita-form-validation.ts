@@ -16,7 +16,7 @@ import {
 export const _createValidationsState = (control: MargaritaFormControlTypes) => {
   return control.valueChanges.pipe(
     debounceTime(5),
-    skip(1),
+    skip(control.field.initialValue ? 1 : 0),
     switchMap((value) => {
       const activeValidatorEntries = Object.entries(
         control.field.validation || {}

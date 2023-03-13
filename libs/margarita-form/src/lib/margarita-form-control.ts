@@ -1,5 +1,6 @@
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import type {
+  MargaritaForm,
   MargaritaFormBaseElement,
   MargaritaFormControlTypes,
   MargaritaFormField,
@@ -23,7 +24,7 @@ export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
   constructor(
     public field: MargaritaFormField,
     public _parent?: MargaritaFormObjectControlTypes<unknown> | null,
-    public _root?: MargaritaFormObjectControlTypes<unknown> | null,
+    public _root?: MargaritaForm | null,
     public _validators?: MargaritaFormFieldValidators
   ) {
     super();
@@ -63,11 +64,11 @@ export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
     return this._parent || this;
   }
 
-  public get root(): MargaritaFormControlTypes<unknown> {
+  public get root(): MargaritaForm {
     if (!this._root) {
       console.warn('Root of controls already reached!', this);
     }
-    return this._root || this;
+    return this._root || (this as unknown as MargaritaForm);
   }
 
   public get validators(): MargaritaFormFieldValidators {

@@ -1,11 +1,14 @@
-import type { MargaritaFormOptions } from '../margarita-form-types';
+import type {
+  MargaritaForm,
+  MargaritaFormOptions,
+} from '../margarita-form-types';
 import { useId, useSyncExternalStore } from 'react';
-import { createMargaritaForm, MargaritaForm } from '../margarita-form';
+import { createMargaritaForm } from '../margarita-form';
 import { combineLatest, debounceTime, skip } from 'rxjs';
 
 const forms: Record<string, MargaritaForm<unknown>> = {};
 
-const getForm = <T>(formId: string, options: MargaritaFormOptions) => {
+const getForm = <T>(formId: string, options: MargaritaFormOptions<T>) => {
   if (formId in forms) return forms[formId] as MargaritaForm<T>;
   const newForm = createMargaritaForm(options);
   forms[formId] = newForm;
@@ -22,7 +25,7 @@ const stores: Record<string, FormStore<unknown>> = {};
 
 const createFormStore = <T>(
   id: string,
-  options: MargaritaFormOptions
+  options: MargaritaFormOptions<T>
 ): FormStore<T> => {
   const form = getForm<T>(id, options);
 
@@ -49,7 +52,7 @@ const createFormStore = <T>(
 };
 
 export const useMargaritaForm = <T = unknown>(
-  options: MargaritaFormOptions
+  options: MargaritaFormOptions<T>
 ) => {
   const formId = useId();
   if (!stores[formId]) stores[formId] = createFormStore(formId, options);
