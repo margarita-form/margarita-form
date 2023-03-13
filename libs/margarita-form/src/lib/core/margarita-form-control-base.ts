@@ -3,6 +3,8 @@ import { BehaviorSubject, Observable, shareReplay } from 'rxjs';
 import { getDefaultState } from './margarita-form-create-state';
 import {
   MargaritaFormBaseElement,
+  MargaritaFormControlsArray,
+  MargaritaFormField,
   MargaritaFormState,
   MargaritaFormStaticStateKeys,
 } from '../margarita-form-types';
@@ -19,6 +21,8 @@ export class MargaritaFormBase {
     this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
   }
 
+  // State
+
   public get state(): MargaritaFormState {
     return this._state.getValue();
   }
@@ -26,6 +30,14 @@ export class MargaritaFormBase {
   public get stateChanges(): Observable<MargaritaFormState> {
     const observable = this._state.pipe(shareReplay(1));
     return observable;
+  }
+
+  public enable() {
+    this.updateStateValue('enabled', true);
+  }
+
+  public disable() {
+    this.updateStateValue('disabled', true);
   }
 
   public updateState(changes: Partial<MargaritaFormState>) {
@@ -40,17 +52,40 @@ export class MargaritaFormBase {
     this._state.next(currentState);
   }
 
-  public enable() {
-    this.updateStateValue('enabled', true);
-  }
-
-  public disable() {
-    this.updateStateValue('disabled', true);
-  }
+  // Internal
 
   public updateSyncId() {
     this.syncId = nanoid(4);
   }
 
-  // State getters
+  // Not implemented getters
+
+  get controls(): MargaritaFormControlsArray<unknown> {
+    console.warn('Trying to access "controls" which is not available!', {
+      context: this,
+    });
+    return [];
+  }
+
+  public getControl(identifier: string | number) {
+    console.warn('Trying to use method "getControl" which is not available!', {
+      identifier,
+      context: this,
+    });
+    return null;
+  }
+
+  public addControl(field: MargaritaFormField) {
+    console.warn('Trying to use method "addControl" which is not available!', {
+      field,
+      context: this,
+    });
+  }
+
+  public removeControl(identifier: string) {
+    console.warn(
+      'Trying to use method "removeControl" which is not available!',
+      { identifier, context: this }
+    );
+  }
 }

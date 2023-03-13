@@ -13,7 +13,7 @@ import { BehaviorSubject } from 'rxjs';
 import { debounceTime, shareReplay, skip } from 'rxjs/operators';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
-import { addRef } from './core/margarita-form-add-ref';
+import { setRef } from './core/margarita-form-control-set-ref';
 import { MargaritaFormGroup } from './margarita-form-control-group';
 
 export class MargaritaFormControl<T = unknown>
@@ -47,6 +47,13 @@ export class MargaritaFormControl<T = unknown>
     this._subscriptions.forEach((subscription) => {
       subscription.unsubscribe();
     });
+
+    this.refs.forEach((ref) => {
+      if (!ref || !ref.controls) return;
+      const { controls = [] } = ref;
+      const index = controls.findIndex((control) => control === this);
+      if (index > -1) ref.controls.splice(index, 1);
+    });
   }
 
   public get name(): string {
@@ -71,6 +78,21 @@ export class MargaritaFormControl<T = unknown>
     return this._validators || this.root.validators;
   }
 
+  public get index(): number {
+    if (this.parent instanceof MargaritaFormGroup) {
+      return this.parent.controlsController.getControlIndex(this.key);
+    }
+    return -1;
+  }
+
+  // Controls
+
+  public remove() {
+    this.parent.removeControl(this.key);
+  }
+
+  // Value
+
   public get valueChanges(): Observable<T> {
     const observable = this._value.pipe(shareReplay(1));
     return observable as Observable<T>;
@@ -84,45 +106,11 @@ export class MargaritaFormControl<T = unknown>
     this._value.next(value);
   }
 
-  public get index(): number {
-    if (this.parent instanceof MargaritaFormGroup) {
-      return this.parent.controlsController.getControlIndex(this.key);
-    }
-    return -1;
-  }
-
-  public remove() {
-    this.parent.removeControl(this.key);
-  }
-
   // Common
-  get controls() {
-    console.warn(
-      'Trying to access "controls" which is not available for MargaritaFormControl!',
-      { context: this }
-    );
-    return null;
-  }
-
-  public getControl(name: string) {
-    console.warn(
-      'Trying to use method "getControl" which is not available for MargaritaFormControl!',
-      { name, context: this }
-    );
-    return null;
-  }
-
-  public removeControl(identifier: string) {
-    console.warn(
-      'Trying to use method "removeControl" which is not available for MargaritaFormControl!',
-      { identifier, context: this }
-    );
-    return null;
-  }
 
   get setRef() {
     return (ref: unknown) => {
-      return addRef(ref as MargaritaFormBaseElement, this);
+      return setRef(ref as MargaritaFormBaseElement, this);
     };
   }
 
@@ -162,7 +150,6 @@ export class MargaritaFormControl<T = unknown>
           valid,
           errors,
         };
-
         this.updateState(changes);
       });
   }

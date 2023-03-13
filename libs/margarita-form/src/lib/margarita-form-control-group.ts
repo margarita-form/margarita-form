@@ -3,7 +3,6 @@ import {
   CommonRecord,
   MargaritaFormBaseElement,
   MargaritaFormControlBase,
-  MargaritaFormControlsArray,
   MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
@@ -11,7 +10,7 @@ import {
   MargaritaFormObjectControlTypes,
   MargaritaFormStateErrors,
 } from './margarita-form-types';
-import { debounceTime, Observable, Subscription } from 'rxjs';
+import { debounceTime, Observable, skip, Subscription } from 'rxjs';
 import {
   BehaviorSubject,
   shareReplay,
@@ -23,7 +22,7 @@ import _get from 'lodash.get';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { createControlsController } from './core/margarita-form-create-control';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
-import { addRef } from './core/margarita-form-add-ref';
+import { setRef } from './core/margarita-form-control-set-ref';
 
 export class MargaritaFormGroup<T = CommonRecord>
   extends MargaritaFormBase
@@ -47,8 +46,13 @@ export class MargaritaFormGroup<T = CommonRecord>
 
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._setValidationsState();
+    const dirtyStateSubscription = this._setDirtyState();
     const stateSubscription = this._setState();
-    this._subscriptions = [validationsStateSubscription, stateSubscription];
+    this._subscriptions = [
+      validationsStateSubscription,
+      dirtyStateSubscription,
+      stateSubscription,
+    ];
   }
 
   public cleanup() {
@@ -58,6 +62,13 @@ export class MargaritaFormGroup<T = CommonRecord>
 
     this.controlsController.controlsArray.forEach((control) => {
       control.cleanup();
+    });
+
+    this.refs.forEach((ref) => {
+      if (!ref || !ref.controls) return;
+      const { controls = [] } = ref;
+      const index = controls.findIndex((control) => control === this);
+      if (index > -1) ref.controls.splice(index, 1);
     });
   }
 
@@ -112,21 +123,21 @@ export class MargaritaFormGroup<T = CommonRecord>
 
   // Controls
 
-  public get controls(): MargaritaFormControlsArray<unknown> {
+  public override get controls() {
     return this.controlsController.controlsArray;
   }
 
-  public getControl<T = MargaritaFormControlTypes>(
+  public override getControl<T = MargaritaFormControlTypes>(
     identifier: string | number
   ): T {
     return this.controlsController.getControl(identifier) as T;
   }
 
-  public addControl(field: MargaritaFormField) {
+  public override addControl(field: MargaritaFormField) {
     this.controlsController.addControl(field);
   }
 
-  public removeControl(identifier: string) {
+  public override removeControl(identifier: string) {
     this.controlsController.removeControl(identifier);
   }
 
@@ -220,7 +231,7 @@ export class MargaritaFormGroup<T = CommonRecord>
 
   get setRef() {
     return (ref: unknown): void => {
-      return addRef(ref as MargaritaFormBaseElement, this);
+      return setRef(ref as MargaritaFormBaseElement, this);
     };
   }
 
@@ -230,6 +241,14 @@ export class MargaritaFormGroup<T = CommonRecord>
     return _createValidationsState(this).subscribe((validationState) => {
       this._validationsState.next(validationState);
     });
+  }
+
+  private _setDirtyState() {
+    return this.valueChanges
+      .pipe(skip(this.field.initialValue ? 1 : 0))
+      .subscribe(() => {
+        this.updateStateValue('dirty', true);
+      });
   }
 
   private _setState() {
