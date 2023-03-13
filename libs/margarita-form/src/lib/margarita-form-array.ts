@@ -28,7 +28,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
   extends MargaritaFormBase
   implements MargaritaFormControlBase<T>
 {
-  private _controls = createControlsController();
+  public controlsController = createControlsController();
   private _subscriptions: Subscription[];
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
@@ -41,8 +41,8 @@ export class MargaritaFormArray<T = CommonRecord[]>
   ) {
     super();
 
-    this._controls.init(this, this.__root, this.validators);
-    this._controls.addControls(field.fields);
+    this.controlsController.init(this, this.__root, this.validators);
+    this.controlsController.addControls(field.fields);
 
     if (field.initialValue) this.setValue(field.initialValue as T[]);
     const validationsStateSubscription = this._setValidationsState();
@@ -55,7 +55,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
       subscription.unsubscribe();
     });
 
-    this._controls.controlsArray.forEach((control) => {
+    this.controlsController.controlsArray.forEach((control) => {
       control.cleanup();
     });
   }
@@ -94,20 +94,15 @@ export class MargaritaFormArray<T = CommonRecord[]>
   }
 
   public addControl(field: MargaritaFormField) {
-    this._controls.addControl(field);
+    this.controlsController.addControl(field);
   }
 
   public removeControl(identifier: string | number) {
-    this._controls.removeControl(identifier);
+    this.controlsController.removeControl(identifier);
   }
 
   public remove() {
-    if (this.parent instanceof MargaritaFormArray) {
-      this.parent.removeControl(this.index);
-    }
-    if (this.parent instanceof MargaritaFormGroup) {
-      this.parent.removeControl(this.name);
-    }
+    this.parent.removeControl(this.key);
   }
 
   public setValue(values: T[] = []) {
@@ -122,7 +117,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
       let controlsItem = this.controls[index];
       if (!controlsItem) {
         if (this.field.grouping === 'repeat-group') {
-          controlsItem = this._controls.appendRepeatingControlGroup(
+          controlsItem = this.controlsController.appendRepeatingControlGroup(
             this.field.fields
           );
         }
@@ -134,7 +129,7 @@ export class MargaritaFormArray<T = CommonRecord[]>
   }
 
   public get controls() {
-    return this._controls.controlsArray;
+    return this.controlsController.controlsArray;
   }
 
   public findIndexForName(name: string) {
@@ -167,15 +162,15 @@ export class MargaritaFormArray<T = CommonRecord[]>
 
   public addControls(fields = this.field.fields) {
     if (this.field.grouping === 'repeat-group') {
-      this._controls.appendRepeatingControlGroup(fields);
+      this.controlsController.appendRepeatingControlGroup(fields);
     }
     if (this.field.grouping === 'array') {
-      this._controls.addControls(fields);
+      this.controlsController.addControls(fields);
     }
   }
 
   public get valueChanges(): Observable<T> {
-    return this._controls.controlChanges.pipe(
+    return this.controlsController.controlChanges.pipe(
       switchMap((controlsArray) => {
         if (!controlsArray.length)
           return new Promise((resolve) =>

@@ -30,8 +30,7 @@ export class MargaritaFormGroup<T = CommonRecord>
   extends MargaritaFormBase
   implements MargaritaFormControlBase<T>
 {
-  private _controls = createControlsController();
-
+  public controlsController = createControlsController();
   private _subscriptions: Subscription[];
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
@@ -44,8 +43,8 @@ export class MargaritaFormGroup<T = CommonRecord>
   ) {
     super();
 
-    this._controls.init(this, this.__root, this.validators, true);
-    this._controls.addControls(field.fields);
+    this.controlsController.init(this, this.__root, this.validators, true);
+    this.controlsController.addControls(field.fields);
 
     if (field.initialValue) this.setValue(field.initialValue);
     const validationsStateSubscription = this._setValidationsState();
@@ -58,7 +57,7 @@ export class MargaritaFormGroup<T = CommonRecord>
       subscription.unsubscribe();
     });
 
-    this._controls.controlsArray.forEach((control) => {
+    this.controlsController.controlsArray.forEach((control) => {
       control.cleanup();
     });
   }
@@ -97,11 +96,11 @@ export class MargaritaFormGroup<T = CommonRecord>
   }
 
   public addControl(field: MargaritaFormField) {
-    this._controls.addControl(field);
+    this.controlsController.addControl(field);
   }
 
   public removeControl(identifier: string) {
-    this._controls.removeControl(identifier);
+    this.controlsController.removeControl(identifier);
   }
 
   public remove() {
@@ -123,7 +122,7 @@ export class MargaritaFormGroup<T = CommonRecord>
   }
 
   public get controls(): MargaritaFormControlsGroup<unknown> {
-    return this._controls.controlsGroup;
+    return this.controlsController.controlsGroup;
   }
 
   public getControl<T = MargaritaFormGroup | MargaritaFormControl>(
@@ -143,22 +142,20 @@ export class MargaritaFormGroup<T = CommonRecord>
   }
 
   public get valueChanges(): Observable<T> {
-    return this._controls.controlChanges.pipe(
+    return this.controlsController.controlChanges.pipe(
       switchMap((controls) => {
-        const valueChangesEntries = Object.entries(controls).map(
-          ([key, control]) => {
-            return control.valueChanges.pipe(
-              map((value) => {
-                return { key, value };
-              })
-            );
-          }
-        );
+        const valueChangesEntries = controls.map((control) => {
+          return control.valueChanges.pipe(
+            map((value) => {
+              return { control, value };
+            })
+          );
+        });
 
         const valueChanges = combineLatest(valueChangesEntries).pipe(
           map((values) => {
-            return values.reduce((acc: CommonRecord, { key, value }) => {
-              acc[key] = value;
+            return values.reduce((acc: CommonRecord, { control, value }) => {
+              acc[control.name] = value;
               return acc;
             }, {});
           }),
@@ -186,12 +183,13 @@ export class MargaritaFormGroup<T = CommonRecord>
     });
   }
 
-  private _getChildStates() {
-    return Object.values(this.controls).map((control) => control.stateChanges);
-  }
-
   private _setState() {
-    const childStates = combineLatest(this._getChildStates());
+    const childStates = this.controlsController.controlChanges.pipe(
+      switchMap((controls) => {
+        const stateChanges = controls.map((control) => control.stateChanges);
+        return combineLatest(stateChanges);
+      })
+    );
 
     return combineLatest([this._validationsState, childStates])
       .pipe(debounceTime(5))
