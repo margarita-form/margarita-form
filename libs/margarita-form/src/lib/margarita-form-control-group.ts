@@ -2,7 +2,6 @@ import {
   arrayGroupings,
   CommonRecord,
   MargaritaFormBaseElement,
-  MargaritaFormControlBase,
   MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
@@ -24,10 +23,7 @@ import { createControlsController } from './core/margarita-form-create-control';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 
-export class MargaritaFormGroup<T = CommonRecord>
-  extends MargaritaFormBase
-  implements MargaritaFormControlBase<T>
-{
+export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
   public controlsController = createControlsController();
   private _subscriptions: Subscription[];
   private _validationsState =

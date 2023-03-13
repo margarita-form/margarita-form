@@ -87,21 +87,6 @@ export interface MargaritaFormOptions {
   validators?: MargaritaFormFieldValidators;
 }
 
-export interface MargaritaFormControlBase<T = unknown> {
-  field: MargaritaFormField;
-  validators: MargaritaFormFieldValidators;
-  valueChanges: Observable<T>;
-  value: T;
-  state: MargaritaFormState;
-  stateChanges: Observable<MargaritaFormState>;
-  parent?: MargaritaFormControlTypes<unknown>;
-  controls?: MargaritaFormControlsArray<unknown> | null;
-  refs: MargaritaFormBaseElement[];
-  setValue: (value: any) => void;
-  setRef: <E = HTMLElement>(ref: E) => void;
-  cleanup: () => void;
-}
-
 export type MargaritaFormObjectControlTypes<T = unknown> =
   MargaritaFormGroup<T>;
 

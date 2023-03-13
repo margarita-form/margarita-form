@@ -1,7 +1,6 @@
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import type {
   MargaritaFormBaseElement,
-  MargaritaFormControlBase,
   MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
@@ -16,10 +15,7 @@ import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { MargaritaFormGroup } from './margarita-form-control-group';
 
-export class MargaritaFormControl<T = unknown>
-  extends MargaritaFormBase
-  implements MargaritaFormControlBase<T>
-{
+export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
   private _subscriptions: Subscription[];
   private _value = new BehaviorSubject<unknown>(undefined);
   private _validationsState =
