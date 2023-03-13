@@ -1,10 +1,10 @@
 import { nanoid } from 'nanoid';
-import { BehaviorSubject, debounceTime } from 'rxjs';
-import { MargaritaFormArray } from '../margarita-form-array';
+import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
-import { MargaritaFormGroup } from '../margarita-form-group';
+import { MargaritaFormGroup } from '../margarita-form-control-group';
 import {
-  arrayGroupings,
+  MargaritaFormControlsArray,
+  MargaritaFormControlsGroup,
   MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFieldValidators,
@@ -17,9 +17,7 @@ export const createControlFromField = (
   root: MargaritaFormObjectControlTypes<unknown>,
   validators: MargaritaFormFieldValidators
 ): MargaritaFormControlTypes => {
-  const { fields, grouping = 'group' } = field;
-  const isArray = fields && arrayGroupings.includes(grouping);
-  if (isArray) return new MargaritaFormArray(field, parent, root, validators);
+  const { fields } = field;
   if (fields) return new MargaritaFormGroup(field, parent, root, validators);
   return new MargaritaFormControl(field, parent, root, validators);
 };
@@ -72,7 +70,6 @@ export const createControlsController = () => {
         this.requireUniqueNames = requireUniqueNames;
       };
     },
-
     get addControls() {
       return (fields?: MargaritaFormField[]) => {
         if (!fields) throw 'No fields provided!';
@@ -82,11 +79,12 @@ export const createControlsController = () => {
       };
     },
     get appendRepeatingControlGroup() {
-      return (fields?: MargaritaFormField[]) => {
+      return (fields?: MargaritaFormField[], initialValue?: unknown) => {
         if (!fields) throw 'No fields provided!';
         const field = {
           name: nanoid(4),
           fields,
+          initialValue,
         };
         return this.addControl(field);
       };
@@ -100,7 +98,7 @@ export const createControlsController = () => {
           this.root,
           this.validators
         );
-
+        if (this.parent.state.disabled) control.disable();
         return this.appendControl(control);
       };
     },
@@ -129,16 +127,35 @@ export const createControlsController = () => {
         this.controls.next(items);
       };
     },
-    get controlChanges() {
+    get getControl() {
+      return (identifier: string | number) => {
+        const items = this.controls.getValue();
+        if (typeof identifier === 'number') {
+          return items[identifier];
+        }
+        return items.find((control) =>
+          [control.name, control.key].includes(identifier)
+        );
+      };
+    },
+    get getControlIndex() {
+      return (identifier: string) => {
+        const items = this.controls.getValue();
+        return items.findIndex((control) =>
+          [control.name, control.key].includes(identifier)
+        );
+      };
+    },
+    get controlChanges(): Observable<MargaritaFormControlTypes<unknown>[]> {
       const changes = this.controls.pipe(debounceTime(5));
       return changes;
     },
-    get controlsGroup() {
+    get controlsGroup(): MargaritaFormControlsGroup<unknown> {
       const items = this.controls.getValue();
       const entries = items.map((item) => [item.name, item]);
       return Object.fromEntries(entries);
     },
-    get controlsArray() {
+    get controlsArray(): MargaritaFormControlsArray<unknown> {
       const items = this.controls.getValue();
       return items;
     },

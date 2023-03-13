@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fromEvent } from 'rxjs';
-import { MargaritaFormArray } from '../margarita-form-array';
 import { MargaritaFormControl } from '../margarita-form-control';
-import { MargaritaFormGroup } from '../margarita-form-group';
+import { MargaritaFormGroup } from '../margarita-form-control-group';
 import {
   MargaritaFormControlTypes,
   MargaritaFormBaseElement,
@@ -13,6 +12,8 @@ export const addRef = (
   control: MargaritaFormControlTypes<unknown>
 ): void => {
   if (!node) return;
+  const type = node.type || node.nodeName;
+  const multiple = node.multiple;
   const nodeHasControls = node.controls;
   if (!nodeHasControls) {
     Object.defineProperty(node, 'controls', {
@@ -32,7 +33,14 @@ export const addRef = (
 
     const handleSetValue = control.valueChanges.subscribe((value) => {
       try {
-        if ('value' in node) {
+        if (type === 'checkbox') {
+          if (multiple) {
+            //
+          } else if (control.refs.length > 1) {
+            console.warn('Applying checked to multiple fields!');
+            node.checked = Boolean(value);
+          }
+        } else if ('value' in node) {
           if (control instanceof MargaritaFormControl) {
             node.value = value || '';
           }
@@ -47,30 +55,42 @@ export const addRef = (
 
     const handleChange = fromEvent<InputEvent>(node, 'input').subscribe(() => {
       try {
-        if ('value' in node) {
+        const getNodeValue = () => {
+          if (type === 'checkbox') {
+            if (multiple) {
+              const isDefaultValue = /on|off/gi.test(String(node.value));
+              if (isDefaultValue) {
+                console.warn('No value available for checkbox!', { node });
+              }
+
+              const value = node.checked && node.value;
+              const current: unknown[] = (control.value as any) || [];
+
+              if (value) {
+                return [...current, value];
+              }
+              return current.filter((val) => val !== node.value);
+            }
+            return node.checked;
+          }
+          if (node.value) return node.value;
+          return undefined;
+        };
+
+        const value = getNodeValue();
+
+        if (value !== undefined) {
           if (control instanceof MargaritaFormControl) {
-            control.setValue(node.value);
+            return control.setValue(value);
           }
 
           if (control instanceof MargaritaFormGroup) {
-            if (typeof node.value === 'string') {
-              const value = JSON.parse(node.value);
-              control.setValue(value);
+            if (typeof value === 'string') {
+              const object = JSON.parse(value);
+              return control.setValue(object);
             }
-            if (typeof node.value === 'object') {
-              control.setValue(node.value);
-            }
-          }
-
-          if (control instanceof MargaritaFormArray) {
-            if (typeof node.value === 'string') {
-              const value = JSON.parse(node.value);
-              if (Array.isArray(value)) {
-                control.setValue(value);
-              }
-            }
-            if (typeof node.value === 'object' && Array.isArray(node.value)) {
-              control.setValue(node.value);
+            if (typeof value === 'object') {
+              return control.setValue(value);
             }
           }
         }
@@ -98,7 +118,6 @@ export const addRef = (
             handleFocus.unsubscribe();
             mutationObserver.disconnect();
             control.refs = control.refs.filter((ref) => ref !== node);
-            console.log('delete', control);
           }
         });
       });

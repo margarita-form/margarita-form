@@ -1,13 +1,14 @@
-import type {
+import {
+  arrayGroupings,
   CommonRecord,
   MargaritaFormBaseElement,
   MargaritaFormControlBase,
-  MargaritaFormControlsGroup,
+  MargaritaFormControlsArray,
+  MargaritaFormControlTypes,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormObjectControlTypes,
-  MargaritaFormStateChildren,
   MargaritaFormStateErrors,
 } from './margarita-form-types';
 import { debounceTime, Observable, Subscription } from 'rxjs';
@@ -19,11 +20,9 @@ import {
   combineLatest,
 } from 'rxjs';
 import _get from 'lodash.get';
-import { MargaritaFormControl } from './margarita-form-control';
-import { MargaritaFormArray } from './margarita-form-array';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { createControlsController } from './core/margarita-form-create-control';
-import { MargaritaFormBase } from './core/margarita-form-base-class';
+import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { addRef } from './core/margarita-form-add-ref';
 
 export class MargaritaFormGroup<T = CommonRecord>
@@ -89,10 +88,38 @@ export class MargaritaFormGroup<T = CommonRecord>
   }
 
   public get index(): number {
-    if (this.parent instanceof MargaritaFormArray) {
-      return this.parent.findIndexForName(this.name);
+    if (this.parent instanceof MargaritaFormGroup) {
+      return this.parent.controlsController.getControlIndex(this.key);
     }
     return -1;
+  }
+
+  // State
+
+  public override enable() {
+    this.updateStateValue('enabled', true);
+    this.controls.forEach((control) => {
+      control.updateStateValue('enabled', true);
+    });
+  }
+
+  public override disable() {
+    this.updateStateValue('disabled', true);
+    this.controls.forEach((control) => {
+      control.updateStateValue('disabled', true);
+    });
+  }
+
+  // Controls
+
+  public get controls(): MargaritaFormControlsArray<unknown> {
+    return this.controlsController.controlsArray;
+  }
+
+  public getControl<T = MargaritaFormControlTypes>(
+    identifier: string | number
+  ): T {
+    return this.controlsController.getControl(identifier) as T;
   }
 
   public addControl(field: MargaritaFormField) {
@@ -107,38 +134,19 @@ export class MargaritaFormGroup<T = CommonRecord>
     this.parent.removeControl(this.key);
   }
 
-  public setValue(value: unknown) {
-    if (!this.controls) throw 'Cannot set value';
-    Object.values(this.controls).forEach((control) => {
-      const { name } = control.field;
-      if (value && typeof value === 'object') {
-        const updatedValue = _get(value, [name], control.value);
-        control.setValue(updatedValue);
-      } else {
-        // control.setValue(null);
-        throw 'Not yet implemented';
-      }
-    });
-  }
-
-  public get controls(): MargaritaFormControlsGroup<unknown> {
-    return this.controlsController.controlsGroup;
-  }
-
-  public getControl<T = MargaritaFormGroup | MargaritaFormControl>(
-    name: string
-  ) {
-    return this.controls[name] as T;
-  }
+  // Value
 
   public get value(): T {
-    return Object.entries(this.controls).reduce(
-      (acc: CommonRecord, [key, control]) => {
-        acc[key] = control.value;
-        return acc;
-      },
-      {}
-    ) as T;
+    const { controlsArray } = this.controlsController;
+    const { grouping = 'group' } = this.field;
+    const expectArray = arrayGroupings.includes(grouping);
+    if (expectArray) {
+      return controlsArray.map((control) => control.value) as T;
+    }
+    const entries = controlsArray.map((control) => {
+      return [control.name, control.value];
+    });
+    return Object.fromEntries(entries);
   }
 
   public get valueChanges(): Observable<T> {
@@ -153,11 +161,17 @@ export class MargaritaFormGroup<T = CommonRecord>
         });
 
         const valueChanges = combineLatest(valueChangesEntries).pipe(
-          map((values) => {
-            return values.reduce((acc: CommonRecord, { control, value }) => {
-              acc[control.name] = value;
-              return acc;
-            }, {});
+          map((changeEntries) => {
+            const { grouping = 'group' } = this.field;
+            const expectArray = arrayGroupings.includes(grouping);
+            if (expectArray) {
+              return changeEntries.map((entry) => entry.value);
+            }
+
+            const entries = changeEntries.map(({ control, value }) => {
+              return [control.name, value];
+            });
+            return Object.fromEntries(entries);
           }),
           shareReplay(1)
         );
@@ -165,6 +179,41 @@ export class MargaritaFormGroup<T = CommonRecord>
         return valueChanges as Observable<T>;
       })
     );
+  }
+
+  public setValue(values: unknown) {
+    try {
+      const { grouping = 'group' } = this.field;
+      const { controlsArray, controlsGroup } = this.controlsController;
+      const expectArray = arrayGroupings.includes(grouping);
+      const isArray = Array.isArray(values);
+      if (expectArray && isArray) {
+        controlsArray.forEach((control, index) => {
+          const hasValue = control && values[index];
+          if (!hasValue) control.remove();
+        });
+
+        values.forEach((value, index) => {
+          const control = controlsArray[index];
+          if (control) return control.setValue(value);
+          if (grouping === 'repeat-group') {
+            this.controlsController.appendRepeatingControlGroup(
+              this.field.fields,
+              value
+            );
+          }
+        });
+      } else if (!isArray) {
+        Object.values(controlsGroup).forEach((control) => {
+          const { name } = control.field;
+          const updatedValue = _get(values, [name], control.value);
+          control.setValue(updatedValue);
+        });
+      }
+    } catch (error) {
+      console.error('Could not set values!', { control: this, values, error });
+    }
+    throw 'Could not set value!';
   }
 
   // Common
@@ -193,12 +242,11 @@ export class MargaritaFormGroup<T = CommonRecord>
 
     return combineLatest([this._validationsState, childStates])
       .pipe(debounceTime(5))
-      .subscribe(([validationStates, childStates]) => {
+      .subscribe(([validationStates, children]) => {
+        const childrenAreValid = children.every((child) => child.valid);
         const currentIsValid = Object.values(validationStates).every(
           (state) => state.valid
         );
-        const childrenAreValid = childStates.every((child) => child.valid);
-
         const errors = Object.entries(validationStates).reduce(
           (acc, [key, { error }]) => {
             if (error) acc[key] = error;
@@ -206,16 +254,6 @@ export class MargaritaFormGroup<T = CommonRecord>
           },
           {} as MargaritaFormStateErrors
         );
-
-        const children = childStates.reduce((acc, child) => {
-          if (!child.control) return acc;
-          const { name } = child.control;
-          return {
-            ...acc,
-            [name]: child,
-          };
-        }, {} as MargaritaFormStateChildren);
-
         const valid = currentIsValid && childrenAreValid;
         const changes = {
           valid,

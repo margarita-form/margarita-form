@@ -15,7 +15,7 @@ export class MargaritaFormBase {
   private _state!: BehaviorSubject<MargaritaFormState>;
 
   constructor() {
-    const defaultState = getDefaultState(this);
+    const defaultState = getDefaultState(this as any);
     this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
   }
 
@@ -36,11 +36,21 @@ export class MargaritaFormBase {
 
   public updateStateValue(key: MargaritaFormStaticStateKeys, value: boolean) {
     const currentState = this.state;
-    currentState[key] = value;
+    Object.assign(currentState, { [key]: value });
     this._state.next(currentState);
+  }
+
+  public enable() {
+    this.updateStateValue('enabled', true);
+  }
+
+  public disable() {
+    this.updateStateValue('disabled', true);
   }
 
   public updateSyncId() {
     this.syncId = nanoid(4);
   }
+
+  // State getters
 }

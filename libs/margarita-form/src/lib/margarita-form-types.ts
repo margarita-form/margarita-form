@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Observable } from 'rxjs';
-import type { MargaritaFormArray } from './margarita-form-array';
 import type { MargaritaFormControl } from './margarita-form-control';
-import type { MargaritaFormGroup } from './margarita-form-group';
+import type { MargaritaFormGroup } from './margarita-form-control-group';
 
 export interface MargaritaFormFieldContext<T = unknown, P = any> {
   value: T;
@@ -55,7 +54,7 @@ export interface MargaritaFormField {
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
-export type MargaritaFormStateChildren = Record<string, MargaritaFormState>;
+export type MargaritaFormStateChildren = MargaritaFormState[];
 
 export type MargaritaFormStaticStateKeys =
   | 'pristine'
@@ -77,7 +76,7 @@ export interface MargaritaFormState extends MargaritaFormStaticState {
   valid: boolean;
   errors: MargaritaFormStateErrors;
   control: MargaritaFormControlTypes | null;
-  children?: Record<string, MargaritaFormState>;
+  children?: MargaritaFormStateChildren;
 }
 
 export type MargaritaFormFields = MargaritaFormField[];
@@ -104,8 +103,7 @@ export interface MargaritaFormControlBase<T = unknown> {
 }
 
 export type MargaritaFormObjectControlTypes<T = unknown> =
-  | MargaritaFormGroup<T>
-  | MargaritaFormArray<T>;
+  MargaritaFormGroup<T>;
 
 export type MargaritaFormControlTypes<T = unknown> =
   | MargaritaFormControl<T>
@@ -126,4 +124,13 @@ export type CommonRecord = Record<string | number | symbol, unknown>;
 export type MargaritaFormBaseElement<
   T = HTMLElement,
   C = MargaritaFormControls<unknown>
-> = (T & { controls?: C[] }) | null;
+> =
+  | (T & {
+      controls?: C[];
+      value?: unknown;
+      checked?: boolean;
+      multiple?: boolean;
+      type?: string;
+      name?: string;
+    })
+  | null;

@@ -11,10 +11,10 @@ import type {
 } from './margarita-form-types';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime, shareReplay, skip } from 'rxjs/operators';
-import { MargaritaFormArray } from './margarita-form-array';
 import { _createValidationsState } from './core/margarita-form-validation';
-import { MargaritaFormBase } from './core/margarita-form-base-class';
+import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { addRef } from './core/margarita-form-add-ref';
+import { MargaritaFormGroup } from './margarita-form-control-group';
 
 export class MargaritaFormControl<T = unknown>
   extends MargaritaFormBase
@@ -85,8 +85,8 @@ export class MargaritaFormControl<T = unknown>
   }
 
   public get index(): number {
-    if (this.parent instanceof MargaritaFormArray) {
-      return this.parent.findIndexForName(this.name);
+    if (this.parent instanceof MargaritaFormGroup) {
+      return this.parent.controlsController.getControlIndex(this.key);
     }
     return -1;
   }
