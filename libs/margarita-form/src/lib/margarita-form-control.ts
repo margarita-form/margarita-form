@@ -84,6 +84,14 @@ export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
 
   // Controls
 
+  public moveToIndex(toIndex: number) {
+    if (this.parent instanceof MargaritaFormGroup) {
+      this.parent.controlsController.moveControl(this.key, toIndex);
+    } else {
+      console.warn('Could not move control!');
+    }
+  }
+
   public remove() {
     this.parent.removeControl(this.key);
   }

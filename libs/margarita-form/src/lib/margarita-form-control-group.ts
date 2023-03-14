@@ -144,6 +144,10 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
     this.controlsController.removeControl(identifier);
   }
 
+  public moveControl(identifier: string, toIndex: number) {
+    this.controlsController.moveControl(identifier, toIndex);
+  }
+
   public remove() {
     this.parent.removeControl(this.key);
   }

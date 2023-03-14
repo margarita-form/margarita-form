@@ -34,7 +34,11 @@ export class ControlsController {
     private _requireUniqueNames = false,
     private _initialFields?: MargaritaFormField[]
   ) {
-    this.addControls(this._initialFields);
+    if (this.parent.field.grouping === 'repeat-group') {
+      this.appendRepeatingControlGroup(this._initialFields);
+    } else {
+      this.addControls(this._initialFields);
+    }
   }
 
   get parent(): MargaritaFormObjectControlTypes<unknown> {
@@ -126,6 +130,15 @@ export class ControlsController {
       return items.findIndex((control) =>
         [control.name, control.key].includes(identifier)
       );
+    };
+  }
+  get moveControl() {
+    return (identifier: string, toIndex: number) => {
+      const items = this.controls.getValue();
+      const currentIndex = this.getControlIndex(identifier);
+      const [item] = items.splice(currentIndex, 1);
+      items.splice(toIndex, 0, item);
+      this.controls.next(items);
     };
   }
   get controlChanges(): Observable<MargaritaFormControlTypes<unknown>[]> {
