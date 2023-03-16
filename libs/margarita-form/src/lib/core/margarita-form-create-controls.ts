@@ -19,39 +19,51 @@ export const createControlFromField = (
   root: MargaritaForm,
   validators: MargaritaFormFieldValidators
 ): MargaritaFormControlTypes => {
-  const { fields } = field;
-  if (fields) return new MargaritaFormGroup(field, parent, root, validators);
+  const { fields, template } = field;
+  const isGroup = fields || template;
+  if (isGroup) return new MargaritaFormGroup(field, parent, root, validators);
   return new MargaritaFormControl(field, parent, root, validators);
 };
 
 export class ControlsController {
   private controls = new BehaviorSubject<MargaritaFormControlTypes[]>([]);
 
-  constructor(
-    private _parent: MargaritaFormObjectControlTypes<unknown>,
-    private _root: MargaritaForm,
-    private _validators: MargaritaFormFieldValidators,
-    private _requireUniqueNames = false,
-    private _initialFields?: MargaritaFormField[]
-  ) {
-    if (this.parent.field.grouping === 'repeat-group') {
-      this.appendRepeatingControlGroup(this._initialFields);
-    } else {
-      this.addControls(this._initialFields);
-    }
+  constructor(private _parent: MargaritaFormObjectControlTypes<unknown>) {
+    this.init();
   }
 
+  private init() {
+    const { grouping } = this.parent;
+    const { startWith = 1, fields, template } = this.parent.field;
+    for (let i = 0; i < startWith; i++) {
+      if (grouping === 'repeat-group') {
+        const _template = fields ? { fields } : template;
+        this.addTemplatedControl(_template);
+      } else if (grouping === 'array') {
+        if (fields) {
+          this.addControls(fields);
+        } else {
+          this.addTemplatedControl(template);
+        }
+      } else {
+        this.addControls(fields);
+      }
+    }
+  }
+  private get _requireUniqueNames() {
+    return this._parent.grouping === 'group';
+  }
   get parent(): MargaritaFormObjectControlTypes<unknown> {
     if (!this._parent) throw 'Invalid parent!';
     return this._parent;
   }
   get root(): MargaritaForm {
-    if (!this._root) throw 'Invalid root!';
-    return this._root;
+    if (!this._parent.root) throw 'Invalid root!';
+    return this._parent.root;
   }
   get validators(): MargaritaFormFieldValidators {
-    if (!this._validators) throw 'Invalid validators!';
-    return this._validators;
+    if (!this._parent.validators) throw 'Invalid validators!';
+    return this._parent.validators;
   }
   get length() {
     return this.controlsArray.length;
@@ -64,13 +76,12 @@ export class ControlsController {
       });
     };
   }
-  get appendRepeatingControlGroup() {
-    return (fields?: MargaritaFormField[], initialValue?: unknown) => {
-      if (!fields) throw 'No fields provided!';
+  get addTemplatedControl() {
+    return (fieldTemplate?: Partial<MargaritaFormField>) => {
+      if (!fieldTemplate) throw 'No template for repeating field provided!';
       const field = {
         name: nanoid(4),
-        fields,
-        initialValue,
+        ...fieldTemplate,
       };
       return this.addControl(field);
     };

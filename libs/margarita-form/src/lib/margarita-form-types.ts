@@ -50,6 +50,8 @@ export interface MargaritaFormField {
   name: string;
   fields?: MargaritaFormFields;
   grouping?: MargaritaFormGroupings;
+  startWith?: number;
+  template?: MargaritaFormField;
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators;
