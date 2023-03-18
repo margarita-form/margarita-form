@@ -8,7 +8,9 @@
     "build:core": "nx run margarita-form:build",
     "build:react": "nx run margarita-form-react:build",
     "build:all": "npm run build:core && npm run build:react",
-    "publish:all": "npm run build:all && add-readme.sh && lerna publish"
+    "publish:core": "cd dist/libs/margarita-form && npm publish",
+    "publish:react": "cd dist/libs/margarita-form-react && npm publish",
+    "publish:all": "lerna version --force-publish -m \"chore(release): version %v\" && npm run build:all && add-readme.sh && npm run publish:core && npm run publish:react"
   },
   "private": true,
   "devDependencies": {
@@ -64,6 +66,6 @@
     "styled-components": "5.3.6"
   },
   "workspaces": [
-    "libs/*"
+    "packages/*"
   ]
 }
