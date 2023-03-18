@@ -2,222 +2,187 @@ import styled from 'styled-components';
 import {
   MargaritaFormControl,
   useMargaritaForm,
-  MargaritaFormArray,
+  MargaritaFormField,
   MargaritaFormGroup,
-} from 'margarita-form';
+} from '@margarita-form/react';
+import { useState } from 'react';
 
-const StyledApp = styled.div`
-  // Your style here
+const AppWrapper = styled.div`
+  font-family: Arial, sans-serif;
+  padding: 10vw;
+  display: grid;
+  justify-content: center;
+  justify-items: start;
+  grid-template-columns: 1fr 1fr;
+  width: fit-content;
+  gap: 50px;
+  margin: auto;
+  form {
+    min-width: clamp(400px, 25vw, 620px);
+    display: grid;
+    gap: 10px;
+    input,
+    textarea {
+      font-family: Arial, sans-serif;
+      padding: 0.5em;
+    }
+    .step-container {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr max-content;
+    }
+    hr {
+      width: 100%;
+    }
+  }
+  pre {
+    width: 100%;
+    padding: 20px;
+    background: #f8f8f8;
+    min-height: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
 `;
 
+const fields: MargaritaFormField[] = [
+  {
+    name: 'title',
+    initialValue: 'Hello world',
+    validation: {
+      required: true,
+    },
+  },
+  {
+    name: 'description',
+    validation: {
+      required: true,
+    },
+  },
+  {
+    name: 'steps',
+    grouping: 'repeat-group',
+    startWith: 2,
+    template: {
+      name: 'test',
+      fields: [
+        {
+          name: 'title',
+          validation: {
+            required: true,
+          },
+        },
+        {
+          name: 'description',
+          validation: {
+            required: true,
+          },
+        },
+      ],
+    },
+  },
+];
+
 export function App() {
-  const { form, value, state } = useMargaritaForm({
-    fields: [
-      {
-        name: 'hello',
-        initialValue: 'initial value',
-        validation: {
-          required: true,
-        },
+  const [submitResponse, setSubmitResponse] = useState<string | null>(null);
+  const { form, value } = useMargaritaForm({
+    fields,
+    handleSubmit: {
+      valid: (value) => {
+        console.log('Valid submit', { value });
+        setSubmitResponse('Form is valid!');
       },
-      {
-        name: 'world',
-        fields: [
-          {
-            name: 'asd',
-            validation: {
-              required: true,
-            },
-          },
-        ],
+      invalid: (value) => {
+        console.log('Invalid submit', { value });
+        setSubmitResponse('Form is invalid!');
       },
-      {
-        name: 'others',
-        grouping: 'repeat-group',
-        validation: {
-          required: true,
-        },
-        initialValue: [
-          {
-            lastname: 'asd',
-          },
-        ],
-        fields: [
-          {
-            name: 'firstname',
-          },
-          {
-            name: 'lastname',
-          },
-        ],
-      },
-      {
-        name: 'array',
-        grouping: 'array',
-        fields: [
-          {
-            name: 'test1',
-            initialValue: 1,
-          },
-          {
-            name: 'test1',
-            initialValue: 2,
-          },
-          {
-            name: 'test2',
-            initialValue: 3,
-          },
-          {
-            name: 'invalidi',
-            initialValue: 4,
-          },
-        ],
-      },
-    ],
+    },
   });
 
-  const helloControl = form.getControl<MargaritaFormControl>('hello');
-  const worldControl = form.getControl<MargaritaFormGroup>('world');
-  const asdControl = worldControl.getControl<MargaritaFormControl>('asd');
-  const othersControl = form.getControl<MargaritaFormArray>('others');
-  const arrayControl = form.getControl<MargaritaFormArray>('array');
-
-  console.log(form.state);
+  const titleControl = form.getControl<MargaritaFormControl>('title');
+  const descriptionControl =
+    form.getControl<MargaritaFormControl>('description');
+  const stepsControl = form.getControl<MargaritaFormGroup>('steps');
 
   return (
-    <StyledApp>
-      <h1>{'Hello'}</h1>
-      <div>
-        <button
-          onClick={() => {
-            form.setValue({
-              hello: Math.random().toString(),
-            });
-          }}
-        >
-          update value
-        </button>
-        <button
-          onClick={() => {
-            form.register({
-              name: 'other',
-              initialValue: Math.random(),
-            });
-          }}
-        >
-          add field
-        </button>
+    <AppWrapper>
+      <div className="form-wrapper">
+        <form ref={form.setRef}>
+          <label htmlFor="title">Title</label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            ref={titleControl.setRef}
+            placeholder="How to make a cake"
+          />
+
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            ref={descriptionControl.setRef}
+            placeholder="Lorem ipsum"
+          />
+
+          {stepsControl &&
+            stepsControl.controls.map((stepGroup) => {
+              const stepTitleControl =
+                stepGroup.getControl<MargaritaFormControl>('title');
+              const stepDescriptionControl =
+                stepGroup.getControl<MargaritaFormControl>('description');
+
+              return (
+                <div className="step-container" key={stepGroup.key}>
+                  {stepTitleControl && (
+                    <input
+                      id="title"
+                      name="title"
+                      type="text"
+                      ref={stepTitleControl.setRef}
+                      placeholder="Title"
+                    />
+                  )}
+                  {stepDescriptionControl && (
+                    <input
+                      id="description"
+                      name="description"
+                      type="text"
+                      ref={stepDescriptionControl.setRef}
+                      placeholder="Description"
+                    />
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      stepGroup.remove();
+                    }}
+                  >
+                    Delete step
+                  </button>
+                </div>
+              );
+            })}
+
+          <button
+            type="button"
+            onClick={() => {
+              stepsControl.appendRepeatingControls();
+            }}
+          >
+            Add new step
+          </button>
+
+          <hr />
+
+          <button type="submit">Submit</button>
+
+          {submitResponse && <span>{submitResponse}</span>}
+        </form>
       </div>
-      <div>
-        {helloControl && (
-          <input type="text" ref={(node) => helloControl.setRef(node)} />
-        )}
-      </div>
-      <input
-        type="text"
-        ref={(node) => asdControl.setRef(node)}
-        placeholder="asd"
-      />
-
-      {othersControl.controlsArray.map((control, i) => {
-        const group = control as MargaritaFormGroup;
-        const firstNameControl =
-          group.getControl<MargaritaFormControl>('firstname');
-
-        const lastNameControl = group.getControl(
-          'lastname'
-        ) as MargaritaFormControl;
-
-        const muunameControl = group.getControl(
-          'muuname'
-        ) as MargaritaFormControl;
-
-        return (
-          <div key={i + 1}>
-            {firstNameControl && (
-              <input
-                type="text"
-                placeholder="firstname"
-                ref={(node) => firstNameControl.setRef(node)}
-              />
-            )}
-            {lastNameControl && (
-              <input
-                type="text"
-                placeholder="lastname"
-                ref={(node) => lastNameControl.setRef(node)}
-              />
-            )}
-            {muunameControl && (
-              <input
-                type="text"
-                placeholder="muuname"
-                ref={(node) => muunameControl.setRef(node)}
-              />
-            )}
-          </div>
-        );
-      })}
-
-      {arrayControl.controlsArray.map((control, i) => {
-        if (control.name === 'test1') {
-          return (
-            <div key={i + 1}>
-              {control && (
-                <input
-                  type="text"
-                  placeholder="test1"
-                  ref={(node) => control.setRef(node)}
-                />
-              )}
-            </div>
-          );
-        }
-        if (control.name === 'test2') {
-          return (
-            <div key={i + 1}>
-              {control && (
-                <input
-                  type="text"
-                  placeholder="test2"
-                  ref={(node) => control.setRef(node)}
-                />
-              )}
-            </div>
-          );
-        }
-
-        return (
-          <div key={i + 1}>
-            {control && (
-              <input
-                type="text"
-                placeholder="joku muu"
-                ref={(node) => control.setRef(node)}
-              />
-            )}
-          </div>
-        );
-      })}
-
-      <h2>State</h2>
-      <p>
-        <strong>Valid: </strong>
-        {state?.valid ? 'valid' : 'invalid'}
-      </p>
-      <h2>Value</h2>
       <pre>{JSON.stringify(value, null, 2)}</pre>
-
-      <button onClick={() => othersControl.addControls()}>Add</button>
-      <button onClick={() => othersControl.addControls([{ name: 'muuname' }])}>
-        Add else
-      </button>
-      <button onClick={() => othersControl.removeControls(0)}>
-        Delete first
-      </button>
-
-      <button onClick={() => form.unregister('hello')}>Delete hello</button>
-    </StyledApp>
+    </AppWrapper>
   );
 }
 
