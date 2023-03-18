@@ -8,7 +8,7 @@
     "build:core": "nx run margarita-form:build",
     "build:react": "nx run margarita-form-react:build",
     "build:all": "npm run build:core && npm run build:react",
-    "publish:all": "npm run build:all && ./add-readme.sh && lerna publish"
+    "publish:all": "npm run build:all && add-readme.sh && lerna publish"
   },
   "private": true,
   "devDependencies": {
