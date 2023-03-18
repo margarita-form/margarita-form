@@ -85,7 +85,7 @@ const fields: MargaritaFormField[] = [
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const { form, value } = useMargaritaForm({
+  const form = useMargaritaForm({
     fields,
     handleSubmit: {
       valid: (value) => {
@@ -181,7 +181,7 @@ export function App() {
           {submitResponse && <span>{submitResponse}</span>}
         </form>
       </div>
-      <pre>{JSON.stringify(value, null, 2)}</pre>
+      <pre>{JSON.stringify(form.value, null, 2)}</pre>
     </AppWrapper>
   );
 }

@@ -59,9 +59,5 @@ export const useMargaritaForm = <T = unknown>(
   const store = stores[formId] as FormStore<T>;
   useSyncExternalStore(store.subscribe, () => store.getSnapshot());
   const { form } = store;
-  return {
-    form,
-    value: form.value,
-    state: form.state,
-  };
+  return form;
 };
