@@ -3,4 +3,3 @@ export * from './lib/margarita-form-control';
 export * from './lib/margarita-form-control-group';
 export * from './lib/margarita-form-types';
 export * from './lib/validators';
-export * from './lib/react/margarita-form-hooks';

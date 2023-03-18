@@ -1,10 +1,10 @@
-import type {
+import { useId, useSyncExternalStore } from 'react';
+import { combineLatest, debounceTime, skip } from 'rxjs';
+import {
+  createMargaritaForm,
   MargaritaForm,
   MargaritaFormOptions,
-} from '../margarita-form-types';
-import { useId, useSyncExternalStore } from 'react';
-import { createMargaritaForm } from '../margarita-form';
-import { combineLatest, debounceTime, skip } from 'rxjs';
+} from '@margarita-form/core';
 
 const forms: Record<string, MargaritaForm<unknown>> = {};
 
