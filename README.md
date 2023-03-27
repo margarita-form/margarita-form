@@ -4,21 +4,29 @@
 
 Margarita form is heavily inspired by [Angular's Reactive forms](https://angular.io/guide/reactive-forms) but unlike many form libraries, margarita forms is build to be framework agnostic meaning that it works with any framework or library like React, Next.js, Gatsby.js, Vue or Svelte!
 
+### Packages
+
+[Core](https://www.npmjs.com/package/@margarita-form/core)
+[React](https://www.npmjs.com/package/@margarita-form/react)
+
 ## Get started
 
 ### React
 
-#### Install the React package: 
+#### Install the React package:
+
 ```
 npm i @margarita-form/react
 ```
 
-#### Import it into your project: 
+#### Import it into your project:
+
 ```typescript
-import { useMargaritaForm } from '@margarita-form/react'
+import { useMargaritaForm } from '@margarita-form/react';
 ```
 
-#### Create a new form with single field: 
+#### Create a new form with single field:
+
 ```typescript
 interface MyFormValue {
   myControl: string;
@@ -35,11 +43,13 @@ const form = useMargaritaForm<MyFormValue>({
 ```
 
 #### Get control from the form:
+
 ```typescript
 const myControl = form.getControl('myControl');
 ```
 
 #### Connect controls to your inputs
+
 ```typescript
 <form ref={form.setRef}>
   <input type="text" ref={myControl.setRef} placeholder="My Control" />
@@ -48,6 +58,7 @@ const myControl = form.getControl('myControl');
 ```
 
 #### Full example
+
 ```typescript
 import { useMargaritaForm } from '@margarita-form/react';
 
@@ -82,17 +93,20 @@ export default App;
 
 The plan is to make more framework specific libraries but even now you can use @margarita-form/core to implement the form logic into any project!
 
-#### Install the Core package: 
+#### Install the Core package:
+
 ```
 npm i @margarita-form/core
 ```
 
-#### Import it into your project: 
+#### Import it into your project:
+
 ```typescript
-import { createMargaritaForm } from '@margarita-form/core'
+import { createMargaritaForm } from '@margarita-form/core';
 ```
 
-#### Create a new form with single field: 
+#### Create a new form with single field:
+
 ```typescript
 interface MyFormValue {
   myControl: string;
@@ -109,6 +123,7 @@ const form = createMargaritaForm<MyFormValue>({
 ```
 
 #### Get control from the form:
+
 ```typescript
 const myControl = form.getControl('myControl');
 ```
