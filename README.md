@@ -89,7 +89,7 @@ npm i @margarita-form/core
 
 #### Import it into your project: 
 ```typescript
-import { createMargaritaForm } from '@margarita-form/react'
+import { createMargaritaForm } from '@margarita-form/core'
 ```
 
 #### Create a new form with single field: 
