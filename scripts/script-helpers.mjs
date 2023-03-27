@@ -1,6 +1,7 @@
 import { join, dirname } from 'path';
 import { readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child-process-promise';
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
@@ -13,10 +14,12 @@ export const getFile = async (path, json = true) => {
 
 export const setFile = async (path, content) => {
   if (typeof content === 'object') {
-    return await setFile(
-      join(__dirname, path),
-      JSON.stringify(content, null, 2)
-    );
+    return await setFile(path, JSON.stringify(content, null, 2));
   }
-  return await writeFile(path, content);
+  return await writeFile(join(__dirname, path), content);
+};
+
+export const runCommand = async (command) => {
+  const [main, ...args] = command.split(' ');
+  await spawn(main, args, { stdio: 'inherit' });
 };

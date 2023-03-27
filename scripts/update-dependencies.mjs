@@ -1,4 +1,4 @@
-import { getFile, setFile, __dirname } from './script-helpers.mjs';
+import { getFile, setFile, runCommand } from './script-helpers.mjs';
 
 const rootPath = '../package.json';
 const corePath = '../libs/margarita-form/package.json';
@@ -34,3 +34,6 @@ await Promise.all(
     await setFile(dist, contents);
   })
 );
+
+await runCommand('git add .');
+await runCommand('git commit -m "chore: update lib dependencies"');

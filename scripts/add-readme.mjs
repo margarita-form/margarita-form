@@ -1,4 +1,4 @@
-import { getFile, setFile, __dirname } from './script-helpers.mjs';
+import { getFile, setFile } from './script-helpers.mjs';
 
 const rootPath = '../README.md';
 const corePath = '../dist/libs/margarita-form/README.md';
