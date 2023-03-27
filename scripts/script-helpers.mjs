@@ -21,5 +21,5 @@ export const setFile = async (path, content) => {
 
 export const runCommand = async (command) => {
   const [main, ...args] = command.split(' ');
-  await spawn(main, args, { stdio: 'inherit' });
+  await spawn(main, args.replace(/\\s/g, ' '), { stdio: 'inherit' });
 };

@@ -36,4 +36,4 @@ await Promise.all(
 );
 
 await runCommand('git add .');
-await runCommand('git commit -m "chore: update lib dependencies"');
+await runCommand('git commit -m "chore:\\supdate\\slib\\sdependencies"');
