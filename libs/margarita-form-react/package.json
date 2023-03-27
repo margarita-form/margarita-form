@@ -1,22 +1,29 @@
 {
   "name": "@margarita-form/react",
   "version": "0.0.3",
-  "type": "commonjs",
+  "type": "module",
   "license": "MIT",
   "private": false,
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/tremppu/margarita-form",
+  "homepage": "https://github.com/margarita-form/margarita-form",
   "bugs": {
-    "url": "https://github.com/tremppu/margarita-form/issues"
+    "url": "https://github.com/margarita-form/margarita-form/issues"
   },
   "dependencies": {
+    "@margarita-form/core": "^0.0.3",
     "lodash.get": "^4.4.2",
     "nanoid": "^4.0.1",
     "rxjs": "^7.8.0"
   },
   "peerDependencies": {
     "react": ">=18.2.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
   }
 }
