@@ -77,6 +77,14 @@ export class MargaritaFormBase<
     return null;
   }
 
+  public hasControl(identifier: string | number) {
+    console.warn('Trying to use method "hasControl" which is not available!', {
+      identifier,
+      context: this,
+    });
+    return false;
+  }
+
   public addControl(field: MargaritaFormField) {
     console.warn('Trying to use method "addControl" which is not available!', {
       field,
