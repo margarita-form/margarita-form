@@ -6,8 +6,8 @@ Margarita form is heavily inspired by [Angular's Reactive forms](https://angular
 
 ### Packages
 
-[Core](https://www.npmjs.com/package/@margarita-form/core)
-[React](https://www.npmjs.com/package/@margarita-form/react)
+- [Core](https://www.npmjs.com/package/@margarita-form/core)
+- [React](https://www.npmjs.com/package/@margarita-form/react)
 
 ## Get started
 
