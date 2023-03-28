@@ -3,10 +3,14 @@ import type { Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaFormGroup } from './margarita-form-control-group';
 
-export interface MargaritaFormFieldContext<T = unknown, P = any> {
+export interface MargaritaFormFieldContext<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField,
+  P = any
+> {
   value: T;
-  field: MargaritaFormField;
-  control: MargaritaFormControlTypes<T>;
+  field: F;
+  control: MargaritaFormControlTypes<T, F>;
   params: P;
 }
 
@@ -24,12 +28,18 @@ export type MargaritaFormFieldFunctionOutput<
   T = MargaritaFormFieldValidatorResult
 > = T | Promise<T> | Observable<T>;
 
-export type MargaritaFormFieldFunction<T = unknown> = (
-  context: MargaritaFormFieldContext<T>
+export type MargaritaFormFieldFunction<
+  T = unknown,
+  F1 extends MargaritaFormField = MargaritaFormField
+> = <F2 extends MargaritaFormField = F1>(
+  context: MargaritaFormFieldContext<T, F2>
 ) => MargaritaFormFieldFunctionOutput;
 
-export interface MargaritaFormFieldValidators {
-  [key: string]: MargaritaFormFieldFunction;
+export interface MargaritaFormFieldValidators<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField
+> {
+  [key: string]: MargaritaFormFieldFunction<T, F>;
 }
 
 export interface MargaritaFormFieldValidationsState {
@@ -48,13 +58,13 @@ export const arrayGroupings: MargaritaFormGroupings[] = [
 
 export interface MargaritaFormField {
   name: string;
-  fields?: MargaritaFormFields;
+  fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
   template?: MargaritaFormField;
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
-  validators?: MargaritaFormFieldValidators;
+  validators?: MargaritaFormFieldValidators<unknown, MargaritaFormField>;
   control?: MargaritaFormControlTypes;
 }
 
@@ -84,10 +94,8 @@ export interface MargaritaFormState extends MargaritaFormStaticState {
   children?: MargaritaFormStateChildren;
 }
 
-export type MargaritaFormFields = MargaritaFormField[];
-
-export interface MargaritaFormOptions<T> {
-  fields: MargaritaFormFields;
+export interface MargaritaFormOptions<T, F = MargaritaFormField> {
+  fields: F[];
   initialValue?: Record<string, unknown>;
   validators?: MargaritaFormFieldValidators;
   handleSubmit?: {
@@ -96,29 +104,40 @@ export interface MargaritaFormOptions<T> {
   };
 }
 
-export type MargaritaFormObjectControlTypes<T = unknown> =
-  MargaritaFormGroup<T>;
+export type MargaritaFormObjectControlTypes<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField
+> = MargaritaFormGroup<T, F>;
 
-export type MargaritaFormControlTypes<T = unknown> =
-  | MargaritaFormControl<T>
-  | MargaritaFormObjectControlTypes<T>;
+export type MargaritaFormControlTypes<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField
+> = MargaritaFormControl<T, F> | MargaritaFormObjectControlTypes<T, F>;
 
-export type MargaritaFormControlsGroup<T> = Record<
-  string,
-  MargaritaFormControlTypes<T>
->;
+export type MargaritaFormControlsGroup<
+  T,
+  F extends MargaritaFormField = MargaritaFormField
+> = Record<string, MargaritaFormControlTypes<T, F>>;
 
-export type MargaritaForm<T = unknown, C = MargaritaFormGroup<T>> = C & {
+export type MargaritaForm<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField,
+  C = MargaritaFormGroup<T, F>
+> = C & {
   submit: () => void;
 };
 
-export type MargaritaFormControlsArray<T> = MargaritaFormControlTypes<T>[];
+export type MargaritaFormControlsArray<
+  T,
+  F extends MargaritaFormField = MargaritaFormField
+> = MargaritaFormControlTypes<T, F>[];
 
 export type CommonRecord = Record<string | number | symbol, unknown>;
 
 export type MargaritaFormBaseElement<
+  F extends MargaritaFormField = MargaritaFormField,
   T = HTMLElement,
-  C = MargaritaFormControlsArray<unknown>
+  C = MargaritaFormControlsArray<unknown, F>
 > = T & {
   controls?: C;
   value?: unknown;

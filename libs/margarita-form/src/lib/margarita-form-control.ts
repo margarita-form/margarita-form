@@ -16,14 +16,17 @@ import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { MargaritaFormGroup } from './margarita-form-control-group';
 
-export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
+export class MargaritaFormControl<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField
+> extends MargaritaFormBase<F> {
   private _subscriptions: Subscription[];
   private _value = new BehaviorSubject<unknown>(undefined);
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
   constructor(
-    public field: MargaritaFormField,
-    public _parent?: MargaritaFormObjectControlTypes<unknown> | null,
+    public field: F,
+    public _parent?: MargaritaFormObjectControlTypes<unknown, F> | null,
     public _root?: MargaritaForm | null,
     public _validators?: MargaritaFormFieldValidators
   ) {
@@ -48,7 +51,7 @@ export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
     this.refs.forEach((ref) => {
       if (!ref || !ref.controls) return;
       const { controls = [] } = ref;
-      const index = controls.findIndex((control) => control === this);
+      const index = controls.findIndex((control) => control.key === this.key);
       if (index > -1) ref.controls.splice(index, 1);
     });
   }
@@ -57,7 +60,7 @@ export class MargaritaFormControl<T = unknown> extends MargaritaFormBase {
     return this.field.name;
   }
 
-  public get parent(): MargaritaFormControlTypes<unknown> {
+  public get parent(): MargaritaFormControlTypes<unknown, F> {
     if (!this._parent) {
       console.warn('Root of controls reached!', this);
     }

@@ -4,14 +4,17 @@ import { MargaritaFormGroup } from '../../margarita-form-control-group';
 import {
   MargaritaFormBaseElement,
   MargaritaFormControlTypes,
+  MargaritaFormField,
 } from '../../margarita-form-types';
 
-export const setNodeValueOnControlValueChanges = ({
+export const setNodeValueOnControlValueChanges = <
+  F extends MargaritaFormField = MargaritaFormField
+>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement;
-  control: MargaritaFormControlTypes;
+  node: MargaritaFormBaseElement<F>;
+  control: MargaritaFormControlTypes<unknown, F>;
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;
@@ -38,12 +41,14 @@ export const setNodeValueOnControlValueChanges = ({
   });
 };
 
-export const setControlValueOnNodeValueChanges = ({
+export const setControlValueOnNodeValueChanges = <
+  F extends MargaritaFormField = MargaritaFormField
+>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement;
-  control: MargaritaFormControlTypes;
+  node: MargaritaFormBaseElement<F>;
+  control: MargaritaFormControlTypes<unknown, F>;
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;

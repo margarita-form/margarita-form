@@ -1,9 +1,14 @@
 import type {
   MargaritaFormBaseElement,
   MargaritaFormControlTypes,
+  MargaritaFormField,
 } from '../../margarita-form-types';
 
-const defineControlsToNode = (node: MargaritaFormBaseElement) => {
+const defineControlsToNode = <
+  F extends MargaritaFormField = MargaritaFormField
+>(
+  node: MargaritaFormBaseElement<F>
+) => {
   const nodeHasControls = node.controls;
   if (!nodeHasControls) {
     Object.defineProperty(node, 'controls', {
@@ -12,9 +17,11 @@ const defineControlsToNode = (node: MargaritaFormBaseElement) => {
   }
 };
 
-export const connectNodeToControl = (
-  node: MargaritaFormBaseElement,
-  control: MargaritaFormControlTypes
+export const connectNodeToControl = <
+  F extends MargaritaFormField = MargaritaFormField
+>(
+  node: MargaritaFormBaseElement<F>,
+  control: MargaritaFormControlTypes<unknown, F>
 ) => {
   defineControlsToNode(node);
 
@@ -30,12 +37,14 @@ export const connectNodeToControl = (
   return alreadyIncluded;
 };
 
-export const disconnectNodeFromControl = ({
+export const disconnectNodeFromControl = <
+  F extends MargaritaFormField = MargaritaFormField
+>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement;
-  control: MargaritaFormControlTypes;
+  node: MargaritaFormBaseElement<F>;
+  control: MargaritaFormControlTypes<unknown, F>;
 }) => {
   defineControlsToNode(node);
 

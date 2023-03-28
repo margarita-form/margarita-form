@@ -10,10 +10,12 @@ import {
 } from '../margarita-form-types';
 import { nanoid } from 'nanoid';
 
-export class MargaritaFormBase {
+export class MargaritaFormBase<
+  F extends MargaritaFormField = MargaritaFormField
+> {
   public key: string = nanoid(4);
   public syncId: string = nanoid(4);
-  public refs: MargaritaFormBaseElement[] = [];
+  public refs: MargaritaFormBaseElement<F>[] = [];
   private _state!: BehaviorSubject<MargaritaFormState>;
 
   constructor() {
@@ -60,7 +62,7 @@ export class MargaritaFormBase {
 
   // Not implemented getters
 
-  get controls(): MargaritaFormControlsArray<unknown> {
+  get controls(): MargaritaFormControlsArray<unknown, any> {
     console.warn('Trying to access "controls" which is not available!', {
       context: this,
     });

@@ -1,6 +1,5 @@
 import {
   arrayGroupings,
-  CommonRecord,
   MargaritaFormGroupings,
   MargaritaFormBaseElement,
   MargaritaFormControlTypes,
@@ -11,6 +10,7 @@ import {
   MargaritaFormStateErrors,
   MargaritaFormState,
   MargaritaForm,
+  MargaritaFormControlsArray,
 } from './margarita-form-types';
 import { debounceTime, Observable, skip, Subscription } from 'rxjs';
 import {
@@ -26,15 +26,18 @@ import { ControlsController } from './core/margarita-form-create-controls';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 
-export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
-  public controlsController: ControlsController;
+export class MargaritaFormGroup<
+  T = unknown,
+  F extends MargaritaFormField = MargaritaFormField
+> extends MargaritaFormBase<F> {
+  public controlsController: ControlsController<F>;
   private _subscriptions: Subscription[];
   private _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
   constructor(
-    public field: MargaritaFormField,
-    private _parent?: MargaritaFormObjectControlTypes<unknown> | null,
+    public field: F,
+    private _parent?: MargaritaFormObjectControlTypes<unknown, F> | null,
     private _root?: MargaritaForm | null,
     private _validators?: MargaritaFormFieldValidators
   ) {
@@ -65,7 +68,7 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
     this.refs.forEach((ref) => {
       if (!ref || !ref.controls) return;
       const { controls = [] } = ref;
-      const index = controls.findIndex((control) => control === this);
+      const index = controls.findIndex((control) => control.key === this.key);
       if (index > -1) ref.controls.splice(index, 1);
     });
   }
@@ -82,7 +85,7 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
     return this.field.name;
   }
 
-  public get parent(): MargaritaFormObjectControlTypes<unknown> {
+  public get parent(): MargaritaFormObjectControlTypes<unknown, F> {
     if (!this._parent) {
       console.warn('Root of controls reached!', this);
     }
@@ -122,17 +125,17 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
 
   // Controls
 
-  public override get controls() {
+  public override get controls(): MargaritaFormControlsArray<unknown, F> {
     return this.controlsController.controlsArray;
   }
 
-  public override getControl<T = MargaritaFormControlTypes>(
+  public override getControl<T = MargaritaFormControlTypes<unknown, F>>(
     identifier: string | number
   ): T {
     return this.controlsController.getControl(identifier) as T;
   }
 
-  public override addControl(field: MargaritaFormField) {
+  public override addControl(field: F) {
     this.controlsController.addControl(field);
   }
 
@@ -144,16 +147,15 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
     this.controlsController.moveControl(identifier, toIndex);
   }
 
-  public appendRepeatingControls(
-    field?: Partial<MargaritaFormField> | MargaritaFormField[]
-  ) {
+  public appendRepeatingControls(field?: Partial<F> | MargaritaFormField[]) {
     if (!field) {
       const { fields, template } = this.field;
-      if (fields) this.appendRepeatingControls({ fields });
+      if (fields) this.appendRepeatingControls({ fields } as F);
       else if (template) this.controlsController.addTemplatedControl(template);
     } else {
-      if (Array.isArray(field)) this.appendRepeatingControls({ fields: field });
-      else this.controlsController.addTemplatedControl(field);
+      if (Array.isArray(field)) {
+        this.appendRepeatingControls({ fields: field } as F);
+      } else this.controlsController.addTemplatedControl(field);
     }
   }
 
@@ -248,7 +250,10 @@ export class MargaritaFormGroup<T = CommonRecord> extends MargaritaFormBase {
 
   get setRef() {
     return (ref: unknown): void => {
-      return setRef(ref as MargaritaFormBaseElement, this);
+      return setRef(
+        ref as MargaritaFormBaseElement,
+        this as unknown as MargaritaFormControlTypes
+      );
     };
   }
 
