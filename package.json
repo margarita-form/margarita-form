@@ -2,6 +2,15 @@
   "name": "margarita-form",
   "version": "0.0.0",
   "license": "MIT",
+  "description": "Modern form library made with TypeScript",
+  "keywords": [
+    "Form",
+    "Forms",
+    "Form alternative",
+    "Form library",
+    "Reactive form",
+    "React form"
+  ],
   "scripts": {
     "dev": "nx run baking-oven:serve",
     "gen:lib": "./generate-lib.sh",
