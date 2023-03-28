@@ -85,6 +85,16 @@ export class MargaritaFormBase<
     return false;
   }
 
+  public getOrAddControl(field: MargaritaFormField) {
+    console.warn(
+      'Trying to use method "getOrAddControl" which is not available!',
+      {
+        field,
+        context: this,
+      }
+    );
+  }
+
   public addControl(field: MargaritaFormField) {
     console.warn('Trying to use method "addControl" which is not available!', {
       field,
