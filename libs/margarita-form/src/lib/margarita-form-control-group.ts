@@ -141,8 +141,18 @@ export class MargaritaFormGroup<
     return exists;
   }
 
-  public override addControl(field: F) {
-    return this.controlsController.addControl(field);
+  public override getOrAddControl<T = MargaritaFormControlTypes<unknown, F>>(
+    field: F
+  ): T {
+    const control = this.controlsController.getControl(field.name);
+    if (!control) return this.controlsController.addControl(field) as T;
+    return control as T;
+  }
+
+  public override addControl<T = MargaritaFormControlTypes<unknown, F>>(
+    field: F
+  ): T {
+    return this.controlsController.addControl(field) as T;
   }
 
   public override removeControl(identifier: string) {
