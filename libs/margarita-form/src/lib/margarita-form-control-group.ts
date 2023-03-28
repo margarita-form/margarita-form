@@ -136,7 +136,7 @@ export class MargaritaFormGroup<
   }
 
   public override addControl(field: F) {
-    this.controlsController.addControl(field);
+    return this.controlsController.addControl(field);
   }
 
   public override removeControl(identifier: string) {
