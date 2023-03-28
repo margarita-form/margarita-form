@@ -135,6 +135,12 @@ export class MargaritaFormGroup<
     return this.controlsController.getControl(identifier) as T;
   }
 
+  public override hasControl(identifier: string | number): boolean {
+    const control = this.controlsController.getControl(identifier);
+    const exists = Boolean(control);
+    return exists;
+  }
+
   public override addControl(field: F) {
     return this.controlsController.addControl(field);
   }
