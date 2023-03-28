@@ -1,5 +1,6 @@
 import type {
   MargaritaForm,
+  MargaritaFormField,
   MargaritaFormFieldValidators,
   MargaritaFormOptions,
 } from './margarita-form-types';
@@ -11,21 +12,27 @@ const defaultValidators: MargaritaFormFieldValidators = {
   required: requiredValidator(),
 };
 
-const createMargaritaFormFn = <T>(
-  options: MargaritaFormOptions<T>
-): MargaritaForm => {
+const createMargaritaFormFn = <
+  T,
+  F extends MargaritaFormField = MargaritaFormField
+>(
+  options: MargaritaFormOptions<T, unknown>
+): MargaritaForm<T, F> => {
   const {
     fields,
     validators = defaultValidators,
     initialValue,
     handleSubmit,
   } = options;
-  const form = new MargaritaFormGroup<T>(
-    { name: 'root', fields, initialValue },
+
+  const initialField = { name: 'root', fields, initialValue } as F;
+
+  const form = new MargaritaFormGroup<T, F>(
+    initialField,
     null,
     null,
     validators
-  ) as MargaritaForm<T>;
+  ) as MargaritaForm<T, F>;
 
   form.submit = () => {
     if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';

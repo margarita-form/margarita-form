@@ -2,6 +2,7 @@
 import {
   MargaritaFormControlTypes,
   MargaritaFormBaseElement,
+  MargaritaFormField,
 } from '../margarita-form-types';
 import {
   connectNodeToControl,
@@ -18,9 +19,9 @@ import {
   setNodeValueOnControlValueChanges,
 } from './ref-helpers/margarita-form-ref-value-changes';
 
-export const setRef = (
-  node: MargaritaFormBaseElement | null,
-  control: MargaritaFormControlTypes<unknown>
+export const setRef = <F extends MargaritaFormField = MargaritaFormField>(
+  node: MargaritaFormBaseElement<F> | null,
+  control: MargaritaFormControlTypes<unknown, F>
 ): void => {
   if (!node) return;
   const alreadyIncluded = connectNodeToControl(node, control);

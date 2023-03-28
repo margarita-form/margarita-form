@@ -13,22 +13,29 @@ import {
   MargaritaFormObjectControlTypes,
 } from '../margarita-form-types';
 
-export const createControlFromField = (
-  field: MargaritaFormField,
-  parent: MargaritaFormObjectControlTypes,
+export const createControlFromField = <
+  F extends MargaritaFormField = MargaritaFormField
+>(
+  field: F,
+  parent: MargaritaFormObjectControlTypes<unknown, F>,
   root: MargaritaForm,
   validators: MargaritaFormFieldValidators
-): MargaritaFormControlTypes => {
+): MargaritaFormControlTypes<unknown, F> => {
   const { fields, template } = field;
   const isGroup = fields || template;
-  if (isGroup) return new MargaritaFormGroup(field, parent, root, validators);
+  if (isGroup)
+    return new MargaritaFormGroup<unknown, F>(field, parent, root, validators);
   return new MargaritaFormControl(field, parent, root, validators);
 };
 
-export class ControlsController {
-  private controls = new BehaviorSubject<MargaritaFormControlTypes[]>([]);
+export class ControlsController<
+  F extends MargaritaFormField = MargaritaFormField
+> {
+  private controls = new BehaviorSubject<
+    MargaritaFormControlTypes<unknown, F>[]
+  >([]);
 
-  constructor(private _parent: MargaritaFormObjectControlTypes<unknown>) {
+  constructor(private _parent: MargaritaFormObjectControlTypes<unknown, F>) {
     this.init();
   }
 
@@ -41,19 +48,19 @@ export class ControlsController {
         this.addTemplatedControl(_template);
       } else if (grouping === 'array') {
         if (fields) {
-          this.addControls(fields);
+          this.addControls(fields as F[]);
         } else {
           this.addTemplatedControl(template);
         }
       } else {
-        this.addControls(fields);
+        this.addControls(fields as F[]);
       }
     }
   }
   private get _requireUniqueNames() {
     return this._parent.grouping === 'group';
   }
-  get parent(): MargaritaFormObjectControlTypes<unknown> {
+  get parent(): MargaritaFormObjectControlTypes<unknown, F> {
     if (!this._parent) throw 'Invalid parent!';
     return this._parent;
   }
@@ -69,7 +76,7 @@ export class ControlsController {
     return this.controlsArray.length;
   }
   get addControls() {
-    return (fields?: MargaritaFormField[]) => {
+    return (fields?: F[]) => {
       if (!fields) throw 'No fields provided!';
       return fields.map((field) => {
         this.addControl(field);
@@ -82,14 +89,14 @@ export class ControlsController {
       const field = {
         name: nanoid(4),
         ...fieldTemplate,
-      };
+      } as F;
       return this.addControl(field);
     };
   }
   get addControl() {
-    return (field?: MargaritaFormField) => {
+    return (field?: F) => {
       if (!field) throw 'No field provided!';
-      const control = createControlFromField(
+      const control = createControlFromField<F>(
         field,
         this.parent,
         this.root,
@@ -100,7 +107,7 @@ export class ControlsController {
     };
   }
   get appendControl() {
-    return (control: MargaritaFormControlTypes) => {
+    return (control: MargaritaFormControlTypes<unknown, F>) => {
       if (this._requireUniqueNames) this.removeControl(control.name);
       const items = this.controls.getValue();
       items.push(control);
@@ -152,17 +159,17 @@ export class ControlsController {
       this.controls.next(items);
     };
   }
-  get controlChanges(): Observable<MargaritaFormControlTypes<unknown>[]> {
+  get controlChanges(): Observable<MargaritaFormControlTypes<unknown, F>[]> {
     const changes = this.controls.pipe(debounceTime(5));
     return changes;
   }
-  get controlsGroup(): MargaritaFormControlsGroup<unknown> {
+  get controlsGroup(): MargaritaFormControlsGroup<unknown, F> {
     const items = this.controls.getValue();
     const entries = items.map((item) => [item.name, item]);
     const obj = Object.fromEntries(entries);
     return obj;
   }
-  get controlsArray(): MargaritaFormControlsArray<unknown> {
+  get controlsArray(): MargaritaFormControlsArray<unknown, F> {
     const items = this.controls.getValue();
     return items;
   }

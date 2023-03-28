@@ -1,5 +1,6 @@
 import type {
   MargaritaFormControlTypes,
+  MargaritaFormField,
   MargaritaFormFieldFunctionOutput,
   MargaritaFormFieldValidatorResultEntry,
 } from '../margarita-form-types';
@@ -13,7 +14,11 @@ import {
   skip,
 } from 'rxjs';
 
-export const _createValidationsState = (control: MargaritaFormControlTypes) => {
+export const _createValidationsState = <
+  F extends MargaritaFormField = MargaritaFormField
+>(
+  control: MargaritaFormControlTypes<unknown, F>
+) => {
   return control.valueChanges.pipe(
     debounceTime(5),
     skip(control.field.initialValue ? 1 : 0),
@@ -23,7 +28,7 @@ export const _createValidationsState = (control: MargaritaFormControlTypes) => {
       ).reduce((acc, [key, params]) => {
         const validatorFn = control.validators[key];
         if (typeof validatorFn !== 'undefined') {
-          const validatorOutput = validatorFn({
+          const validatorOutput = validatorFn<F>({
             value,
             params,
             field: control.field,
