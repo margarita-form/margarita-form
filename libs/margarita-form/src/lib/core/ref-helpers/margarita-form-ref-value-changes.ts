@@ -73,7 +73,7 @@ export const setControlValueOnNodeValueChanges = <
           }
           return node.checked;
         }
-        if (node.value) return node.value;
+        if (node.value !== undefined) return node.value;
         return undefined;
       };
 

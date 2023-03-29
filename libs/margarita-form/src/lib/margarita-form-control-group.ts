@@ -313,7 +313,9 @@ export class MargaritaFormGroup<
           },
           {} as MargaritaFormStateErrors
         );
-        const valid = currentIsValid && childrenAreValid;
+        const validationResult = currentIsValid && childrenAreValid;
+        const forceValid = this.state.pristine;
+        const valid = forceValid || validationResult;
         const changes = {
           valid,
           errors,
