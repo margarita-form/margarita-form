@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useId, useSyncExternalStore } from 'react';
 import { combineLatest, debounceTime, skip } from 'rxjs';
 import {
