@@ -140,9 +140,11 @@ export class MargaritaFormControl<
     return combineLatest([this._validationsState])
       .pipe(debounceTime(5))
       .subscribe(([validationStates]) => {
-        const valid = Object.values(validationStates).every(
+        const validationResult = Object.values(validationStates).every(
           (state) => state.valid
         );
+        const forceValid = this.state.pristine;
+        const valid = forceValid || validationResult;
 
         const errors = Object.entries(validationStates).reduce(
           (acc, [key, { error }]) => {
