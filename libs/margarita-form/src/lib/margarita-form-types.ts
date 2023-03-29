@@ -160,4 +160,6 @@ export type MargaritaFormBaseElement<
   type?: string;
   name?: string;
   disabled?: boolean;
+  required?: boolean;
+  pattern?: string;
 };
