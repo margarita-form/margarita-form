@@ -16,7 +16,7 @@ const createMargaritaFormFn = <
   T,
   F extends MargaritaFormField = MargaritaFormField
 >(
-  options: MargaritaFormOptions<T, unknown>
+  options: MargaritaFormOptions<T, F>
 ): MargaritaForm<T, F> => {
   const {
     fields,
@@ -25,7 +25,7 @@ const createMargaritaFormFn = <
     handleSubmit,
   } = options;
 
-  const initialField = { name: 'root', fields, initialValue } as F;
+  const initialField = { name: 'root', fields, initialValue } as unknown as F;
 
   const form = new MargaritaFormGroup<T, F>(
     initialField,
@@ -36,8 +36,8 @@ const createMargaritaFormFn = <
 
   form.submit = () => {
     if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
-    if (form.state.valid) return handleSubmit.valid(form.value);
-    if (handleSubmit?.invalid) return handleSubmit.invalid(form.value);
+    if (form.state.valid) return handleSubmit.valid(form);
+    if (handleSubmit?.invalid) return handleSubmit.invalid(form);
   };
 
   return form;
