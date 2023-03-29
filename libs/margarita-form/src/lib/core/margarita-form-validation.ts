@@ -1,6 +1,7 @@
 import type {
   MargaritaFormControlTypes,
   MargaritaFormField,
+  MargaritaFormFieldFunction,
   MargaritaFormFieldFunctionOutput,
   MargaritaFormFieldValidatorResultEntry,
 } from '../margarita-form-types';
@@ -25,9 +26,11 @@ export const _createValidationsState = <
     switchMap((value) => {
       const activeValidatorEntries = Object.entries(
         control.field.validation || {}
-      ).reduce((acc, [key, params]) => {
-        const validatorFn = control.validators[key];
-        if (typeof validatorFn !== 'undefined') {
+      ).reduce((acc, [key, validationValue]) => {
+        const validateFunction = (
+          validatorFn: MargaritaFormFieldFunction,
+          params: unknown
+        ) => {
           const validatorOutput = validatorFn<F>({
             value,
             params,
@@ -61,6 +64,12 @@ export const _createValidationsState = <
             }) as Promise<MargaritaFormFieldValidatorResultEntry>;
             acc.push([key, promise]);
           }
+        };
+        const validatorFn = control.validators[key];
+        if (typeof validationValue === 'function') {
+          validateFunction(validationValue as MargaritaFormFieldFunction, null);
+        } else if (typeof validatorFn !== 'undefined') {
+          validateFunction(validatorFn, validationValue);
         }
         return acc;
       }, [] as [string, MargaritaFormFieldFunctionOutput<MargaritaFormFieldValidatorResultEntry>][]);

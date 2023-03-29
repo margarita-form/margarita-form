@@ -145,6 +145,7 @@ export class MargaritaFormControl<
         );
         const forceValid = this.state.pristine;
         const valid = forceValid || validationResult;
+        const invalid = !valid;
 
         const errors = Object.entries(validationStates).reduce(
           (acc, [key, { error }]) => {
@@ -156,6 +157,7 @@ export class MargaritaFormControl<
 
         const changes = {
           valid,
+          invalid,
           errors,
         };
         this.updateState(changes);

@@ -316,8 +316,10 @@ export class MargaritaFormGroup<
         const validationResult = currentIsValid && childrenAreValid;
         const forceValid = this.state.pristine;
         const valid = forceValid || validationResult;
+        const invalid = !valid;
         const changes = {
           valid,
+          invalid,
           errors,
           children,
         };
