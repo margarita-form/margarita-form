@@ -18,6 +18,7 @@ import {
   setControlValueOnNodeValueChanges,
   setNodeValueOnControlValueChanges,
 } from './ref-helpers/margarita-form-ref-value-changes';
+import { setControlValidationFromNode } from './ref-helpers/margarita-form-ref-set-control-validation';
 
 export const setRef = <F extends MargaritaFormField = MargaritaFormField>(
   node: MargaritaFormBaseElement<F> | null,
@@ -27,6 +28,8 @@ export const setRef = <F extends MargaritaFormField = MargaritaFormField>(
   const alreadyIncluded = connectNodeToControl(node, control);
   if (!alreadyIncluded) {
     const params = { node, control };
+
+    setControlValidationFromNode(params);
 
     const handleControlValueChange = setNodeValueOnControlValueChanges(params);
     const handleNodeValueChange = setControlValueOnNodeValueChanges(params);

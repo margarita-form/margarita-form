@@ -11,7 +11,7 @@ export const numberValidator: (
     if (!params) return { valid: true };
     const regex = new RegExp(/\d+/g);
     const stringValue = typeof value === 'string' ? value : String(value);
-    const valueIsInvalid = regex.test(stringValue);
+    const valueIsInvalid = !regex.test(stringValue);
     const error = valueIsInvalid ? errorMessage : null;
     return { valid: !valueIsInvalid, error };
   };

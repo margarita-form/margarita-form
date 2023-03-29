@@ -6,6 +6,8 @@ import type {
 } from './margarita-form-types';
 import {
   colorValidator,
+  dateValidator,
+  emailValidator,
   maxValidator,
   minValidator,
   numberValidator,
@@ -22,13 +24,14 @@ import { MargaritaFormGroup } from './margarita-form-control-group';
 
 const defaultValidators: MargaritaFormFieldValidators = {
   color: colorValidator(),
-  date: requiredValidator(),
-  email: requiredValidator(),
+  date: dateValidator(),
+  email: emailValidator(),
   min: minValidator(),
   max: maxValidator(),
   required: requiredValidator(),
   number: numberValidator(),
   pattern: patternValidator(),
+  tel: phoneValidator(),
   phone: phoneValidator(),
   sameAs: sameAsValidator(),
   slug: slugValidator(),

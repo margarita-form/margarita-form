@@ -12,7 +12,7 @@ export const patternValidator: (
     const regex = new RegExp(params);
     const stringValue =
       typeof value === 'string' ? value : JSON.stringify(value);
-    const valueIsInvalid = regex.test(stringValue);
+    const valueIsInvalid = !regex.test(stringValue);
     const error = valueIsInvalid ? errorMessage : null;
     return { valid: !valueIsInvalid, error };
   };

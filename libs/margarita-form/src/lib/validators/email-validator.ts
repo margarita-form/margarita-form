@@ -11,7 +11,9 @@ export const emailValidator: (
     if (!params) return { valid: true };
     const regex = new RegExp(/.+@.+\..+/g);
     const stringValue = typeof value === 'string' ? value : String(value);
-    const valueIsInvalid = regex.test(stringValue);
+    const valueIsInvalid = !regex.test(stringValue);
+    console.log({ valueIsInvalid, regex, stringValue });
+
     const error = valueIsInvalid ? errorMessage : null;
     return { valid: !valueIsInvalid, error };
   };

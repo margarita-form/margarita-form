@@ -13,7 +13,7 @@ export const colorValidator: (
       /#[0-9a-zA-Z]{3,8}|(rgba?|hsla?)\([^,]{1,4},[^,]{1,4},[^,]{1,4}(,[^,]{1,3})?\)/gi
     );
     const stringValue = typeof value === 'string' ? value : String(value);
-    const valueIsInvalid = regex.test(stringValue);
+    const valueIsInvalid = !regex.test(stringValue);
     const error = valueIsInvalid ? errorMessage : null;
     return { valid: !valueIsInvalid, error };
   };
