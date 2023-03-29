@@ -102,8 +102,8 @@ export interface MargaritaFormOptions<
   initialValue?: Record<string, unknown>;
   validators?: MargaritaFormFieldValidators;
   handleSubmit?: {
-    valid: (form: MargaritaForm<T, F>) => void | Promise<void>;
-    invalid?: (form: MargaritaForm<T, F>) => void | Promise<void>;
+    valid: (form: MargaritaForm<T, F>) => unknown | Promise<unknown>;
+    invalid?: (form: MargaritaForm<T, F>) => unknown | Promise<unknown>;
   };
 }
 
