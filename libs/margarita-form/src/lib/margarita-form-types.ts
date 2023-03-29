@@ -61,7 +61,7 @@ export interface MargaritaFormField {
   fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
-  template?: MargaritaFormField;
+  template?: Partial<MargaritaFormField>;
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators<unknown, MargaritaFormField>;
@@ -94,13 +94,16 @@ export interface MargaritaFormState extends MargaritaFormStaticState {
   children?: MargaritaFormStateChildren;
 }
 
-export interface MargaritaFormOptions<T, F = MargaritaFormField> {
+export interface MargaritaFormOptions<
+  T,
+  F extends MargaritaFormField = MargaritaFormField
+> {
   fields: F[];
   initialValue?: Record<string, unknown>;
   validators?: MargaritaFormFieldValidators;
   handleSubmit?: {
-    valid: (value: T) => void | Promise<void>;
-    invalid?: (value: T) => void | Promise<void>;
+    valid: (form: MargaritaForm<T, F>) => void | Promise<void>;
+    invalid?: (form: MargaritaForm<T, F>) => void | Promise<void>;
   };
 }
 
