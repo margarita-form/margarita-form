@@ -30,9 +30,10 @@ export type MargaritaFormFieldFunctionOutput<
 
 export type MargaritaFormFieldFunction<
   T = unknown,
-  F1 extends MargaritaFormField = MargaritaFormField
+  F1 extends MargaritaFormField = MargaritaFormField,
+  P = unknown
 > = <F2 extends MargaritaFormField = F1>(
-  context: MargaritaFormFieldContext<T, F2>
+  context: MargaritaFormFieldContext<T, F2, P>
 ) => MargaritaFormFieldFunctionOutput;
 
 export interface MargaritaFormFieldValidators<
