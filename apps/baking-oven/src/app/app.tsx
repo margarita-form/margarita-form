@@ -64,7 +64,6 @@ const fields: MargaritaFormField[] = [
     grouping: 'repeat-group',
     startWith: 2,
     template: {
-      name: 'test',
       fields: [
         {
           name: 'title',
@@ -83,16 +82,22 @@ const fields: MargaritaFormField[] = [
   },
 ];
 
+interface FormValue {
+  title: string;
+  description: string;
+  steps: { title: string; description: string }[];
+}
+
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const form = useMargaritaForm({
+  const form = useMargaritaForm<FormValue>({
     fields,
     handleSubmit: {
-      valid: (value) => {
+      valid: ({ value }) => {
         console.log('Valid submit', { value });
         setSubmitResponse('Form is valid!');
       },
-      invalid: (value) => {
+      invalid: ({ value }) => {
         console.log('Invalid submit', { value });
         setSubmitResponse('Form is invalid!');
       },
