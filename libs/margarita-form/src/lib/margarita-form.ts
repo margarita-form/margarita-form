@@ -34,10 +34,22 @@ const createMargaritaFormFn = <
     validators
   ) as MargaritaForm<T, F>;
 
-  form.submit = () => {
+  form.submit = async () => {
     if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
-    if (form.state.valid) return handleSubmit.valid(form);
-    if (handleSubmit?.invalid) return handleSubmit.invalid(form);
+    form.updateStateValue('submitting', true);
+
+    if (form.state.valid) {
+      return await Promise.resolve(handleSubmit.valid(form))
+        .then(() => form.updateStateValue('submitted', true))
+        .catch(() => form.updateStateValue('submitted', false))
+        .finally(() => form.updateStateValue('submitting', false));
+    }
+    if (handleSubmit?.invalid) {
+      return await Promise.resolve(handleSubmit.invalid(form))
+        .then(() => form.updateStateValue('submitted', false))
+        .catch(() => form.updateStateValue('submitted', false))
+        .finally(() => form.updateStateValue('submitting', false));
+    }
   };
 
   return form;

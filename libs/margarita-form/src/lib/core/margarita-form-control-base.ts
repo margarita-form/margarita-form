@@ -5,6 +5,7 @@ import {
   MargaritaFormBaseElement,
   MargaritaFormControlsArray,
   MargaritaFormField,
+  MargaritaFormRootStateKeys,
   MargaritaFormState,
   MargaritaFormStaticStateKeys,
 } from '../margarita-form-types';
@@ -48,7 +49,10 @@ export class MargaritaFormBase<
     this._state.next(currentState);
   }
 
-  public updateStateValue(key: MargaritaFormStaticStateKeys, value: boolean) {
+  public updateStateValue(
+    key: MargaritaFormStaticStateKeys | MargaritaFormRootStateKeys,
+    value: boolean
+  ) {
     const currentState = this.state;
     Object.assign(currentState, { [key]: value });
     this._state.next(currentState);
