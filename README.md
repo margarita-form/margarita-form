@@ -35,7 +35,7 @@ interface MyFormValue {
 const form = useMargaritaForm<MyFormValue>({
   fields: [{ name: 'myControl', validation: { required: true } }],
   handleSubmit: {
-    valid: (formValue) => {
+    valid: (formContext) => {
       /* Handle valid submission */
     },
   },
@@ -70,7 +70,7 @@ export function App() {
   const form = useMargaritaForm<MyFormValue>({
     fields: [{ name: 'myControl', validation: { required: true } }],
     handleSubmit: {
-      valid: (formValue) => {
+      valid: (formContext) => {
         /* Handle valid submission */
       },
     },
@@ -115,7 +115,7 @@ interface MyFormValue {
 const form = createMargaritaForm<MyFormValue>({
   fields: [{ name: 'myControl', validation: { required: true } }],
   handleSubmit: {
-    valid: (formValue) => {
+    valid: (formContext) => {
       /* Handle valid submission */
     },
   },
