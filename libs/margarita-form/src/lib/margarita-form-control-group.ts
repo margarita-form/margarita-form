@@ -25,6 +25,7 @@ import { _createValidationsState } from './core/margarita-form-validation';
 import { ControlsController } from './core/margarita-form-create-controls';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
+import { valueExists } from './helpers/chack-value';
 
 export class MargaritaFormGroup<
   T = unknown,
@@ -306,6 +307,12 @@ export class MargaritaFormGroup<
         const currentIsValid = Object.values(validationStates).every(
           (state) => state.valid
         );
+
+        const validationResult = currentIsValid && childrenAreValid;
+        const forceValid = this.state.pristine;
+        const valid = forceValid || validationResult;
+        const invalid = !valid;
+
         const errors = Object.entries(validationStates).reduce(
           (acc, [key, { error }]) => {
             if (error) acc[key] = error;
@@ -313,15 +320,14 @@ export class MargaritaFormGroup<
           },
           {} as MargaritaFormStateErrors
         );
-        const validationResult = currentIsValid && childrenAreValid;
-        const forceValid = this.state.pristine;
-        const valid = forceValid || validationResult;
-        const invalid = !valid;
+
+        const hasValue = valueExists(this.value);
         const changes = {
           valid,
           invalid,
           errors,
           children,
+          hasValue,
         };
         this.updateState(changes);
       });
