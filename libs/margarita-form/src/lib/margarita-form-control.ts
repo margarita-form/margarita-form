@@ -15,6 +15,7 @@ import { _createValidationsState } from './core/margarita-form-validation';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { MargaritaFormGroup } from './margarita-form-control-group';
+import { valueExists } from './helpers/chack-value';
 
 export class MargaritaFormControl<
   T = unknown,
@@ -155,10 +156,12 @@ export class MargaritaFormControl<
           {} as MargaritaFormStateErrors
         );
 
+        const hasValue = valueExists(this.value);
         const changes = {
           valid,
           invalid,
           errors,
+          hasValue,
         };
         this.updateState(changes);
       });

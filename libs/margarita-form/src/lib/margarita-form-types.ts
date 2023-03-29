@@ -31,7 +31,7 @@ export type MargaritaFormFieldFunctionOutput<
 export type MargaritaFormFieldFunction<
   T = unknown,
   F1 extends MargaritaFormField = MargaritaFormField,
-  P = unknown
+  P = any
 > = <F2 extends MargaritaFormField = F1>(
   context: MargaritaFormFieldContext<T, F2, P>
 ) => MargaritaFormFieldFunctionOutput;
@@ -88,7 +88,16 @@ export type MargaritaFormStaticState = Record<
   boolean
 >;
 
-export interface MargaritaFormState extends MargaritaFormStaticState {
+export type MargaritaFormRootStateKeys = 'submitting' | 'submitted';
+
+export type MargaritaFormRootState = Record<
+  MargaritaFormRootStateKeys,
+  boolean
+>;
+
+export interface MargaritaFormState
+  extends MargaritaFormStaticState,
+    Partial<MargaritaFormRootState> {
   valid: boolean;
   errors: MargaritaFormStateErrors;
   control: MargaritaFormControlTypes | null;
