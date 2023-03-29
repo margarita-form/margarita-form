@@ -4,12 +4,36 @@ import type {
   MargaritaFormFieldValidators,
   MargaritaFormOptions,
 } from './margarita-form-types';
-import { requiredValidator } from './validators';
+import {
+  colorValidator,
+  maxValidator,
+  minValidator,
+  numberValidator,
+  patternValidator,
+  phoneValidator,
+  requiredValidator,
+  sameAsValidator,
+  slugValidator,
+  uniqueValidator,
+  urlValidator,
+} from './validators';
 import { MargaritaFormControl } from './margarita-form-control';
 import { MargaritaFormGroup } from './margarita-form-control-group';
 
 const defaultValidators: MargaritaFormFieldValidators = {
+  color: colorValidator(),
+  date: requiredValidator(),
+  email: requiredValidator(),
+  min: minValidator(),
+  max: maxValidator(),
   required: requiredValidator(),
+  number: numberValidator(),
+  pattern: patternValidator(),
+  phone: phoneValidator(),
+  sameAs: sameAsValidator(),
+  slug: slugValidator(),
+  unique: uniqueValidator(),
+  url: urlValidator(),
 };
 
 const createMargaritaFormFn = <
