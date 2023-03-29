@@ -1,10 +1,14 @@
-import { MargaritaFormFieldFunction } from '../margarita-form-types';
+import {
+  MargaritaFormField,
+  MargaritaFormFieldFunction,
+} from '../margarita-form-types';
 
 export const requiredValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction =
+) => MargaritaFormFieldFunction<unknown, MargaritaFormField, boolean> =
   (errorMessage = 'This field is required!') =>
-  ({ value }) => {
+  ({ value, params }) => {
+    if (!params) return { valid: true };
     const invalidValues: unknown[] = [null, undefined, NaN, ''];
     let valueIsInvalid = invalidValues.includes(value);
     if (!valueIsInvalid && value) {
