@@ -71,7 +71,7 @@ export class MargaritaFormValueControl<
     return this._value.getValue() as T;
   }
 
-  public setValue(value: unknown, setAsDirty = true) {
+  public override setValue(value: unknown, setAsDirty = true) {
     this._value.next(value);
     if (setAsDirty) this.updateStateValue('dirty', true);
   }

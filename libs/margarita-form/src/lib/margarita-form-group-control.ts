@@ -180,7 +180,7 @@ export class MargaritaFormGroupControl<
     );
   }
 
-  public setValue(values: unknown, setAsDirty = true) {
+  public override setValue(values: unknown, setAsDirty = true) {
     try {
       if (setAsDirty) this.updateStateValue('dirty', true);
       const { controlsArray, controlsGroup } = this.controlsController;
