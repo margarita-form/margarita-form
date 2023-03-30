@@ -128,10 +128,18 @@ export interface MargaritaFormState
   children?: MargaritaFormStateChildren;
 }
 
+interface MargaritaFormFunctionalityOptions {
+  detectInputElementValidations?: boolean;
+  asyncFunctionWarningTimeout?: number;
+  disableFormWhileSubmitting?: boolean;
+  handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
+}
+
 export interface MargaritaFormOptions<
   T,
   F extends MargaritaFormField = MargaritaFormField
-> {
+> extends MargaritaFormFunctionalityOptions {
+  // Common options
   fields: F[];
   initialValue?: Record<string, unknown>;
   validators?: MargaritaFormFieldValidators;
@@ -155,9 +163,10 @@ export type MargaritaForm<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField,
   C = MargaritaFormGroupControl<T, F>
-> = C & {
-  submit: () => void;
-};
+> = C &
+  MargaritaFormFunctionalityOptions & {
+    submit: () => void;
+  };
 
 export type MargaritaFormControlsArray<
   T,

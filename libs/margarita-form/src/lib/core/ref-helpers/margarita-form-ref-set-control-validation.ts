@@ -14,6 +14,7 @@ export const setControlValidationFromNode = <
   node: MargaritaFormBaseElement<F>;
   control: MargaritaFormControl<unknown, F>;
 }) => {
+  if (!control.root.detectInputElementValidations) return;
   if (!control.field.validation) control.field.validation = {};
 
   const validation = control.field.validation as MargaritaFormFieldValidation;

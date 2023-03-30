@@ -50,6 +50,10 @@ const createMargaritaFormFn = <
     validators = defaultValidators,
     initialValue,
     handleSubmit,
+    detectInputElementValidations = true,
+    asyncFunctionWarningTimeout = 2000,
+    disableFormWhileSubmitting = true,
+    handleSuccesfullSubmit = 'disable',
   } = options;
 
   const initialField = { name: 'root', fields, initialValue } as unknown as F;
@@ -61,21 +65,45 @@ const createMargaritaFormFn = <
     validators
   ) as MargaritaForm<T, F>;
 
+  Object.assign(form, {
+    detectInputElementValidations,
+    asyncFunctionWarningTimeout,
+    disableFormWhileSubmitting,
+    handleSuccesfullSubmit,
+  });
+
   form.submit = async () => {
     if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
     form.updateStateValue('submitting', true);
+    if (disableFormWhileSubmitting) form.updateStateValue('disabled', true);
 
     if (form.state.valid) {
       return await Promise.resolve(handleSubmit.valid(form))
-        .then(() => form.updateStateValue('submitted', true))
+        .then(() => {
+          switch (handleSuccesfullSubmit) {
+            case 'disable':
+              form.updateStateValue('disabled', true);
+              break;
+            case 'reset':
+              form.reset();
+              break;
+            default:
+              form.updateStateValue('disabled', false);
+              break;
+          }
+          form.updateStateValue('submitted', true);
+        })
         .catch(() => form.updateStateValue('submitted', false))
         .finally(() => form.updateStateValue('submitting', false));
     }
     if (handleSubmit?.invalid) {
-      return await Promise.resolve(handleSubmit.invalid(form))
-        .then(() => form.updateStateValue('submitted', false))
-        .catch(() => form.updateStateValue('submitted', false))
-        .finally(() => form.updateStateValue('submitting', false));
+      return await Promise.resolve(handleSubmit.invalid(form)).finally(() =>
+        form.updateState({
+          submitted: false,
+          submitting: false,
+          disabled: false,
+        })
+      );
     }
   };
 
