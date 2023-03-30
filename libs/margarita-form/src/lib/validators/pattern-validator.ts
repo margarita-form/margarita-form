@@ -1,11 +1,17 @@
 import {
   MargaritaFormField,
   MargaritaFormFieldFunction,
+  MargaritaFormFieldValidatorResult,
 } from '../margarita-form-types';
 
 export const patternValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction<unknown, MargaritaFormField, string | RegExp> =
+) => MargaritaFormFieldFunction<
+  unknown,
+  MargaritaFormFieldValidatorResult,
+  MargaritaFormField,
+  string | RegExp
+> =
   (errorMessage = 'Value does not match required pattern!') =>
   ({ value, params }) => {
     if (!params) return { valid: true };

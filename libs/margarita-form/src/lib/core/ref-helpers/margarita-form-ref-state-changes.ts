@@ -52,3 +52,22 @@ export const handleControlDisable = <
       node.disabled = disabled;
     });
 };
+
+export const handleControlReadonly = <
+  F extends MargaritaFormField = MargaritaFormField
+>({
+  node,
+  control,
+}: {
+  node: MargaritaFormBaseElement<F>;
+  control: MargaritaFormControl<unknown, F>;
+}) => {
+  return control.stateChanges
+    .pipe(
+      map((state) => state.readOnly),
+      distinctUntilChanged()
+    )
+    .subscribe((readOnly) => {
+      node.readOnly = readOnly;
+    });
+};

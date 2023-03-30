@@ -11,6 +11,7 @@ import {
 import { handleFormElementSubmit } from './ref-helpers/margarita-form-ref-form-submit';
 import {
   handleControlDisable,
+  handleControlReadonly,
   handleElementBlur,
   handleElementFocus,
 } from './ref-helpers/margarita-form-ref-state-changes';
@@ -35,6 +36,7 @@ export const setRef = <F extends MargaritaFormField = MargaritaFormField>(
     const handleNodeValueChange = setControlValueOnNodeValueChanges(params);
 
     const handleDisable = handleControlDisable(params);
+    const handleReadOnly = handleControlReadonly(params);
     const handleBlur = handleElementBlur(params);
     const handleFocus = handleElementFocus(params);
     const handleSubmit = handleFormElementSubmit(params);
@@ -47,6 +49,7 @@ export const setRef = <F extends MargaritaFormField = MargaritaFormField>(
             handleControlValueChange?.unsubscribe();
             handleNodeValueChange?.unsubscribe();
             handleDisable?.unsubscribe();
+            handleReadOnly?.unsubscribe();
             handleBlur?.unsubscribe();
             handleFocus?.unsubscribe();
             handleSubmit?.unsubscribe();

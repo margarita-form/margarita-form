@@ -1,11 +1,17 @@
 import {
   MargaritaFormField,
   MargaritaFormFieldFunction,
+  MargaritaFormFieldValidatorResult,
 } from '../margarita-form-types';
 
 export const minValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction<unknown, MargaritaFormField, number> =
+) => MargaritaFormFieldFunction<
+  unknown,
+  MargaritaFormFieldValidatorResult,
+  MargaritaFormField,
+  number
+> =
   (errorMessage = 'Value is too low!') =>
   ({ value, params: minValue }) => {
     if (!minValue) return { valid: true };
@@ -23,7 +29,12 @@ export const minValidator: (
 
 export const maxValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction<unknown, MargaritaFormField, number> =
+) => MargaritaFormFieldFunction<
+  unknown,
+  MargaritaFormFieldValidatorResult,
+  MargaritaFormField,
+  number
+> =
   (errorMessage = 'Value is too high!') =>
   ({ value, params: minValue }) => {
     if (!minValue) return { valid: true };

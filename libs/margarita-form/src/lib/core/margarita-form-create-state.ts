@@ -1,7 +1,19 @@
+import { debounceTime, switchMap } from 'rxjs';
+import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
 import type {
   MargaritaFormControl,
+  MargaritaFormField,
+  MargaritaFormFieldContext,
+  MargaritaFormFieldFunctionOutput,
+  MargaritaFormFieldStateKeys,
   MargaritaFormState,
 } from '../margarita-form-types';
+
+const fieldStateKeys: MargaritaFormFieldStateKeys[] = [
+  'active',
+  'disabled',
+  'readOnly',
+];
 
 const defaultState: MargaritaFormState = {
   // Context
@@ -9,12 +21,15 @@ const defaultState: MargaritaFormState = {
   // Dynamic state
   valid: true,
   errors: {},
-  // Static state
+  // Automatic state
   focus: false,
   pristine: true,
   untouched: true,
+  // User defined state
   enabled: true,
   editable: true,
+  active: true,
+  // Getters and setters
   get dirty() {
     return !this.pristine;
   },
@@ -33,11 +48,17 @@ const defaultState: MargaritaFormState = {
   set disabled(val: boolean) {
     this.enabled = !val;
   },
-  get readonly() {
+  get readOnly() {
     return !this.editable;
   },
-  set readonly(val: boolean) {
+  set readOnly(val: boolean) {
     this.editable = !val;
+  },
+  get inactive() {
+    return !this.editable;
+  },
+  set inactive(val: boolean) {
+    this.active = !val;
   },
 };
 
@@ -50,5 +71,41 @@ export const getDefaultState = (
     state.submitted = false;
     state.submitting = false;
   }
+  fieldStateKeys.forEach((key) => {
+    const value = control.field[key];
+    if (typeof value === 'boolean') state[key] = value;
+  });
   return state;
+};
+
+export const _createUserDefinedState = <
+  F extends MargaritaFormField = MargaritaFormField
+>(
+  control: MargaritaFormControl<unknown, F>
+) => {
+  const { field } = control;
+  return control.valueChanges.pipe(
+    debounceTime(5),
+    switchMap((value) => {
+      const context = {
+        control,
+        value,
+        field,
+        params: null,
+      } as unknown as MargaritaFormFieldContext<boolean>;
+
+      const entries = fieldStateKeys.reduce((acc, key) => {
+        const state = field[key];
+        if (typeof state !== 'undefined') {
+          if (typeof state === 'function') {
+            const result = state(context);
+            acc.push([key, result]);
+          }
+        }
+        return acc;
+      }, [] as [MargaritaFormFieldStateKeys, MargaritaFormFieldFunctionOutput<boolean>][]);
+
+      return resolveFunctionOutputs('State', context, entries);
+    })
+  );
 };
