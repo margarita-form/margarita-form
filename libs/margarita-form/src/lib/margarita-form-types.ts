@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Observable } from 'rxjs';
-import type { MargaritaFormControl } from './margarita-form-control';
-import type { MargaritaFormGroup } from './margarita-form-control-group';
+import type { MargaritaFormValueControl } from './margarita-form-value-control';
+import type { MargaritaFormGroupControl } from './margarita-form-group-control';
 
 export interface MargaritaFormFieldContext<
   T = unknown,
@@ -10,7 +10,7 @@ export interface MargaritaFormFieldContext<
 > {
   value: T;
   field: F;
-  control: MargaritaFormControlTypes<T, F>;
+  control: MargaritaFormControl<T, F>;
   params: P;
 }
 
@@ -66,7 +66,7 @@ export interface MargaritaFormField {
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators<unknown, MargaritaFormField>;
-  control?: MargaritaFormControlTypes;
+  control?: MargaritaFormControl;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
@@ -100,7 +100,7 @@ export interface MargaritaFormState
     Partial<MargaritaFormRootState> {
   valid: boolean;
   errors: MargaritaFormStateErrors;
-  control: MargaritaFormControlTypes | null;
+  control: MargaritaFormControl | null;
   children?: MargaritaFormStateChildren;
 }
 
@@ -117,25 +117,20 @@ export interface MargaritaFormOptions<
   };
 }
 
-export type MargaritaFormObjectControlTypes<
+export type MargaritaFormControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
-> = MargaritaFormGroup<T, F>;
-
-export type MargaritaFormControlTypes<
-  T = unknown,
-  F extends MargaritaFormField = MargaritaFormField
-> = MargaritaFormControl<T, F> | MargaritaFormObjectControlTypes<T, F>;
+> = MargaritaFormValueControl<T, F> | MargaritaFormGroupControl<T, F>;
 
 export type MargaritaFormControlsGroup<
   T,
   F extends MargaritaFormField = MargaritaFormField
-> = Record<string, MargaritaFormControlTypes<T, F>>;
+> = Record<string, MargaritaFormControl<T, F>>;
 
 export type MargaritaForm<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField,
-  C = MargaritaFormGroup<T, F>
+  C = MargaritaFormGroupControl<T, F>
 > = C & {
   submit: () => void;
 };
@@ -143,7 +138,7 @@ export type MargaritaForm<
 export type MargaritaFormControlsArray<
   T,
   F extends MargaritaFormField = MargaritaFormField
-> = MargaritaFormControlTypes<T, F>[];
+> = MargaritaFormControl<T, F>[];
 
 export type CommonRecord = Record<string | number | symbol, unknown>;
 
@@ -163,3 +158,12 @@ export type MargaritaFormBaseElement<
   required?: boolean;
   pattern?: string;
 };
+
+// Shorthands
+
+export type MF = MargaritaForm;
+export type MFF = MargaritaFormField;
+export type MFC = MargaritaFormControl;
+export type MFVC = MargaritaFormValueControl;
+export type MFGC = MargaritaFormGroupControl;
+export type MFBE = MargaritaFormBaseElement;

@@ -1,6 +1,6 @@
 import {
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldValidation,
 } from '../../margarita-form-types';
@@ -12,7 +12,7 @@ export const setControlValidationFromNode = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   if (!control.field.validation) control.field.validation = {};
 

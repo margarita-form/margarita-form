@@ -1,7 +1,7 @@
 import { distinctUntilChanged, fromEvent, map } from 'rxjs';
 import type {
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
 } from '../../margarita-form-types';
 
@@ -12,7 +12,7 @@ export const handleElementBlur = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   return fromEvent<InputEvent>(node, 'blur').subscribe(() => {
     control.updateStateValue('touched', true);
@@ -27,7 +27,7 @@ export const handleElementFocus = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   return fromEvent<InputEvent>(node, 'focus').subscribe(() => {
     control.updateStateValue('focus', true);
@@ -41,7 +41,7 @@ export const handleControlDisable = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   return control.stateChanges
     .pipe(

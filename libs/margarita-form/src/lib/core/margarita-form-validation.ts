@@ -1,5 +1,5 @@
 import type {
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldFunction,
   MargaritaFormFieldFunctionOutput,
@@ -18,7 +18,7 @@ import {
 export const _createValidationsState = <
   F extends MargaritaFormField = MargaritaFormField
 >(
-  control: MargaritaFormControlTypes<unknown, F>
+  control: MargaritaFormControl<unknown, F>
 ) => {
   return control.valueChanges.pipe(
     debounceTime(5),

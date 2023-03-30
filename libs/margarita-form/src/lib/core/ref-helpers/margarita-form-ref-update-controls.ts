@@ -1,6 +1,6 @@
 import type {
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
 } from '../../margarita-form-types';
 
@@ -21,7 +21,7 @@ export const connectNodeToControl = <
   F extends MargaritaFormField = MargaritaFormField
 >(
   node: MargaritaFormBaseElement<F>,
-  control: MargaritaFormControlTypes<unknown, F>
+  control: MargaritaFormControl<unknown, F>
 ) => {
   defineControlsToNode(node);
 
@@ -44,7 +44,7 @@ export const disconnectNodeFromControl = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   defineControlsToNode(node);
 

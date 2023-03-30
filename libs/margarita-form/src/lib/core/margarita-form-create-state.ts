@@ -1,5 +1,5 @@
 import type {
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormState,
 } from '../margarita-form-types';
 
@@ -42,7 +42,7 @@ const defaultState: MargaritaFormState = {
 };
 
 export const getDefaultState = (
-  control: MargaritaFormControlTypes
+  control: MargaritaFormControl
 ): MargaritaFormState => {
   const state = { control } as MargaritaFormState;
   Object.setPrototypeOf(state, defaultState);
