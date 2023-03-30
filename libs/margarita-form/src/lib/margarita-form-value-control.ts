@@ -27,7 +27,7 @@ export class MargaritaFormValueControl<
     public override _validators?: MargaritaFormFieldValidators
   ) {
     super(field, _parent, _root, _validators);
-    if (field.initialValue) this.setValue(field.initialValue);
+    if (field.initialValue) this.setValue(field.initialValue, false);
     const stateSubscription = this._setState();
     this._subscriptions.push(stateSubscription);
     this._init();
@@ -71,15 +71,16 @@ export class MargaritaFormValueControl<
     return this._value.getValue() as T;
   }
 
-  public setValue(value: unknown) {
+  public setValue(value: unknown, setAsDirty = true) {
     this._value.next(value);
+    if (setAsDirty) this.updateStateValue('dirty', true);
   }
 
   // Common
 
   get setRef() {
-    return (ref: unknown) => {
-      return setRef(ref as MargaritaFormBaseElement, this);
+    return (ref: unknown): void => {
+      return setRef(ref as MargaritaFormBaseElement, this as any);
     };
   }
 

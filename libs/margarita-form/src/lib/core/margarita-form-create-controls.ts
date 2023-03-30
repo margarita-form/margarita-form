@@ -83,19 +83,21 @@ export class ControlsController<
     if (!this._parent.validators) throw 'Invalid validators!';
     return this._parent.validators;
   }
-  get length() {
+  get length(): number {
     return this.controlsArray.length;
   }
   get addControls() {
-    return (fields?: F[]) => {
+    return (fields?: F[]): MargaritaFormControl<unknown, F>[] => {
       if (!fields) throw 'No fields provided!';
       return fields.map((field) => {
-        this.addControl(field);
+        return this.addControl(field);
       });
     };
   }
   get addTemplatedControl() {
-    return (fieldTemplate?: Partial<MargaritaFormField>) => {
+    return (
+      fieldTemplate?: Partial<MargaritaFormField>
+    ): MargaritaFormControl<unknown, F> => {
       if (!fieldTemplate) throw 'No template for repeating field provided!';
       const field = {
         name: nanoid(4),
@@ -105,7 +107,7 @@ export class ControlsController<
     };
   }
   get addControl() {
-    return (field?: F) => {
+    return (field?: F): MargaritaFormControl<unknown, F> => {
       if (!field) throw 'No field provided!';
       const validators = field.validators;
       const control = createControlFromField<F>(
