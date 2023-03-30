@@ -172,6 +172,11 @@ export class MargaritaFormBase<
     this.updateState(changes);
   }
 
+  public resetState(respectField = true) {
+    const defaultState = getDefaultState(this as any, respectField);
+    this._state.next(defaultState);
+  }
+
   // Internal
 
   public updateSyncId() {

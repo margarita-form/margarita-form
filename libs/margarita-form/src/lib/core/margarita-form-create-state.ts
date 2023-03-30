@@ -63,7 +63,8 @@ const defaultState: MargaritaFormState = {
 };
 
 export const getDefaultState = (
-  control: MargaritaFormControl
+  control: MargaritaFormControl,
+  respectField = true
 ): MargaritaFormState => {
   const state = { control } as MargaritaFormState;
   Object.setPrototypeOf(state, defaultState);
@@ -71,6 +72,7 @@ export const getDefaultState = (
     state.submitted = false;
     state.submitting = false;
   }
+  if (!respectField) return state;
   fieldStateKeys.forEach((key) => {
     const value = control.field[key];
     if (typeof value === 'boolean') state[key] = value;
