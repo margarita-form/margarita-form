@@ -1,7 +1,7 @@
-import { MargaritaFormControlTypes } from '@margarita-form/core';
+import { MargaritaFormControl } from '@margarita-form/core';
 import { useControlContext } from './control-provider-hooks';
 
-export const useControl = <T = MargaritaFormControlTypes,>(
+export const useControl = <T = MargaritaFormControl,>(
   identifier: string | number
 ): T | null => {
   const control = useControlContext();

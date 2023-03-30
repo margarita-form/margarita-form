@@ -1,14 +1,12 @@
 import { createContext, ReactNode, useContext } from 'react';
-import { MargaritaFormControlTypes } from '@margarita-form/core';
+import { MargaritaFormControl } from '@margarita-form/core';
 
 interface ProvideControlProps {
   children: ReactNode;
-  control: MargaritaFormControlTypes;
+  control: MargaritaFormControl;
 }
 
-export const ControlContext = createContext<MargaritaFormControlTypes | null>(
-  null
-);
+export const ControlContext = createContext<MargaritaFormControl | null>(null);
 
 export const ProvideControl = ({ control, children }: ProvideControlProps) => {
   return (
