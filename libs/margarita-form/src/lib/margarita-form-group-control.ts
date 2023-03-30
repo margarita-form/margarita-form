@@ -37,9 +37,9 @@ export class MargaritaFormGroupControl<
 
   constructor(
     public field: F,
-    private _parent?: MargaritaFormGroupControl<unknown, F> | null,
-    private _root?: MargaritaForm | null,
-    private _validators?: MargaritaFormFieldValidators
+    public _parent?: MargaritaFormGroupControl<unknown, F> | null,
+    public _root?: MargaritaForm | null,
+    public _validators?: MargaritaFormFieldValidators
   ) {
     super();
 
