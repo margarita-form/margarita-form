@@ -45,7 +45,7 @@ export const _createValidationsState = <
               field: control.field,
               control: this,
             });
-          }, 2000);
+          }, control.root.asyncFunctionWarningTimeout);
 
           if (validatorOutput instanceof Observable) {
             const observable = validatorOutput.pipe(
