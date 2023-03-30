@@ -4,23 +4,20 @@ import {
   MargaritaFormBaseElement,
   MargaritaFormControl,
   MargaritaFormField,
-  MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormStateErrors,
   MargaritaFormState,
   MargaritaForm,
   MargaritaFormControlsArray,
 } from './margarita-form-types';
-import { debounceTime, Observable, skip, Subscription } from 'rxjs';
 import {
-  BehaviorSubject,
-  shareReplay,
-  switchMap,
-  map,
-  combineLatest,
+  debounceTime,
+  distinctUntilKeyChanged,
+  Observable,
+  Subscription,
 } from 'rxjs';
+import { shareReplay, switchMap, map, combineLatest } from 'rxjs';
 import _get from 'lodash.get';
-import { _createValidationsState } from './core/margarita-form-validation';
 import { ControlsController } from './core/margarita-form-create-controls';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
@@ -31,29 +28,19 @@ export class MargaritaFormGroupControl<
   F extends MargaritaFormField = MargaritaFormField
 > extends MargaritaFormBase<F> {
   public controlsController: ControlsController<F>;
-  private _subscriptions: Subscription[];
-  private _validationsState =
-    new BehaviorSubject<MargaritaFormFieldValidationsState>({});
 
   constructor(
-    public field: F,
-    public _parent?: MargaritaFormGroupControl<unknown, F> | null,
-    public _root?: MargaritaForm | null,
-    public _validators?: MargaritaFormFieldValidators
+    public override field: F,
+    public override _parent?: MargaritaFormGroupControl<unknown, F> | null,
+    public override _root?: MargaritaForm | null,
+    public override _validators?: MargaritaFormFieldValidators
   ) {
-    super();
-
+    super(field, _parent, _root, _validators);
     this.controlsController = new ControlsController(this);
-
     if (field.initialValue) this.setValue(field.initialValue);
-    const validationsStateSubscription = this._setValidationsState();
-    const dirtyStateSubscription = this._setDirtyState();
     const stateSubscription = this._setState();
-    this._subscriptions = [
-      validationsStateSubscription,
-      dirtyStateSubscription,
-      stateSubscription,
-    ];
+    this._subscriptions.push(stateSubscription);
+    this._init();
   }
 
   public cleanup() {
@@ -105,22 +92,6 @@ export class MargaritaFormGroupControl<
       return this.parent.controlsController.getControlIndex(this.key);
     }
     return -1;
-  }
-
-  // State
-
-  public override enable() {
-    this.updateStateValue('enabled', true);
-    this.controls.forEach((control) => {
-      control.updateStateValue('enabled', true);
-    });
-  }
-
-  public override disable() {
-    this.updateStateValue('disabled', true);
-    this.controls.forEach((control) => {
-      control.disable();
-    });
   }
 
   // Controls
@@ -183,24 +154,35 @@ export class MargaritaFormGroupControl<
 
   public get value(): T {
     const { controlsArray } = this.controlsController;
+    const activeControls = controlsArray.filter(
+      (control) => control.state.active
+    );
     if (this.expectArray) {
-      return controlsArray.map((control) => control.value) as T;
+      return activeControls.map((control) => control.value) as T;
     }
-    const entries = controlsArray.map((control) => {
+    const entries = activeControls.map((control) => {
       return [control.name, control.value];
     });
     return Object.fromEntries(entries);
   }
 
-  public get valueChanges(): Observable<T> {
+  public override get valueChanges(): Observable<T> {
     return this.controlsController.controlChanges.pipe(
       switchMap((controls) => {
         if (!controls.length) return Promise.resolve(null as T);
 
         const valueChangesEntries = controls.map((control) => {
-          return control.valueChanges.pipe(
-            map((value) => {
-              return { control, value };
+          return control.stateChanges.pipe(
+            distinctUntilKeyChanged('active'),
+            switchMap(({ active }) => {
+              if (!active) {
+                return Promise.resolve({ control, value: undefined });
+              }
+              return control.valueChanges.pipe(
+                map((value) => {
+                  return { control, value };
+                })
+              );
             })
           );
         });
@@ -275,19 +257,13 @@ export class MargaritaFormGroupControl<
 
   // Internal
 
-  private _setValidationsState(): Subscription {
-    return _createValidationsState(this).subscribe((validationState) => {
-      this._validationsState.next(validationState);
+  public override _enableChildren(value: boolean) {
+    this.controls.forEach((control) => {
+      control.updateStateValue('enabled', value);
     });
   }
 
-  private _setDirtyState() {
-    return this.valueChanges.pipe(skip(1)).subscribe(() => {
-      this.updateStateValue('dirty', true);
-    });
-  }
-
-  private _setState() {
+  private _setState(): Subscription {
     const childStates: Observable<MargaritaFormState[]> =
       this.controlsController.controlChanges.pipe(
         switchMap((controls) => {
@@ -302,7 +278,9 @@ export class MargaritaFormGroupControl<
     return combineLatest([this._validationsState, childStates])
       .pipe(debounceTime(5))
       .subscribe(([validationStates, children]) => {
-        const childrenAreValid = children.every((child) => child.valid);
+        const childrenAreValid = children.every(
+          (child) => child.valid || child.inactive
+        );
         const currentIsValid = Object.values(validationStates).every(
           (state) => state.valid
         );

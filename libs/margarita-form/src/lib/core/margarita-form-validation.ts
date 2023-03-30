@@ -2,8 +2,7 @@ import type {
   MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldFunction,
-  MargaritaFormFieldFunctionOutput,
-  MargaritaFormFieldValidatorResultEntry,
+  MargaritaFormFieldFunctionOutputResultEntry,
 } from '../margarita-form-types';
 import {
   debounceTime,
@@ -54,15 +53,15 @@ export const _createValidationsState = <
                 clearTimeout(longTime);
                 return [key, result];
               })
-            ) as Observable<MargaritaFormFieldValidatorResultEntry>;
+            ) as Observable<MargaritaFormFieldFunctionOutputResultEntry>;
 
-            acc.push([key, observable]);
+            acc.push(observable);
           } else {
             const promise = Promise.resolve(validatorOutput).then((result) => {
               clearTimeout(longTime);
               return [key, result];
-            }) as Promise<MargaritaFormFieldValidatorResultEntry>;
-            acc.push([key, promise]);
+            }) as Promise<MargaritaFormFieldFunctionOutputResultEntry>;
+            acc.push(promise);
           }
         };
         const validatorFn = control.validators[key];
@@ -72,14 +71,10 @@ export const _createValidationsState = <
           validateFunction(validatorFn, validationValue);
         }
         return acc;
-      }, [] as [string, MargaritaFormFieldFunctionOutput<MargaritaFormFieldValidatorResultEntry>][]);
+      }, [] as ObservableInput<MargaritaFormFieldFunctionOutputResultEntry>[]);
 
-      const activeValidators = activeValidatorEntries.map(
-        (entry) => entry[1]
-      ) as ObservableInput<MargaritaFormFieldValidatorResultEntry>[];
-
-      return combineLatest(activeValidators).pipe(
-        map((values: MargaritaFormFieldValidatorResultEntry[]) => {
+      return combineLatest(activeValidatorEntries).pipe(
+        map((values: MargaritaFormFieldFunctionOutputResultEntry[]) => {
           return Object.fromEntries(values);
         })
       );

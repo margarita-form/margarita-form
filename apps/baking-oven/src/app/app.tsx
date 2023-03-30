@@ -50,12 +50,14 @@ const fields: MargaritaFormField[] = [
   {
     name: 'title',
     initialValue: 'Hello world',
+    readOnly: true,
     validation: {
       required: true,
     },
   },
   {
     name: 'description',
+    active: false,
     validation: {
       required: true,
     },
@@ -108,7 +110,9 @@ export function App() {
   const titleControl = form.getControl<MargaritaFormValueControl>('title');
   const descriptionControl =
     form.getControl<MargaritaFormValueControl>('description');
+
   const stepsControl = form.getControl<MargaritaFormGroupControl>('steps');
+
   return (
     <AppWrapper>
       <div className="form-wrapper">

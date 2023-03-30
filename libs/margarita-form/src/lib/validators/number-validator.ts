@@ -1,11 +1,17 @@
 import {
   MargaritaFormField,
   MargaritaFormFieldFunction,
+  MargaritaFormFieldValidatorResult,
 } from '../margarita-form-types';
 
 export const numberValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction<unknown, MargaritaFormField, boolean> =
+) => MargaritaFormFieldFunction<
+  unknown,
+  MargaritaFormFieldValidatorResult,
+  MargaritaFormField,
+  boolean
+> =
   (errorMessage = 'Please enter a valid number!') =>
   ({ value, params }) => {
     if (!params) return { valid: true };

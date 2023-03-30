@@ -19,28 +19,30 @@ export interface MargaritaFormFieldValidatorResult {
   error?: unknown;
 }
 
-export type MargaritaFormFieldValidatorResultEntry = [
-  string,
-  MargaritaFormFieldValidatorResult
-];
-
-export type MargaritaFormFieldFunctionOutput<
+export type MargaritaFormFieldFunctionOutputResultEntry<
   T = MargaritaFormFieldValidatorResult
-> = T | Promise<T> | Observable<T>;
+> = [string, T];
+
+export type MargaritaFormFieldFunctionOutput<T> =
+  | T
+  | Promise<T>
+  | Observable<T>;
 
 export type MargaritaFormFieldFunction<
   T = unknown,
+  O = unknown,
   F1 extends MargaritaFormField = MargaritaFormField,
   P = any
 > = <F2 extends MargaritaFormField = F1>(
   context: MargaritaFormFieldContext<T, F2, P>
-) => MargaritaFormFieldFunctionOutput;
+) => MargaritaFormFieldFunctionOutput<O>;
 
 export interface MargaritaFormFieldValidators<
   T = unknown,
+  O = unknown,
   F extends MargaritaFormField = MargaritaFormField
 > {
-  [key: string]: MargaritaFormFieldFunction<T, F>;
+  [key: string]: MargaritaFormFieldFunction<T, O, F>;
 }
 
 export interface MargaritaFormFieldValidationsState {
@@ -57,7 +59,14 @@ export const arrayGroupings: MargaritaFormGroupings[] = [
   'repeat-group',
 ];
 
-export interface MargaritaFormField {
+export type MargaritaFormFieldStateKeys = 'active' | 'disabled' | 'readOnly';
+
+export type MargaritaFormFieldStates = Record<
+  MargaritaFormFieldStateKeys,
+  boolean | MargaritaFormFieldFunction<unknown, boolean>
+>;
+
+export interface MargaritaFormField extends Partial<MargaritaFormFieldStates> {
   name: string;
   fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
@@ -65,14 +74,18 @@ export interface MargaritaFormField {
   template?: Partial<MargaritaFormField>;
   initialValue?: unknown;
   validation?: MargaritaFormFieldValidation;
-  validators?: MargaritaFormFieldValidators<unknown, MargaritaFormField>;
+  validators?: MargaritaFormFieldValidators<
+    unknown,
+    MargaritaFormFieldValidatorResult,
+    MargaritaFormField
+  >;
   control?: MargaritaFormControl;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
-export type MargaritaFormStaticStateKeys =
+export type MargaritaFormCommonStateKeys =
   | 'pristine'
   | 'dirty'
   | 'untouched'
@@ -81,10 +94,12 @@ export type MargaritaFormStaticStateKeys =
   | 'enabled'
   | 'disabled'
   | 'editable'
-  | 'readonly';
+  | 'readOnly'
+  | 'inactive'
+  | 'active';
 
 export type MargaritaFormStaticState = Record<
-  MargaritaFormStaticStateKeys,
+  MargaritaFormCommonStateKeys,
   boolean
 >;
 
@@ -155,6 +170,7 @@ export type MargaritaFormBaseElement<
   type?: string;
   name?: string;
   disabled?: boolean;
+  readOnly?: boolean;
   required?: boolean;
   pattern?: string;
 };

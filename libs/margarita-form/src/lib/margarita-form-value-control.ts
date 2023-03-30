@@ -1,16 +1,14 @@
-import { combineLatest, Observable, Subscription } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import type {
   MargaritaForm,
   MargaritaFormBaseElement,
   MargaritaFormControl,
   MargaritaFormField,
-  MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
   MargaritaFormStateErrors,
 } from './margarita-form-types';
 import { BehaviorSubject } from 'rxjs';
-import { debounceTime, shareReplay, skip } from 'rxjs/operators';
-import { _createValidationsState } from './core/margarita-form-validation';
+import { debounceTime, shareReplay } from 'rxjs/operators';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { MargaritaFormGroupControl } from './margarita-form-group-control';
@@ -20,27 +18,19 @@ export class MargaritaFormValueControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
 > extends MargaritaFormBase<F> {
-  private _subscriptions: Subscription[];
   private _value = new BehaviorSubject<unknown>(undefined);
-  private _validationsState =
-    new BehaviorSubject<MargaritaFormFieldValidationsState>({});
-  constructor(
-    public field: F,
-    public _parent?: MargaritaFormGroupControl<unknown, F> | null,
-    public _root?: MargaritaForm | null,
-    public _validators?: MargaritaFormFieldValidators
-  ) {
-    super();
 
+  constructor(
+    public override field: F,
+    public override _parent?: MargaritaFormGroupControl<unknown, F> | null,
+    public override _root?: MargaritaForm | null,
+    public override _validators?: MargaritaFormFieldValidators
+  ) {
+    super(field, _parent, _root, _validators);
     if (field.initialValue) this.setValue(field.initialValue);
-    const validationsStateSubscription = this._setValidationsState();
-    const dirtyStateSubscription = this._setDirtyState();
     const stateSubscription = this._setState();
-    this._subscriptions = [
-      validationsStateSubscription,
-      dirtyStateSubscription,
-      stateSubscription,
-    ];
+    this._subscriptions.push(stateSubscription);
+    this._init();
   }
 
   public cleanup() {
@@ -101,7 +91,7 @@ export class MargaritaFormValueControl<
 
   // Value
 
-  public get valueChanges(): Observable<T> {
+  public override get valueChanges(): Observable<T> {
     const observable = this._value.pipe(shareReplay(1));
     return observable as Observable<T>;
   }
@@ -123,18 +113,6 @@ export class MargaritaFormValueControl<
   }
 
   // Internal
-
-  private _setValidationsState(): Subscription {
-    return _createValidationsState(this).subscribe((validationState) => {
-      this._validationsState.next(validationState);
-    });
-  }
-
-  private _setDirtyState() {
-    return this.valueChanges.pipe(skip(1)).subscribe(() => {
-      this.updateStateValue('dirty', true);
-    });
-  }
 
   private _setState() {
     return combineLatest([this._validationsState])
