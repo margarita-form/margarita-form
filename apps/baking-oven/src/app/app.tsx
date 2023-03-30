@@ -1,9 +1,10 @@
 import styled from 'styled-components';
 import {
-  MargaritaFormControl,
   useMargaritaForm,
   MargaritaFormField,
-  MargaritaFormGroup,
+  MargaritaFormValueControl,
+  MargaritaFormGroupControl,
+  Form,
 } from '@margarita-form/react';
 import { useState } from 'react';
 
@@ -104,15 +105,14 @@ export function App() {
     },
   });
 
-  const titleControl = form.getControl<MargaritaFormControl>('title');
+  const titleControl = form.getControl<MargaritaFormValueControl>('title');
   const descriptionControl =
-    form.getControl<MargaritaFormControl>('description');
-  const stepsControl = form.getControl<MargaritaFormGroup>('steps');
-
+    form.getControl<MargaritaFormValueControl>('description');
+  const stepsControl = form.getControl<MargaritaFormGroupControl>('steps');
   return (
     <AppWrapper>
       <div className="form-wrapper">
-        <form ref={form.setRef}>
+        <Form form={form}>
           <label htmlFor="title">Title</label>
           <input
             id="title"
@@ -133,9 +133,9 @@ export function App() {
           {stepsControl &&
             stepsControl.controls.map((stepGroup) => {
               const stepTitleControl =
-                stepGroup.getControl<MargaritaFormControl>('title');
+                stepGroup.getControl<MargaritaFormValueControl>('title');
               const stepDescriptionControl =
-                stepGroup.getControl<MargaritaFormControl>('description');
+                stepGroup.getControl<MargaritaFormValueControl>('description');
 
               return (
                 <div className="step-container" key={stepGroup.key}>
@@ -184,7 +184,7 @@ export function App() {
           <button type="submit">Submit</button>
 
           {submitResponse && <span>{submitResponse}</span>}
-        </form>
+        </Form>
       </div>
       <pre>{JSON.stringify(form.value, null, 2)}</pre>
     </AppWrapper>
