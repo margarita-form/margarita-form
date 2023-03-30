@@ -12,13 +12,20 @@ import {
   MargaritaFormFieldValidators,
 } from '../margarita-form-types';
 
-export const createControlFromField = <
+type CreateFn = <F extends MargaritaFormField>(
+  field: F,
+  parent: MargaritaFormGroupControl<unknown, F>,
+  root: MargaritaForm,
+  validators?: MargaritaFormFieldValidators
+) => MargaritaFormControl<unknown, F>;
+
+export const createControlFromField: CreateFn = <
   F extends MargaritaFormField = MargaritaFormField
 >(
   field: F,
   parent: MargaritaFormGroupControl<unknown, F>,
   root: MargaritaForm,
-  validators: MargaritaFormFieldValidators
+  validators?: MargaritaFormFieldValidators
 ): MargaritaFormControl<unknown, F> => {
   const { fields, template } = field;
   const isGroup = fields || template;
@@ -100,18 +107,21 @@ export class ControlsController<
   get addControl() {
     return (field?: F) => {
       if (!field) throw 'No field provided!';
+      const validators = field.validators;
       const control = createControlFromField<F>(
         field,
         this.parent,
         this.root,
-        this.validators
+        validators
       );
       if (this.parent.state.disabled) control.disable();
       return this.appendControl(control);
     };
   }
   get appendControl() {
-    return (control: MargaritaFormControl<unknown, F>) => {
+    return (
+      control: MargaritaFormControl<unknown, F>
+    ): MargaritaFormControl<unknown, F> => {
       if (this._requireUniqueNames) this.removeControl(control.name);
       const items = this.controls.getValue();
       items.push(control);
