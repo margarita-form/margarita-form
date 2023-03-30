@@ -66,20 +66,29 @@ export type MargaritaFormFieldStates = Record<
   boolean | MargaritaFormFieldFunction<unknown, boolean>
 >;
 
-export interface MargaritaFormField extends Partial<MargaritaFormFieldStates> {
+export type MargaritaFormFieldParams<T = unknown, V = unknown> = Record<
+  string,
+  T | MargaritaFormFieldFunction<V, T>
+>;
+
+export type MargaritaFormControlParams<T = unknown> = Record<string, T>;
+
+export interface MargaritaFormField<V = unknown, T = unknown>
+  extends Partial<MargaritaFormFieldStates> {
   name: string;
   fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
-  template?: Partial<MargaritaFormField>;
-  initialValue?: unknown;
+  template?: Partial<MargaritaFormField<V>>;
+  initialValue?: V;
   validation?: MargaritaFormFieldValidation;
   validators?: MargaritaFormFieldValidators<
-    unknown,
+    V,
     MargaritaFormFieldValidatorResult,
     MargaritaFormField
   >;
-  control?: MargaritaFormControl;
+  control?: MargaritaFormControl<V>;
+  params?: MargaritaFormFieldParams<T, V>;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
