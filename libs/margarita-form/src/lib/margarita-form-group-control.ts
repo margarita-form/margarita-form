@@ -2,11 +2,10 @@ import {
   arrayGroupings,
   MargaritaFormGroupings,
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
-  MargaritaFormObjectControlTypes,
   MargaritaFormStateErrors,
   MargaritaFormState,
   MargaritaForm,
@@ -27,7 +26,7 @@ import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { valueExists } from './helpers/chack-value';
 
-export class MargaritaFormGroup<
+export class MargaritaFormGroupControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
 > extends MargaritaFormBase<F> {
@@ -38,7 +37,7 @@ export class MargaritaFormGroup<
 
   constructor(
     public field: F,
-    private _parent?: MargaritaFormObjectControlTypes<unknown, F> | null,
+    private _parent?: MargaritaFormGroupControl<unknown, F> | null,
     private _root?: MargaritaForm | null,
     private _validators?: MargaritaFormFieldValidators
   ) {
@@ -86,7 +85,7 @@ export class MargaritaFormGroup<
     return this.field.name;
   }
 
-  public get parent(): MargaritaFormObjectControlTypes<unknown, F> {
+  public get parent(): MargaritaFormGroupControl<unknown, F> {
     if (!this._parent) {
       console.warn('Root of controls reached!', this);
     }
@@ -102,7 +101,7 @@ export class MargaritaFormGroup<
   }
 
   public get index(): number {
-    if (this.parent instanceof MargaritaFormGroup) {
+    if (this.parent instanceof MargaritaFormGroupControl) {
       return this.parent.controlsController.getControlIndex(this.key);
     }
     return -1;
@@ -130,7 +129,7 @@ export class MargaritaFormGroup<
     return this.controlsController.controlsArray;
   }
 
-  public override getControl<T = MargaritaFormControlTypes<unknown, F>>(
+  public override getControl<T = MargaritaFormControl<unknown, F>>(
     identifier: string | number
   ): T {
     return this.controlsController.getControl(identifier) as T;
@@ -142,7 +141,7 @@ export class MargaritaFormGroup<
     return exists;
   }
 
-  public override getOrAddControl<T = MargaritaFormControlTypes<unknown, F>>(
+  public override getOrAddControl<T = MargaritaFormControl<unknown, F>>(
     field: F
   ): T {
     const control = this.controlsController.getControl(field.name);
@@ -150,7 +149,7 @@ export class MargaritaFormGroup<
     return control as T;
   }
 
-  public override addControl<T = MargaritaFormControlTypes<unknown, F>>(
+  public override addControl<T = MargaritaFormControl<unknown, F>>(
     field: F
   ): T {
     return this.controlsController.addControl(field) as T;
@@ -269,7 +268,7 @@ export class MargaritaFormGroup<
     return (ref: unknown): void => {
       return setRef(
         ref as MargaritaFormBaseElement,
-        this as unknown as MargaritaFormControlTypes
+        this as unknown as MargaritaFormControl
       );
     };
   }

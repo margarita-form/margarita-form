@@ -1,7 +1,7 @@
 import { fromEvent } from 'rxjs';
 import {
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
 } from '../../margarita-form-types';
 
@@ -12,7 +12,7 @@ export const handleFormElementSubmit = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   const isForm = node instanceof HTMLFormElement;
   if (!isForm) return null;

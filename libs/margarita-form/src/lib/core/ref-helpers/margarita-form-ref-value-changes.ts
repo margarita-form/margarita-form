@@ -1,9 +1,9 @@
 import { fromEvent } from 'rxjs';
-import { MargaritaFormControl } from '../../margarita-form-control';
-import { MargaritaFormGroup } from '../../margarita-form-control-group';
+import { MargaritaFormValueControl } from '../../margarita-form-value-control';
+import { MargaritaFormGroupControl } from '../../margarita-form-group-control';
 import {
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
 } from '../../margarita-form-types';
 
@@ -14,7 +14,7 @@ export const setNodeValueOnControlValueChanges = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;
@@ -28,10 +28,10 @@ export const setNodeValueOnControlValueChanges = <
           node.checked = Boolean(value);
         }
       } else if ('value' in node) {
-        if (control instanceof MargaritaFormControl) {
+        if (control instanceof MargaritaFormValueControl) {
           node.value = value || '';
         }
-        if (control instanceof MargaritaFormGroup) {
+        if (control instanceof MargaritaFormGroupControl) {
           node.value = JSON.stringify(control.value, null, 2);
         }
       }
@@ -48,7 +48,7 @@ export const setControlValueOnNodeValueChanges = <
   control,
 }: {
   node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControlTypes<unknown, F>;
+  control: MargaritaFormControl<unknown, F>;
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;
@@ -80,11 +80,11 @@ export const setControlValueOnNodeValueChanges = <
       const value = getNodeValue();
 
       if (value !== undefined) {
-        if (control instanceof MargaritaFormControl) {
+        if (control instanceof MargaritaFormValueControl) {
           return control.setValue(value);
         }
 
-        if (control instanceof MargaritaFormGroup) {
+        if (control instanceof MargaritaFormGroupControl) {
           if (typeof value === 'string') {
             const object = JSON.parse(value);
             return control.setValue(object);

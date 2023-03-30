@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormBaseElement,
   MargaritaFormField,
 } from '../margarita-form-types';
@@ -22,7 +22,7 @@ import { setControlValidationFromNode } from './ref-helpers/margarita-form-ref-s
 
 export const setRef = <F extends MargaritaFormField = MargaritaFormField>(
   node: MargaritaFormBaseElement<F> | null,
-  control: MargaritaFormControlTypes<unknown, F>
+  control: MargaritaFormControl<unknown, F>
 ): void => {
   if (!node) return;
   const alreadyIncluded = connectNodeToControl(node, control);

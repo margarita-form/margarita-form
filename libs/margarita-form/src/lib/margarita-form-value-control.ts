@@ -2,11 +2,10 @@ import { combineLatest, Observable, Subscription } from 'rxjs';
 import type {
   MargaritaForm,
   MargaritaFormBaseElement,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldValidationsState,
   MargaritaFormFieldValidators,
-  MargaritaFormObjectControlTypes,
   MargaritaFormStateErrors,
 } from './margarita-form-types';
 import { BehaviorSubject } from 'rxjs';
@@ -14,10 +13,10 @@ import { debounceTime, shareReplay, skip } from 'rxjs/operators';
 import { _createValidationsState } from './core/margarita-form-validation';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
-import { MargaritaFormGroup } from './margarita-form-control-group';
+import { MargaritaFormGroupControl } from './margarita-form-group-control';
 import { valueExists } from './helpers/chack-value';
 
-export class MargaritaFormControl<
+export class MargaritaFormValueControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
 > extends MargaritaFormBase<F> {
@@ -27,7 +26,7 @@ export class MargaritaFormControl<
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
   constructor(
     public field: F,
-    public _parent?: MargaritaFormObjectControlTypes<unknown, F> | null,
+    public _parent?: MargaritaFormGroupControl<unknown, F> | null,
     public _root?: MargaritaForm | null,
     public _validators?: MargaritaFormFieldValidators
   ) {
@@ -61,7 +60,7 @@ export class MargaritaFormControl<
     return this.field.name;
   }
 
-  public get parent(): MargaritaFormControlTypes<unknown, F> {
+  public get parent(): MargaritaFormControl<unknown, F> {
     if (!this._parent) {
       console.warn('Root of controls reached!', this);
     }
@@ -80,7 +79,7 @@ export class MargaritaFormControl<
   }
 
   public get index(): number {
-    if (this.parent instanceof MargaritaFormGroup) {
+    if (this.parent instanceof MargaritaFormGroupControl) {
       return this.parent.controlsController.getControlIndex(this.key);
     }
     return -1;
@@ -89,7 +88,7 @@ export class MargaritaFormControl<
   // Controls
 
   public moveToIndex(toIndex: number) {
-    if (this.parent instanceof MargaritaFormGroup) {
+    if (this.parent instanceof MargaritaFormGroupControl) {
       this.parent.controlsController.moveControl(this.key, toIndex);
     } else {
       console.warn('Could not move control!');

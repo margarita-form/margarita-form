@@ -19,8 +19,8 @@ import {
   uniqueValidator,
   urlValidator,
 } from './validators';
-import { MargaritaFormControl } from './margarita-form-control';
-import { MargaritaFormGroup } from './margarita-form-control-group';
+import { MargaritaFormValueControl } from './margarita-form-value-control';
+import { MargaritaFormGroupControl } from './margarita-form-group-control';
 
 const defaultValidators: MargaritaFormFieldValidators = {
   color: colorValidator(),
@@ -54,7 +54,7 @@ const createMargaritaFormFn = <
 
   const initialField = { name: 'root', fields, initialValue } as unknown as F;
 
-  const form = new MargaritaFormGroup<T, F>(
+  const form = new MargaritaFormGroupControl<T, F>(
     initialField,
     null,
     null,
@@ -84,10 +84,10 @@ const createMargaritaFormFn = <
 
 createMargaritaFormFn.asControl = <T>(
   options: Omit<MargaritaFormOptions<T>, 'handleSubmit'>
-): MargaritaFormControl<T> => {
+): MargaritaFormValueControl<T> => {
   const { fields, validators = defaultValidators, initialValue } = options;
 
-  const form = new MargaritaFormControl<T>(
+  const form = new MargaritaFormValueControl<T>(
     { name: 'root', fields, initialValue },
     null,
     null,

@@ -1,41 +1,45 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { nanoid } from 'nanoid';
 import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
-import { MargaritaFormControl } from '../margarita-form-control';
-import { MargaritaFormGroup } from '../margarita-form-control-group';
+import { MargaritaFormValueControl } from '../margarita-form-value-control';
+import { MargaritaFormGroupControl } from '../margarita-form-group-control';
 import {
   MargaritaForm,
   MargaritaFormControlsArray,
   MargaritaFormControlsGroup,
-  MargaritaFormControlTypes,
+  MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldValidators,
-  MargaritaFormObjectControlTypes,
 } from '../margarita-form-types';
 
 export const createControlFromField = <
   F extends MargaritaFormField = MargaritaFormField
 >(
   field: F,
-  parent: MargaritaFormObjectControlTypes<unknown, F>,
+  parent: MargaritaFormGroupControl<unknown, F>,
   root: MargaritaForm,
   validators: MargaritaFormFieldValidators
-): MargaritaFormControlTypes<unknown, F> => {
+): MargaritaFormControl<unknown, F> => {
   const { fields, template } = field;
   const isGroup = fields || template;
   if (isGroup)
-    return new MargaritaFormGroup<unknown, F>(field, parent, root, validators);
-  return new MargaritaFormControl(field, parent, root, validators);
+    return new MargaritaFormGroupControl<unknown, F>(
+      field,
+      parent,
+      root,
+      validators
+    );
+  return new MargaritaFormValueControl(field, parent, root, validators);
 };
 
 export class ControlsController<
   F extends MargaritaFormField = MargaritaFormField
 > {
-  private controls = new BehaviorSubject<
-    MargaritaFormControlTypes<unknown, F>[]
-  >([]);
+  private controls = new BehaviorSubject<MargaritaFormControl<unknown, F>[]>(
+    []
+  );
 
-  constructor(private _parent: MargaritaFormObjectControlTypes<unknown, F>) {
+  constructor(private _parent: MargaritaFormGroupControl<unknown, F>) {
     this.init();
   }
 
@@ -60,7 +64,7 @@ export class ControlsController<
   private get _requireUniqueNames() {
     return this._parent.grouping === 'group';
   }
-  get parent(): MargaritaFormObjectControlTypes<unknown, F> {
+  get parent(): MargaritaFormGroupControl<unknown, F> {
     if (!this._parent) throw 'Invalid parent!';
     return this._parent;
   }
@@ -107,7 +111,7 @@ export class ControlsController<
     };
   }
   get appendControl() {
-    return (control: MargaritaFormControlTypes<unknown, F>) => {
+    return (control: MargaritaFormControl<unknown, F>) => {
       if (this._requireUniqueNames) this.removeControl(control.name);
       const items = this.controls.getValue();
       items.push(control);
@@ -159,7 +163,7 @@ export class ControlsController<
       this.controls.next(items);
     };
   }
-  get controlChanges(): Observable<MargaritaFormControlTypes<unknown, F>[]> {
+  get controlChanges(): Observable<MargaritaFormControl<unknown, F>[]> {
     const changes = this.controls.pipe(debounceTime(5));
     return changes;
   }
