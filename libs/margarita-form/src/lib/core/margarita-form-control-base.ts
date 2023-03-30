@@ -2,6 +2,8 @@
 import {
   BehaviorSubject,
   debounceTime,
+  distinctUntilChanged,
+  map,
   Observable,
   shareReplay,
   skip,
@@ -108,6 +110,17 @@ export class MargaritaFormBase<
 
   public get stateChanges(): Observable<MargaritaFormState> {
     return this._state.pipe(debounceTime(5), shareReplay(1));
+  }
+
+  public getState(key: keyof MargaritaFormState) {
+    return this.state[key];
+  }
+
+  public getStateChanges(key: keyof MargaritaFormState) {
+    return this.stateChanges.pipe(
+      map((state) => state[key]),
+      distinctUntilChanged()
+    );
   }
 
   public enable() {
