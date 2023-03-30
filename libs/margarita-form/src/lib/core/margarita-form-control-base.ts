@@ -22,6 +22,7 @@ import {
   MargaritaForm,
   MargaritaFormFieldValidators,
   MargaritaFormControlParams,
+  MargaritaFormFieldFunction,
 } from '../margarita-form-types';
 import { _createValidationsState } from './margarita-form-validation';
 import { nanoid } from 'nanoid';
@@ -62,6 +63,30 @@ export class MargaritaFormBase<
       dirtyStateSubscription,
       paramsSubscription
     );
+  }
+
+  // Common
+
+  public get name(): string {
+    return this.field.name;
+  }
+
+  public get parent(): MargaritaFormGroupControl<unknown, F> {
+    if (!this._parent) {
+      console.warn('Root of controls reached!', this);
+    }
+    return this._parent || (this as any);
+  }
+
+  public get root(): MargaritaForm {
+    return this._root || (this as unknown as MargaritaForm);
+  }
+
+  public get index(): number {
+    if (this.parent instanceof MargaritaFormGroupControl) {
+      return this.parent.controlsController.getControlIndex(this.key);
+    }
+    return -1;
   }
 
   // Params
@@ -109,6 +134,18 @@ export class MargaritaFormBase<
     this._state.next(currentState);
     if (key === 'enabled') this._enableChildren(value);
     if (key === 'disabled') this._enableChildren(!value);
+  }
+
+  public get validators(): MargaritaFormFieldValidators {
+    return this._validators || this.root.validators;
+  }
+
+  public registerValidator(
+    name: string,
+    validator: MargaritaFormFieldFunction
+  ) {
+    if (!this._validators) this._validators = { [name]: validator };
+    else this._validators[name] = validator;
   }
 
   // Internal

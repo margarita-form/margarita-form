@@ -68,32 +68,6 @@ export class MargaritaFormGroupControl<
     return arrayGroupings.includes(this.grouping);
   }
 
-  public get name(): string {
-    return this.field.name;
-  }
-
-  public get parent(): MargaritaFormGroupControl<unknown, F> {
-    if (!this._parent) {
-      console.warn('Root of controls reached!', this);
-    }
-    return this._parent || this;
-  }
-
-  public get root(): MargaritaForm {
-    return this._root || (this as unknown as MargaritaForm);
-  }
-
-  public get validators(): MargaritaFormFieldValidators {
-    return this._validators || this.root.validators;
-  }
-
-  public get index(): number {
-    if (this.parent instanceof MargaritaFormGroupControl) {
-      return this.parent.controlsController.getControlIndex(this.key);
-    }
-    return -1;
-  }
-
   // Controls
 
   public override get controls(): MargaritaFormControlsArray<unknown, F> {
