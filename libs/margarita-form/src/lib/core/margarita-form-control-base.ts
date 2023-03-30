@@ -188,6 +188,15 @@ export class MargaritaFormBase<
     this._state.next(defaultState);
   }
 
+  public resetValue() {
+    this.setValue(undefined);
+  }
+
+  public reset() {
+    this.resetValue();
+    this.resetState();
+  }
+
   // Internal
 
   public updateSyncId() {
@@ -212,7 +221,15 @@ export class MargaritaFormBase<
     });
   }
 
-  // Not implemented getters
+  // Not implemented
+
+  public setValue(value: unknown, setAsDirty = true) {
+    console.warn('Trying to access "setValue" which is not available!', {
+      context: this,
+      value,
+      setAsDirty,
+    });
+  }
 
   get valueChanges(): Observable<unknown> {
     console.warn('Trying to access "valueChanges" which is not available!', {
