@@ -21,10 +21,12 @@ import {
   MargaritaFormFieldValidationsState,
   MargaritaForm,
   MargaritaFormFieldValidators,
+  MargaritaFormControlParams,
 } from '../margarita-form-types';
 import { _createValidationsState } from './margarita-form-validation';
 import { nanoid } from 'nanoid';
 import { MargaritaFormGroupControl } from '../..';
+import { _createParams } from './margarita-form-create-params';
 
 export class MargaritaFormBase<
   F extends MargaritaFormField = MargaritaFormField
@@ -35,6 +37,7 @@ export class MargaritaFormBase<
   public _subscriptions: Subscription[] = [];
   public _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
+  public _params = new BehaviorSubject<MargaritaFormControlParams>({});
   private _state: BehaviorSubject<MargaritaFormState>;
 
   constructor(
@@ -51,12 +54,24 @@ export class MargaritaFormBase<
     const validationsStateSubscription = this._setValidationsState();
     const userDefinedStateSubscription = this._setUserDefinedState();
     const dirtyStateSubscription = this._setDirtyState();
+    const paramsSubscription = this._setParams();
 
     this._subscriptions.push(
       validationsStateSubscription,
       userDefinedStateSubscription,
-      dirtyStateSubscription
+      dirtyStateSubscription,
+      paramsSubscription
     );
+  }
+
+  // Params
+
+  public params(): MargaritaFormControlParams {
+    return this._params.getValue();
+  }
+
+  public paramsChanges(): Observable<MargaritaFormControlParams> {
+    return this._params.pipe(debounceTime(5), shareReplay(1));
   }
 
   // State
@@ -66,8 +81,7 @@ export class MargaritaFormBase<
   }
 
   public get stateChanges(): Observable<MargaritaFormState> {
-    const observable = this._state.pipe(debounceTime(5), shareReplay(1));
-    return observable;
+    return this._state.pipe(debounceTime(5), shareReplay(1));
   }
 
   public enable() {
@@ -112,6 +126,12 @@ export class MargaritaFormBase<
   private _setUserDefinedState(): Subscription {
     return _createUserDefinedState(this as any).subscribe((changes) => {
       this.updateState(changes);
+    });
+  }
+
+  private _setParams(): Subscription {
+    return _createParams(this as any).subscribe((params) => {
+      this._params.next(params);
     });
   }
 
