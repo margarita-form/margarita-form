@@ -23,6 +23,7 @@ import {
   MargaritaFormFieldValidators,
   MargaritaFormControlParams,
   MargaritaFormFieldFunction,
+  MargaritaFormStateErrors,
 } from '../margarita-form-types';
 import { _createValidationsState } from './margarita-form-validation';
 import { nanoid } from 'nanoid';
@@ -35,11 +36,11 @@ export class MargaritaFormBase<
   public key: string = nanoid(4);
   public syncId: string = nanoid(4);
   public refs: MargaritaFormBaseElement<F>[] = [];
-  public _subscriptions: Subscription[] = [];
+  private _state: BehaviorSubject<MargaritaFormState>;
   public _validationsState =
     new BehaviorSubject<MargaritaFormFieldValidationsState>({});
   public _params = new BehaviorSubject<MargaritaFormControlParams>({});
-  private _state: BehaviorSubject<MargaritaFormState>;
+  public _subscriptions: Subscription[] = [];
 
   constructor(
     public field: F,
@@ -146,6 +147,29 @@ export class MargaritaFormBase<
   ) {
     if (!this._validators) this._validators = { [name]: validator };
     else this._validators[name] = validator;
+  }
+
+  public clearErrors(keys?: string[]) {
+    const validationStates = this._validationsState.getValue();
+    const valid = Object.entries(validationStates).every(
+      ([key, { valid }]) => !keys || keys.includes(key) || valid
+    );
+    const errors = Object.entries(validationStates).reduce(
+      (acc, [key, { error }]) => {
+        if (!keys) return acc;
+        if (keys.includes(key)) return acc;
+        if (error) acc[key] = error;
+        return acc;
+      },
+      {} as MargaritaFormStateErrors
+    );
+    const invalid = !valid;
+    const changes = {
+      valid,
+      invalid,
+      errors,
+    };
+    this.updateState(changes);
   }
 
   // Internal
