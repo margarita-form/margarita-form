@@ -57,13 +57,11 @@ export class MargaritaFormBase<
   public _init() {
     const validationsStateSubscription = this._setValidationsState();
     const userDefinedStateSubscription = this._setUserDefinedState();
-    const dirtyStateSubscription = this._setDirtyState();
     const paramsSubscription = this._setParams();
 
     this._subscriptions.push(
       validationsStateSubscription,
       userDefinedStateSubscription,
-      dirtyStateSubscription,
       paramsSubscription
     );
   }
@@ -211,12 +209,6 @@ export class MargaritaFormBase<
   private _setParams(): Subscription {
     return _createParams(this as any).subscribe((params) => {
       this._params.next(params);
-    });
-  }
-
-  private _setDirtyState() {
-    return this.valueChanges.pipe(skip(1)).subscribe(() => {
-      this.updateStateValue('dirty', true);
     });
   }
 

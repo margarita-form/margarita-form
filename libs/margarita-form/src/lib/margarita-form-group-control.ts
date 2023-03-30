@@ -37,7 +37,7 @@ export class MargaritaFormGroupControl<
   ) {
     super(field, _parent, _root, _validators);
     this.controlsController = new ControlsController(this);
-    if (field.initialValue) this.setValue(field.initialValue);
+    if (field.initialValue) this.setValue(field.initialValue, false);
     const stateSubscription = this._setState();
     this._subscriptions.push(stateSubscription);
     this._init();
@@ -180,8 +180,9 @@ export class MargaritaFormGroupControl<
     );
   }
 
-  public setValue(values: unknown) {
+  public setValue(values: unknown, setAsDirty = true) {
     try {
+      if (setAsDirty) this.updateStateValue('dirty', true);
       const { controlsArray, controlsGroup } = this.controlsController;
       const isArray = Array.isArray(values);
       if (this.expectArray && isArray) {
@@ -192,7 +193,7 @@ export class MargaritaFormGroupControl<
 
         values.forEach((value, index) => {
           const control = this.controlsController.getControl(index);
-          if (control) return control.setValue(value);
+          if (control) return control.setValue(value, setAsDirty);
           if (this.grouping === 'repeat-group') {
             return this.controlsController.addTemplatedControl({
               fields: this.field.fields,
@@ -209,13 +210,12 @@ export class MargaritaFormGroupControl<
         return Object.values(controlsGroup).forEach((control) => {
           const { name } = control.field;
           const updatedValue = _get(values, [name], control.value);
-          control.setValue(updatedValue);
+          control.setValue(updatedValue, setAsDirty);
         });
       }
     } catch (error) {
       console.error('Could not set values!', { control: this, values, error });
     }
-    // throw 'Could not set value!';
   }
 
   // Common
