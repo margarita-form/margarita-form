@@ -181,6 +181,14 @@ export class MargaritaFormGroupControl<
   }
 
   public override setValue(values: unknown, setAsDirty = true) {
+    this._updateGroupValue(values, setAsDirty, false);
+  }
+
+  public patchValue(values: unknown, setAsDirty = true) {
+    this._updateGroupValue(values, setAsDirty, true);
+  }
+
+  private _updateGroupValue(values: unknown, setAsDirty = true, patch = false) {
     try {
       if (setAsDirty) this.updateStateValue('dirty', true);
       const { controlsArray, controlsGroup } = this.controlsController;
@@ -188,7 +196,7 @@ export class MargaritaFormGroupControl<
       if (this.expectArray && isArray) {
         controlsArray.forEach((control, index) => {
           const hasValue = control && values[index];
-          if (!hasValue) control.remove();
+          if (!hasValue && !patch) control.remove();
         });
 
         values.forEach((value, index) => {
@@ -209,7 +217,11 @@ export class MargaritaFormGroupControl<
       } else if (!isArray) {
         return Object.values(controlsGroup).forEach((control) => {
           const { name } = control.field;
-          const updatedValue = _get(values, [name], control.value);
+          const updatedValue = _get(
+            values,
+            [name],
+            patch ? control.value : undefined
+          );
           control.setValue(updatedValue, setAsDirty);
         });
       }
