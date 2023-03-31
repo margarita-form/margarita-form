@@ -135,6 +135,8 @@ export class MargaritaFormBase<
     this._state.next(currentState);
     if (changes.enabled !== undefined) this._enableChildren(changes.enabled);
     if (changes.disabled !== undefined) this._enableChildren(!changes.disabled);
+    if (changes.dirty === true) this._setChildrenDirty();
+    if (changes.pristine === false) this._setChildrenDirty();
   }
 
   public updateStateValue(
@@ -146,6 +148,8 @@ export class MargaritaFormBase<
     this._state.next(currentState);
     if (key === 'enabled') this._enableChildren(value);
     if (key === 'disabled') this._enableChildren(!value);
+    if (key === 'dirty' && value === true) this._setChildrenDirty();
+    if (key === 'pristine' && value === false) this._setChildrenDirty();
   }
 
   public get validators(): MargaritaFormFieldValidators {
@@ -286,6 +290,10 @@ export class MargaritaFormBase<
   }
 
   public _enableChildren(value: boolean) {
+    // Just a placeholder
+  }
+
+  public _setChildrenDirty() {
     // Just a placeholder
   }
 }
