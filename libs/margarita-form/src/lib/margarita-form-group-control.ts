@@ -237,6 +237,12 @@ export class MargaritaFormGroupControl<
     });
   }
 
+  public override _setChildrenDirty() {
+    this.controls.forEach((control) => {
+      control.updateStateValue('dirty', true);
+    });
+  }
+
   private _setState(): Subscription {
     const childStates: Observable<MargaritaFormState[]> =
       this.controlsController.controlChanges.pipe(
