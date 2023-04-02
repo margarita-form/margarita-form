@@ -14,6 +14,7 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
+    "esModuleInterop": true,
     "paths": {
       "@margarita-form/react": ["libs/margarita-form-react/src/index.ts"],
       "@margarita-form/core": ["libs/margarita-form/src/index.ts"]

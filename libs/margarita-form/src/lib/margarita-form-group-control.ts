@@ -23,6 +23,11 @@ import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { valueExists } from './helpers/chack-value';
 
+/**
+ * Control that groups other controls together and inherits their value.
+ * @typeParam T - Type of the value for the control
+ * @typeParam F - Type of the field for the control
+ */
 export class MargaritaFormGroupControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
@@ -43,6 +48,9 @@ export class MargaritaFormGroupControl<
     this._init();
   }
 
+  /**
+   * Unsubscribe from all subscriptions for current control and all child controls
+   */
   public cleanup() {
     this._subscriptions.forEach((subscription) => {
       subscription.unsubscribe();
@@ -60,32 +68,57 @@ export class MargaritaFormGroupControl<
     });
   }
 
+  /**
+   * Get the way how the child controls should be grouped
+   */
   public get grouping(): MargaritaFormGroupings {
     return this.field.grouping || 'group';
   }
 
+  /**
+   * Check if control's output should be an array
+   */
   public get expectArray(): boolean {
     return arrayGroupings.includes(this.grouping);
   }
 
   // Controls
 
+  /**
+   * Get all controls as an array
+   */
   public override get controls(): MargaritaFormControlsArray<unknown, F> {
     return this.controlsController.controlsArray;
   }
 
+  /**
+   * Get control with identifier
+   * @param identifier name, index or key of the control
+   * @returns The control that was found or added
+   */
   public override getControl<T = MargaritaFormControl<unknown, F>>(
     identifier: string | number
   ): T {
     return this.controlsController.getControl(identifier) as T;
   }
 
+  /**
+   * Check if control exists
+   * @param identifier name, index or key of the control
+   * @returns boolean
+   */
   public override hasControl(identifier: string | number): boolean {
     const control = this.controlsController.getControl(identifier);
     const exists = Boolean(control);
     return exists;
   }
 
+  /**
+   * Get control or add it if it doesn't exist.
+   * NOTE: If grouping is array or repeat-group this method might not work as expected as arrays and repeat-groups allow multiple controls with the same name!
+   * @param field The field to use as a template for the new control
+   * @returns The control that was found or added
+   */
   public override getOrAddControl<T = MargaritaFormControl<unknown, F>>(
     field: F
   ): T {
@@ -94,20 +127,38 @@ export class MargaritaFormGroupControl<
     return control as T;
   }
 
+  /**
+   * Add new control to the form group.
+   * @param field The field to use as a template for the new control
+   * @returns Control that was added
+   */
   public override addControl<T = MargaritaFormControl<unknown, F>>(
     field: F
   ): T {
     return this.controlsController.addControl(field) as T;
   }
 
+  /**
+   * Removes a child control from the form group.
+   * @param identifier name, index or key of the control to remove
+   */
   public override removeControl(identifier: string) {
     this.controlsController.removeControl(identifier);
   }
 
+  /**
+   * Moves a child control to a new index in the array.
+   * @param identifier name, index or key of the control to move
+   * @param toIndex index to move the control to
+   */
   public moveControl(identifier: string, toIndex: number) {
     this.controlsController.moveControl(identifier, toIndex);
   }
 
+  /**
+   * Add new controls to the form group array. If no field is provided, the template field or fields will be used.
+   * @param field The field to use as a template for the new controls
+   */
   public appendRepeatingControls(field?: Partial<F> | MargaritaFormField[]) {
     if (!field) {
       const { fields, template } = this.field;
@@ -120,12 +171,18 @@ export class MargaritaFormGroupControl<
     }
   }
 
+  /**
+   * Remove the control from the parent
+   */
   public remove() {
     this.parent.removeControl(this.key);
   }
 
   // Value
 
+  /**
+   * Get current value of the control
+   */
   public get value(): T {
     const { controlsArray } = this.controlsController;
     const activeControls = controlsArray.filter(
@@ -140,6 +197,9 @@ export class MargaritaFormGroupControl<
     return Object.fromEntries(entries);
   }
 
+  /**
+   * Subscribe to value changes of the control.
+   */
   public override get valueChanges(): Observable<T> {
     return this.controlsController.controlChanges.pipe(
       switchMap((controls) => {
@@ -180,14 +240,27 @@ export class MargaritaFormGroupControl<
     );
   }
 
+  /**
+   * Set value of the control group by updating it's childrens values. Unlike patchValue, this method will delete children values if they are not present in the new value.
+   * @param values value to set
+   * @param setAsDirty update dirty state to true
+   */
   public override setValue(values: unknown, setAsDirty = true) {
     this._updateGroupValue(values, setAsDirty, false);
   }
 
+  /**
+   * Set value of the control group by updating it's childrens values. Unlike setValue, this method will not delete children values if they are not present in the new value.
+   * @param values value to set
+   * @param setAsDirty update dirty state to true
+   */
   public patchValue(values: unknown, setAsDirty = true) {
     this._updateGroupValue(values, setAsDirty, true);
   }
 
+  /**
+   * @internal
+   */
   private _updateGroupValue(values: unknown, setAsDirty = true, patch = false) {
     try {
       if (setAsDirty) this.updateStateValue('dirty', true);
@@ -232,6 +305,19 @@ export class MargaritaFormGroupControl<
 
   // Common
 
+  /**
+   * Connect control to a HTML element.
+   * NOTE: If target element is an input, it's recommended to only use this method with MargaritaFormValueControl as MargaritaFormHRoupControl expects a object as value!
+   * @example React
+   * ```jsx
+   * <form ref={control.setRef} />
+   * ```
+   * @example Vanilla JS
+   * ```js
+   * const el = document.querySelector('#myForm');
+   * control.setRef(el);
+   * ```
+   */
   get setRef() {
     return (ref: unknown): void => {
       return setRef(
@@ -243,12 +329,18 @@ export class MargaritaFormGroupControl<
 
   // Internal
 
+  /**
+   * @internal
+   */
   public override _enableChildren(value: boolean) {
     this.controls.forEach((control) => {
       control.updateStateValue('enabled', value);
     });
   }
 
+  /**
+   * @internal
+   */
   private _setState(): Subscription {
     const childStates: Observable<MargaritaFormState[]> =
       this.controlsController.controlChanges.pipe(

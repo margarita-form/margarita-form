@@ -1,20 +1,11 @@
-import {
-  MargaritaFormControlsArray,
-  MargaritaFormField,
-  MargaritaFormFieldFunction,
-} from '../margarita-form-types';
+import { MargaritaFormValidatorFunction } from '../margarita-form-types';
 
 export const sameAsValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction<
-  unknown,
-  MargaritaFormField,
-  boolean | string[]
-> =
+) => MargaritaFormValidatorFunction<boolean | string[]> =
   (errorMessage = 'Please enter same value!') =>
   ({ value, control, params }) => {
-    const parentControls = control.parent
-      .controls as MargaritaFormControlsArray<unknown>;
+    const parentControls = control.parent.controls;
 
     if (!params || !parentControls) return { valid: true };
 
