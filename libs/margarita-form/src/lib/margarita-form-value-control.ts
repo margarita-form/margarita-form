@@ -15,6 +15,8 @@ import { valueExists } from './helpers/chack-value';
 
 /**
  * Control that represents a single field
+ * @typeParam T - Type of the value for the control
+ * @typeParam F - Type of the field for the control
  */
 export class MargaritaFormValueControl<
   T = unknown,

@@ -25,6 +25,8 @@ import { valueExists } from './helpers/chack-value';
 
 /**
  * Control that groups other controls together and inherits their value.
+ * @typeParam T - Type of the value for the control
+ * @typeParam F - Type of the field for the control
  */
 export class MargaritaFormGroupControl<
   T = unknown,
