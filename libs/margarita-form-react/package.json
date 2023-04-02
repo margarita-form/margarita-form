@@ -25,5 +25,11 @@
       "import": "./index.js",
       "require": "./index.cjs"
     }
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "readmeFile": "../../README.md",
+    "displayName": "@margarita-form/react",
+    "tsconfig": "./tsconfig.lib.json"
   }
 }
