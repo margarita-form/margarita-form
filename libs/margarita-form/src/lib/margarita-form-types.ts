@@ -45,6 +45,13 @@ export interface MargaritaFormFieldValidators<
   [key: string]: MargaritaFormFieldFunction<T, O, F>;
 }
 
+export type MargaritaFormValidatorFunction<Params> = MargaritaFormFieldFunction<
+  unknown,
+  MargaritaFormFieldValidatorResult,
+  MargaritaFormField,
+  Params
+>;
+
 export interface MargaritaFormFieldValidationsState {
   [key: string]: MargaritaFormFieldValidatorResult;
 }
@@ -195,9 +202,17 @@ export type MargaritaFormBaseElement<
 
 // Shorthands
 
+/** Shorthand for {@link MargaritaForm}  */
 export type MF = MargaritaForm;
+/** Shorthand for {@link MargaritaFormField}  */
 export type MFF = MargaritaFormField;
+/** Shorthand for {@link MargaritaFormControl}  */
 export type MFC = MargaritaFormControl;
+/** Shorthand for {@link MargaritaFormValueControl}  */
 export type MFVC = MargaritaFormValueControl;
+/** Shorthand for {@link MargaritaFormGroupControl}  */
 export type MFGC = MargaritaFormGroupControl;
+/** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE = MargaritaFormBaseElement;
+/** Shorthand for {@link MargaritaFormBaseElement}  */
+export type MFVF = MargaritaFormBaseElement;

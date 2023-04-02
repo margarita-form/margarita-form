@@ -2,7 +2,6 @@ import { combineLatest, Observable } from 'rxjs';
 import type {
   MargaritaForm,
   MargaritaFormBaseElement,
-  MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldValidators,
   MargaritaFormStateErrors,
@@ -14,6 +13,9 @@ import { setRef } from './core/margarita-form-control-set-ref';
 import { MargaritaFormGroupControl } from './margarita-form-group-control';
 import { valueExists } from './helpers/chack-value';
 
+/**
+ * Control that represents a single field
+ */
 export class MargaritaFormValueControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField

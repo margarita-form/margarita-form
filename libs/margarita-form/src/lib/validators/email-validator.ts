@@ -1,17 +1,8 @@
-import {
-  MargaritaFormField,
-  MargaritaFormFieldFunction,
-  MargaritaFormFieldValidatorResult,
-} from '../margarita-form-types';
+import { MargaritaFormValidatorFunction } from '../margarita-form-types';
 
 export const emailValidator: (
   errorMessage?: string
-) => MargaritaFormFieldFunction<
-  unknown,
-  MargaritaFormFieldValidatorResult,
-  MargaritaFormField,
-  boolean
-> =
+) => MargaritaFormValidatorFunction<boolean> =
   (errorMessage = 'Value must be a valid email address!') =>
   ({ value, params }) => {
     if (!params) return { valid: true };

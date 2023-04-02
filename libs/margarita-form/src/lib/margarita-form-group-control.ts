@@ -23,6 +23,9 @@ import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { valueExists } from './helpers/chack-value';
 
+/**
+ * Control that groups other controls together and inherits their value.
+ */
 export class MargaritaFormGroupControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
