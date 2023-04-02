@@ -33,6 +33,9 @@ export class MargaritaFormValueControl<
     this._init();
   }
 
+  /**
+   * Unsubscribe from all subscriptions for current control
+   */
   public cleanup() {
     this._subscriptions.forEach((subscription) => {
       subscription.unsubscribe();
@@ -48,6 +51,10 @@ export class MargaritaFormValueControl<
 
   // Controls
 
+  /**
+   * Move control to another index
+   * @param toIndex index to move the control to
+   */
   public moveToIndex(toIndex: number) {
     if (this.parent instanceof MargaritaFormGroupControl) {
       this.parent.controlsController.moveControl(this.key, toIndex);
@@ -56,21 +63,35 @@ export class MargaritaFormValueControl<
     }
   }
 
+  /**
+   * Remove current control from parent
+   */
   public remove() {
     this.parent.removeControl(this.key);
   }
 
   // Value
 
+  /**
+   * Listen to value changes of the control
+   */
   public override get valueChanges(): Observable<T> {
     const observable = this._value.pipe(shareReplay(1));
     return observable as Observable<T>;
   }
 
+  /**
+   * Get current value of the control
+   */
   public get value(): T {
     return this._value.getValue() as T;
   }
 
+  /**
+   * Set value of the control
+   * @param value value to set
+   * @param setAsDirty update dirty state to true
+   */
   public override setValue(value: unknown, setAsDirty = true) {
     this._value.next(value);
     if (setAsDirty) this.updateStateValue('dirty', true);
@@ -78,6 +99,18 @@ export class MargaritaFormValueControl<
 
   // Common
 
+  /**
+   * Connect control to a HTML element.
+   * @example React
+   * ```jsx
+   * <input ref={control.setRef} />
+   * ```
+   * @example Vanilla JS
+   * ```js
+   * const el = document.querySelector('#myInput');
+   * control.setRef(el);
+   * ```
+   */
   get setRef() {
     return (ref: unknown): void => {
       return setRef(ref as MargaritaFormBaseElement, this as any);
@@ -86,6 +119,10 @@ export class MargaritaFormValueControl<
 
   // Internal
 
+  /**
+   * @returns Subscribable that updates the state of the control
+   * @internal
+   */
   private _setState() {
     return combineLatest([this._validationsState])
       .pipe(debounceTime(5))
