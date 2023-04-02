@@ -2,5 +2,9 @@
   "$schema": "https://typedoc.org/schema.json",
   "out": "doc",
   "entryPointStrategy": "packages",
-  "entryPoints": ["libs/margarita-form", "libs/margarita-form-react"]
+  "excludePrivate": true,
+  "entryPoints": ["libs/margarita-form", "libs/margarita-form-react"],
+  "name": "Margarita form reference documentation",
+  "titleLink": "https://github.com/margarita-form/margarita-form",
+  "githubPages": true
 }

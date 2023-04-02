@@ -27,8 +27,7 @@
     }
   },
   "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "../../README.md",
+    "entryPoint": "./src/internals.ts",
     "displayName": "@margarita-form/react",
     "tsconfig": "./tsconfig.lib.json"
   }
