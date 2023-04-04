@@ -1,4 +1,4 @@
-import { debounceTime, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
 import type {
   MargaritaFormControl,
@@ -76,6 +76,7 @@ export const getDefaultState = (
   fieldStateKeys.forEach((key) => {
     const value = control.field[key];
     if (typeof value === 'boolean') state[key] = value;
+    if (typeof value === 'function') state[key] = false;
   });
   return state;
 };
@@ -87,7 +88,6 @@ export const _createUserDefinedState = <
 ) => {
   const { field } = control;
   return control.valueChanges.pipe(
-    debounceTime(5),
     switchMap((value) => {
       const context = {
         control,
