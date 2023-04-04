@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useId, useSyncExternalStore } from 'react';
-import { combineLatest, debounceTime, skip } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import {
   createMargaritaForm,
   MargaritaForm,
@@ -44,12 +44,10 @@ const createFormStore = <T, F extends MargaritaFormField = MargaritaFormField>(
 
   const subscribe = (listener: () => void) => {
     const changes = combineLatest([form.valueChanges, form.stateChanges]);
-    const subscription = changes
-      .pipe(debounceTime(50), skip(1))
-      .subscribe(() => {
-        form.updateSyncId();
-        listener();
-      });
+    const subscription = changes.subscribe(() => {
+      form.updateSyncId();
+      listener();
+    });
     return () => subscription.unsubscribe();
   };
 
