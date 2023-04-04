@@ -68,7 +68,7 @@ export const getDefaultState = (
 ): MargaritaFormState => {
   const state = { control } as MargaritaFormState;
   Object.setPrototypeOf(state, defaultState);
-  if (control._root === control) {
+  if (control.root.key === control.key) {
     state.submitted = false;
     state.submitting = false;
   }
