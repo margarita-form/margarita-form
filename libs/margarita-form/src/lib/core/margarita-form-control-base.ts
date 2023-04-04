@@ -54,6 +54,9 @@ export class MargaritaFormBase<
     this._state = new BehaviorSubject<MargaritaFormState>(defaultState);
   }
 
+  /**
+   * @internal
+   */
   public _init() {
     const validationsStateSubscription = this._setValidationsState();
     const userDefinedStateSubscription = this._setUserDefinedState();
@@ -211,18 +214,27 @@ export class MargaritaFormBase<
     this.syncId = nanoid(4);
   }
 
+  /**
+   * @internal
+   */
   private _setValidationsState(): Subscription {
     return _createValidationsState(this as any).subscribe((validationState) => {
       this._validationsState.next(validationState);
     });
   }
 
+  /**
+   * @internal
+   */
   private _setUserDefinedState(): Subscription {
     return _createUserDefinedState(this as any).subscribe((changes) => {
       this.updateState(changes);
     });
   }
 
+  /**
+   * @internal
+   */
   private _setParams(): Subscription {
     return _createParams(this as any).subscribe((params) => {
       this._params.next(params);
@@ -293,10 +305,16 @@ export class MargaritaFormBase<
     );
   }
 
+  /**
+   * @internal
+   */
   public _enableChildren(value: boolean) {
     // Just a placeholder
   }
 
+  /**
+   * @internal
+   */
   public _setParentDirty() {
     if (!this.isRoot) this.parent.updateStateValue('dirty', true);
   }
