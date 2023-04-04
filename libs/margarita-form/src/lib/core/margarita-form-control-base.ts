@@ -99,11 +99,11 @@ export class MargaritaFormBase<
 
   // Params
 
-  public params(): MargaritaFormControlParams {
+  public get params(): MargaritaFormControlParams {
     return this._params.getValue();
   }
 
-  public paramsChanges(): Observable<MargaritaFormControlParams> {
+  public get paramsChanges(): Observable<MargaritaFormControlParams> {
     return this._params.pipe(debounceTime(5), shareReplay(1));
   }
 
