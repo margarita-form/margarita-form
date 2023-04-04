@@ -93,12 +93,18 @@ export class MargaritaFormGroupControl<
 
   /**
    * Get control with identifier
-   * @param identifier name, index or key of the control
-   * @returns The control that was found or added
+   * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
+   * @returns The control that was found or added or null if control doesn't exist.
    */
   public override getControl<T = MargaritaFormControl<unknown, F>>(
-    identifier: string | number
+    identifier: string | number | (string | number)[]
   ): T {
+    if (Array.isArray(identifier)) {
+      const [first, ...rest] = identifier;
+      const control = this.controlsController.getControl(first);
+      if (!control) return null as T;
+      return control.getControl(rest) as T;
+    }
     return this.controlsController.getControl(identifier) as T;
   }
 
