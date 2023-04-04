@@ -50,14 +50,12 @@ const fields: MargaritaFormField[] = [
   {
     name: 'title',
     initialValue: 'Hello world',
-    readOnly: true,
     validation: {
       required: true,
     },
   },
   {
     name: 'description',
-    active: false,
     validation: {
       required: true,
     },

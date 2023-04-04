@@ -4,6 +4,7 @@ import type {
   MargaritaFormControl,
   MargaritaFormField,
   MargaritaFormFieldContext,
+  MargaritaFormFieldFunctionOutput,
 } from '../margarita-form-types';
 
 export const _createParams = <
@@ -23,9 +24,17 @@ export const _createParams = <
       } as unknown as MargaritaFormFieldContext<boolean>;
 
       const { params } = control.field;
+
       if (!params) return Promise.resolve({});
 
-      const entries = Object.entries(params);
+      const entries = Object.entries(params).map(([key, value]) => {
+        if (typeof value === 'function') {
+          const result = value(context);
+          return [key, result];
+        }
+        return [key, value];
+      }) as [string, MargaritaFormFieldFunctionOutput<unknown>][];
+
       return resolveFunctionOutputs('State', context, entries);
     })
   );
