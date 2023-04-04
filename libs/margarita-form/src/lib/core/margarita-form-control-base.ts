@@ -265,7 +265,7 @@ export class MargaritaFormBase<
     return [];
   }
 
-  public getControl(identifier: string | number) {
+  public getControl(identifier: string | number | (string | number)[]) {
     console.warn('Trying to use method "getControl" which is not available!', {
       identifier,
       context: this,
