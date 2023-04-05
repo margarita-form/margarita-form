@@ -77,6 +77,8 @@ export const getDefaultState = (
   if (control.root.key === control.key) {
     state.submitted = false;
     state.submitting = false;
+    state.submitResult = 'not-submitted';
+    state.submits = 0;
   }
   if (!respectField) return state;
   fieldStateKeys.forEach((key) => {

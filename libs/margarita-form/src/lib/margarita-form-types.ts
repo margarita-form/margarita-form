@@ -122,7 +122,8 @@ export type MargaritaFormStaticState = Record<
 export type MargaritaFormRootStateBooleanKeys = 'submitting' | 'submitted';
 
 export type MargaritaFormRootStateSubmitResult = {
-  submitResult: 'form-invalid' | 'error' | 'success';
+  submits: number;
+  submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
 };
 
 export type MargaritaFormRootState = Record<
@@ -147,6 +148,7 @@ interface MargaritaFormFunctionalityOptions {
   asyncFunctionWarningTimeout?: number;
   disableFormWhileSubmitting?: boolean;
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
+  allowConcurrentSubmits?: boolean;
 }
 
 export interface MargaritaFormOptions<
