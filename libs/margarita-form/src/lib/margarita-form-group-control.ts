@@ -34,7 +34,9 @@ export class MargaritaFormGroupControl<
   T = unknown,
   F extends MargaritaFormField = MargaritaFormField
 > extends MargaritaFormBase<F> {
-  public controlsController: ControlsController<F>;
+  public controlsController: ControlsController<F> = new ControlsController<F>(
+    this
+  );
 
   constructor(
     public override field: F,
@@ -43,10 +45,10 @@ export class MargaritaFormGroupControl<
     public override _validators?: MargaritaFormFieldValidators
   ) {
     super(field, _parent, _root, _validators);
-    this.controlsController = new ControlsController(this);
     if (field.initialValue) this.setValue(field.initialValue, false);
     const stateSubscription = this._setState();
     this._subscriptions.push(stateSubscription);
+    this.controlsController._addInitialControls();
     this._init();
   }
 

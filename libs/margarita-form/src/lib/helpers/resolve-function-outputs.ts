@@ -14,7 +14,7 @@ export const resolveFunctionOutputs = <T = unknown>(
   const observableEntries = entries.reduce((acc, [key, output]) => {
     const longTime = setTimeout(() => {
       console.warn(`${title} is taking long time to finish!`, { context });
-    }, context.control.root.asyncFunctionWarningTimeout);
+    }, context.control.root.asyncFunctionWarningTimeout || 2000);
 
     if (output instanceof Observable) {
       const observable = output.pipe(

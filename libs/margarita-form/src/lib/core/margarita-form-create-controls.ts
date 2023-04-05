@@ -46,11 +46,12 @@ export class ControlsController<
     []
   );
 
-  constructor(private _parent: MargaritaFormGroupControl<unknown, F>) {
-    this.init();
-  }
+  constructor(private _parent: MargaritaFormGroupControl<unknown, F>) {}
 
-  private init() {
+  /**
+   * @internal
+   */
+  public _addInitialControls() {
     const { grouping } = this.parent;
     const { startWith = 1, fields, template } = this.parent.field;
     for (let i = 0; i < startWith; i++) {
@@ -148,14 +149,14 @@ export class ControlsController<
     };
   }
   get getControl() {
-    return (identifier: string | number) => {
+    return (identifier: string | number): MargaritaFormControl<unknown, F> => {
       const items = this.controls.getValue();
       if (typeof identifier === 'number') {
         return items[identifier];
       }
       return items.find((control) =>
         [control.name, control.key].includes(identifier)
-      );
+      ) as MargaritaFormControl<unknown, F>;
     };
   }
   get getControlIndex() {
