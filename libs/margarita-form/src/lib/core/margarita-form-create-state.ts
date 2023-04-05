@@ -30,6 +30,9 @@ const defaultState: MargaritaFormState = {
   editable: true,
   active: true,
   // Getters and setters
+  get invalid() {
+    return !this.valid;
+  },
   get dirty() {
     return !this.pristine;
   },
@@ -59,6 +62,9 @@ const defaultState: MargaritaFormState = {
   },
   set inactive(val: boolean) {
     this.active = !val;
+  },
+  get shouldShowError() {
+    return this.invalid && this.dirty;
   },
 };
 

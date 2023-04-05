@@ -73,13 +73,14 @@ const createMargaritaFormFn = <
   });
 
   form.submit = async () => {
+    await form.validate();
     if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
     form.updateStateValue('submitting', true);
     if (disableFormWhileSubmitting) form.updateStateValue('disabled', true);
-
     if (form.state.valid) {
       return await Promise.resolve(handleSubmit.valid(form))
         .then(() => {
+          form.updateStateValue('submitResult', 'success');
           switch (handleSuccesfullSubmit) {
             case 'disable':
               form.updateStateValue('disabled', true);
@@ -91,20 +92,26 @@ const createMargaritaFormFn = <
               form.updateStateValue('disabled', false);
               break;
           }
-          form.updateStateValue('submitted', true);
         })
-        .catch(() => form.updateStateValue('submitted', false))
-        .finally(() => form.updateStateValue('submitting', false));
+        .catch(() => {
+          form.updateStateValue('submitResult', 'error');
+        })
+        .finally(() => {
+          form.updateStateValue('submitted', true);
+          form.updateStateValue('submitting', false);
+        });
     }
     if (handleSubmit?.invalid) {
       return await Promise.resolve(handleSubmit.invalid(form)).finally(() =>
         form.updateState({
-          submitted: false,
           submitting: false,
+          submitted: true,
+          submitResult: 'form-invalid',
           disabled: false,
         })
       );
     }
+    throw 'Could not handle form submit!';
   };
 
   return form;

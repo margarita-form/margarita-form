@@ -3,10 +3,10 @@ import {
   BehaviorSubject,
   debounceTime,
   distinctUntilChanged,
+  firstValueFrom,
   map,
   Observable,
   shareReplay,
-  skip,
   Subscription,
 } from 'rxjs';
 import {
@@ -17,9 +17,7 @@ import {
   MargaritaFormBaseElement,
   MargaritaFormControlsArray,
   MargaritaFormField,
-  MargaritaFormRootStateKeys,
   MargaritaFormState,
-  MargaritaFormCommonStateKeys,
   MargaritaFormFieldValidationsState,
   MargaritaForm,
   MargaritaFormFieldValidators,
@@ -147,13 +145,13 @@ export class MargaritaFormBase<
   }
 
   public updateStateValue(
-    key: MargaritaFormCommonStateKeys | MargaritaFormRootStateKeys,
-    value: boolean
+    key: keyof MargaritaFormState,
+    value: MargaritaFormState[typeof key]
   ) {
     const currentState = this.state;
     Object.assign(currentState, { [key]: value });
     this._state.next(currentState);
-    if (key === 'enabled') this._enableChildren(value);
+    if (key === 'enabled') this._enableChildren(!!value);
     if (key === 'disabled') this._enableChildren(!value);
     if (key === 'dirty' && value === true) this._setParentDirty();
     if (key === 'pristine' && value === false) this._setParentDirty();
@@ -161,6 +159,12 @@ export class MargaritaFormBase<
 
   public get validators(): MargaritaFormFieldValidators {
     return this._validators || this.root.validators;
+  }
+
+  public async validate() {
+    const observable = _createValidationsState(this as any, 0);
+    const validationState = await firstValueFrom(observable);
+    this._validationsState.next(validationState);
   }
 
   public registerValidator(
@@ -218,7 +222,10 @@ export class MargaritaFormBase<
    * @internal
    */
   private _setValidationsState(): Subscription {
-    return _createValidationsState(this as any).subscribe((validationState) => {
+    return _createValidationsState(
+      this as any,
+      this.field.initialValue ? 1 : 0
+    ).subscribe((validationState) => {
       this._validationsState.next(validationState);
     });
   }

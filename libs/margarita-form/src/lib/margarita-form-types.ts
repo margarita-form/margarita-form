@@ -119,17 +119,24 @@ export type MargaritaFormStaticState = Record<
   boolean
 >;
 
-export type MargaritaFormRootStateKeys = 'submitting' | 'submitted';
+export type MargaritaFormRootStateBooleanKeys = 'submitting' | 'submitted';
+
+export type MargaritaFormRootStateSubmitResult = {
+  submitResult: 'form-invalid' | 'error' | 'success';
+};
 
 export type MargaritaFormRootState = Record<
-  MargaritaFormRootStateKeys,
+  MargaritaFormRootStateBooleanKeys,
   boolean
->;
+> &
+  MargaritaFormRootStateSubmitResult;
 
 export interface MargaritaFormState
   extends MargaritaFormStaticState,
     Partial<MargaritaFormRootState> {
   valid: boolean;
+  invalid: boolean;
+  shouldShowError: boolean;
   errors: MargaritaFormStateErrors;
   control: MargaritaFormControl | null;
   children?: MargaritaFormStateChildren;
