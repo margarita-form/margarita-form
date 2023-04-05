@@ -64,7 +64,8 @@ const defaultState: MargaritaFormState = {
     this.active = !val;
   },
   get shouldShowError() {
-    return this.invalid && this.dirty;
+    const interacted = this.touched || this.dirty;
+    return this.invalid && interacted;
   },
 };
 
