@@ -58,10 +58,7 @@ const defaultState: MargaritaFormState = {
     this.editable = !val;
   },
   get inactive() {
-    return !this.editable;
-  },
-  set inactive(val: boolean) {
-    this.active = !val;
+    return !this.active;
   },
   get shouldShowError() {
     const interacted = this.touched || this.dirty;
