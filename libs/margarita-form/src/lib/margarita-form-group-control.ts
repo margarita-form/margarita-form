@@ -315,11 +315,18 @@ export class MargaritaFormGroupControl<
 
   // State
 
-  public override async validate() {
-    await Promise.all(this.controls.map((control) => control.validate()));
+  /**
+   * Validate the control and it's children and update state. Mark the control as touched to show errors.
+   * @param setAsTouched Set the touched state to true
+   */
+  public override async validate(setAsTouched = true) {
+    await Promise.all(
+      this.controls.map((control) => control.validate(setAsTouched))
+    );
     const observable = _createValidationsState(this, 0);
     const validationState = await firstValueFrom(observable);
     this._validationsState.next(validationState);
+    if (setAsTouched) this.updateStateValue('touched', true);
   }
 
   // Common

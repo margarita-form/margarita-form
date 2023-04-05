@@ -161,10 +161,15 @@ export class MargaritaFormBase<
     return this._validators || this.root.validators;
   }
 
-  public async validate() {
+  /**
+   * Validate the control and update state. Mark the control as touched to show errors.
+   * @param setAsTouched Set the touched state to true
+   */
+  public async validate(setAsTouched = true) {
     const observable = _createValidationsState(this as any, 0);
     const validationState = await firstValueFrom(observable);
     this._validationsState.next(validationState);
+    if (setAsTouched) this.updateStateValue('touched', true);
   }
 
   public registerValidator(
