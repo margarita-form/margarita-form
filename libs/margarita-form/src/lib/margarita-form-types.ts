@@ -149,6 +149,7 @@ interface MargaritaFormFunctionalityOptions {
   disableFormWhileSubmitting?: boolean;
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
   allowConcurrentSubmits?: boolean;
+  addDefaultValidators?: boolean;
 }
 
 export interface MargaritaFormOptions<
@@ -181,7 +182,7 @@ export type MargaritaForm<
   C = MargaritaFormGroupControl<T, F>
 > = C &
   MargaritaFormFunctionalityOptions & {
-    submit: () => void;
+    submit: () => Promise<any>;
     onSubmitted: Observable<MargaritaForm<T, F>>;
   };
 

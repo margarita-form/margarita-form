@@ -48,7 +48,7 @@ const createMargaritaFormFn = <
 ): MargaritaForm<T, F> => {
   const {
     fields,
-    validators = defaultValidators,
+    validators = {},
     initialValue,
     handleSubmit,
     detectInputElementValidations = true,
@@ -56,15 +56,20 @@ const createMargaritaFormFn = <
     disableFormWhileSubmitting = true,
     handleSuccesfullSubmit = 'disable',
     allowConcurrentSubmits = false,
+    addDefaultValidators = true,
   } = options;
 
   const initialField = { name: 'root', fields, initialValue } as unknown as F;
+
+  const _validators = addDefaultValidators
+    ? { ...defaultValidators, ...validators }
+    : validators;
 
   const form = new MargaritaFormGroupControl<T, F>(
     initialField,
     null,
     null,
-    validators
+    _validators
   ) as MargaritaForm<T, F>;
 
   Object.assign(form, {
@@ -87,7 +92,7 @@ const createMargaritaFormFn = <
     if (disableFormWhileSubmitting) form.updateStateValue('disabled', true);
     if (form.state.valid) {
       return await Promise.resolve(handleSubmit.valid(form))
-        .then(() => {
+        .then((res) => {
           form.updateStateValue('submitResult', 'success');
           switch (handleSuccesfullSubmit) {
             case 'disable':
@@ -100,9 +105,11 @@ const createMargaritaFormFn = <
               form.updateStateValue('disabled', false);
               break;
           }
+          return res;
         })
-        .catch(() => {
+        .catch((error) => {
           form.updateStateValue('submitResult', 'error');
+          return error;
         })
         .finally(() => {
           form.updateStateValue('submitted', true);
