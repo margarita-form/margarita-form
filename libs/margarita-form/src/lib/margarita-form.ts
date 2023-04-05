@@ -21,6 +21,7 @@ import {
 } from './validators';
 import { MargaritaFormValueControl } from './margarita-form-value-control';
 import { MargaritaFormGroupControl } from './margarita-form-group-control';
+import { map } from 'rxjs';
 
 const defaultValidators: MargaritaFormFieldValidators = {
   color: colorValidator(),
@@ -72,6 +73,8 @@ const createMargaritaFormFn = <
     disableFormWhileSubmitting,
     handleSuccesfullSubmit,
   });
+
+  form.onSubmitted = form.getStateChanges('submits').pipe(map(() => form));
 
   form.submit = async () => {
     await form.validate();

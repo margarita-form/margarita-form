@@ -182,6 +182,7 @@ export type MargaritaForm<
 > = C &
   MargaritaFormFunctionalityOptions & {
     submit: () => void;
+    onSubmitted: Observable<MargaritaForm<T, F>>;
   };
 
 export type MargaritaFormControlsArray<
