@@ -13,6 +13,7 @@ import {
 import {
   debounceTime,
   distinctUntilKeyChanged,
+  firstValueFrom,
   Observable,
   Subscription,
 } from 'rxjs';
@@ -22,6 +23,7 @@ import { ControlsController } from './core/margarita-form-create-controls';
 import { MargaritaFormBase } from './core/margarita-form-control-base';
 import { setRef } from './core/margarita-form-control-set-ref';
 import { valueExists } from './helpers/chack-value';
+import { _createValidationsState } from './core/margarita-form-validation';
 
 /**
  * Control that groups other controls together and inherits their value.
@@ -309,6 +311,15 @@ export class MargaritaFormGroupControl<
     }
   }
 
+  // State
+
+  public override async validate() {
+    await Promise.all(this.controls.map((control) => control.validate()));
+    const observable = _createValidationsState(this, 0);
+    const validationState = await firstValueFrom(observable);
+    this._validationsState.next(validationState);
+  }
+
   // Common
 
   /**
@@ -369,10 +380,7 @@ export class MargaritaFormGroupControl<
           (state) => state.valid
         );
 
-        const validationResult = currentIsValid && childrenAreValid;
-        const forceValid = this.state.pristine;
-        const valid = forceValid || validationResult;
-        const invalid = !valid;
+        const valid = currentIsValid && childrenAreValid;
 
         const errors = Object.entries(validationStates).reduce(
           (acc, [key, { error }]) => {
@@ -385,7 +393,6 @@ export class MargaritaFormGroupControl<
         const hasValue = valueExists(this.value);
         const changes = {
           valid,
-          invalid,
           errors,
           children,
           hasValue,

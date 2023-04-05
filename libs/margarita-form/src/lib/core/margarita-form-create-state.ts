@@ -30,6 +30,9 @@ const defaultState: MargaritaFormState = {
   editable: true,
   active: true,
   // Getters and setters
+  get invalid() {
+    return !this.valid;
+  },
   get dirty() {
     return !this.pristine;
   },
@@ -60,6 +63,9 @@ const defaultState: MargaritaFormState = {
   set inactive(val: boolean) {
     this.active = !val;
   },
+  get shouldShowError() {
+    return this.invalid && this.dirty;
+  },
 };
 
 export const getDefaultState = (
@@ -71,6 +77,8 @@ export const getDefaultState = (
   if (control.root.key === control.key) {
     state.submitted = false;
     state.submitting = false;
+    state.submitResult = 'not-submitted';
+    state.submits = 0;
   }
   if (!respectField) return state;
   fieldStateKeys.forEach((key) => {

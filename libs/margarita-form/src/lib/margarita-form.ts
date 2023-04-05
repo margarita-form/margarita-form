@@ -21,6 +21,7 @@ import {
 } from './validators';
 import { MargaritaFormValueControl } from './margarita-form-value-control';
 import { MargaritaFormGroupControl } from './margarita-form-group-control';
+import { map } from 'rxjs';
 
 const defaultValidators: MargaritaFormFieldValidators = {
   color: colorValidator(),
@@ -54,6 +55,7 @@ const createMargaritaFormFn = <
     asyncFunctionWarningTimeout = 2000,
     disableFormWhileSubmitting = true,
     handleSuccesfullSubmit = 'disable',
+    allowConcurrentSubmits = false,
   } = options;
 
   const initialField = { name: 'root', fields, initialValue } as unknown as F;
@@ -72,14 +74,21 @@ const createMargaritaFormFn = <
     handleSuccesfullSubmit,
   });
 
-  form.submit = async () => {
-    if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
-    form.updateStateValue('submitting', true);
-    if (disableFormWhileSubmitting) form.updateStateValue('disabled', true);
+  form.onSubmitted = form.getStateChanges('submits').pipe(map(() => form));
 
+  form.submit = async () => {
+    await form.validate();
+    if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
+    const canSubmit = allowConcurrentSubmits || !form.state.submitting;
+    if (!canSubmit) throw 'Form is already submitting!';
+
+    form.updateStateValue('submitting', true);
+
+    if (disableFormWhileSubmitting) form.updateStateValue('disabled', true);
     if (form.state.valid) {
       return await Promise.resolve(handleSubmit.valid(form))
         .then(() => {
+          form.updateStateValue('submitResult', 'success');
           switch (handleSuccesfullSubmit) {
             case 'disable':
               form.updateStateValue('disabled', true);
@@ -91,20 +100,30 @@ const createMargaritaFormFn = <
               form.updateStateValue('disabled', false);
               break;
           }
-          form.updateStateValue('submitted', true);
         })
-        .catch(() => form.updateStateValue('submitted', false))
-        .finally(() => form.updateStateValue('submitting', false));
+        .catch(() => {
+          form.updateStateValue('submitResult', 'error');
+        })
+        .finally(() => {
+          form.updateStateValue('submitted', true);
+          form.updateStateValue('submitting', false);
+          const submits = form.state.submits || 0;
+          form.updateStateValue('submits', submits + 1);
+        });
     }
     if (handleSubmit?.invalid) {
-      return await Promise.resolve(handleSubmit.invalid(form)).finally(() =>
+      return await Promise.resolve(handleSubmit.invalid(form)).finally(() => {
+        const submits = form.state.submits || 0;
         form.updateState({
-          submitted: false,
           submitting: false,
+          submitted: true,
+          submitResult: 'form-invalid',
           disabled: false,
-        })
-      );
+          submits: submits + 1,
+        });
+      });
     }
+    throw 'Could not handle form submit!';
   };
 
   return form;

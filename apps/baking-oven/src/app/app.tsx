@@ -92,14 +92,19 @@ interface FormValue {
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
   const form = useMargaritaForm<FormValue>({
+    handleSuccesfullSubmit: 'enable',
     fields,
     handleSubmit: {
-      valid: ({ value }) => {
-        console.log('Valid submit', { value });
+      valid: async (form) => {
+        setSubmitResponse('Fake submitting for 2s...');
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.log('Valid submit', { form });
         setSubmitResponse('Form is valid!');
       },
-      invalid: ({ value }) => {
-        console.log('Invalid submit', { value });
+      invalid: async (form) => {
+        setSubmitResponse('Fake submitting for 2s...');
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.log('Invalid submit', { form });
         setSubmitResponse('Form is invalid!');
       },
     },

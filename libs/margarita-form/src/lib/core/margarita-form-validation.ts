@@ -17,14 +17,16 @@ import {
 export const _createValidationsState = <
   F extends MargaritaFormField = MargaritaFormField
 >(
-  control: MargaritaFormControl<unknown, F>
+  control: MargaritaFormControl<unknown, F>,
+  _skip: number
 ) => {
   return control.valueChanges.pipe(
     debounceTime(5),
-    skip(control.field.initialValue ? 1 : 0),
+    skip(_skip),
     switchMap((value) => {
+      if (!control.field.validation) return Promise.resolve({});
       const activeValidatorEntries = Object.entries(
-        control.field.validation || {}
+        control.field.validation
       ).reduce((acc, [key, validationValue]) => {
         const validateFunction = (
           validatorFn: MargaritaFormFieldFunction,
@@ -72,6 +74,8 @@ export const _createValidationsState = <
         }
         return acc;
       }, [] as ObservableInput<MargaritaFormFieldFunctionOutputResultEntry>[]);
+
+      if (activeValidatorEntries.length === 0) return Promise.resolve({});
 
       return combineLatest(activeValidatorEntries).pipe(
         map((values: MargaritaFormFieldFunctionOutputResultEntry[]) => {
