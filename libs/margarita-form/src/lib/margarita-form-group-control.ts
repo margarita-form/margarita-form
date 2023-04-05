@@ -45,10 +45,10 @@ export class MargaritaFormGroupControl<
     public override _validators?: MargaritaFormFieldValidators
   ) {
     super(field, _parent, _root, _validators);
-    if (field.initialValue) this.setValue(field.initialValue, false);
     const stateSubscription = this._setState();
     this._subscriptions.push(stateSubscription);
     this.controlsController._addInitialControls();
+    if (field.initialValue) this.setValue(field.initialValue, false);
     this._init();
   }
 
