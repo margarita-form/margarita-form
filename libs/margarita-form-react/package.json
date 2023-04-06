@@ -1,6 +1,6 @@
 {
   "name": "@margarita-form/react",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "license": "MIT",
   "private": false,
@@ -12,7 +12,7 @@
     "url": "https://github.com/margarita-form/margarita-form/issues"
   },
   "dependencies": {
-    "@margarita-form/core": "^0.2.7",
+    "@margarita-form/core": "^0.2.8",
     "lodash.get": "^4.4.2",
     "nanoid": "^4.0.1",
     "rxjs": "^7.8.0"
