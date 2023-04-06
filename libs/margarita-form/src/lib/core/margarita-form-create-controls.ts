@@ -177,7 +177,7 @@ export class ControlsController<
     };
   }
   get controlChanges(): Observable<MargaritaFormControl<unknown, F>[]> {
-    const changes = this.controls.pipe(debounceTime(5));
+    const changes = this.controls.pipe(debounceTime(1));
     return changes;
   }
   get controlsGroup(): MargaritaFormControlsGroup<unknown, F> {

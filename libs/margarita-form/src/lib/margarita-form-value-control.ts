@@ -80,7 +80,7 @@ export class MargaritaFormValueControl<
    * Listen to value changes of the control
    */
   public override get valueChanges(): Observable<T> {
-    const observable = this._value.pipe(debounceTime(5), shareReplay(1));
+    const observable = this._value.pipe(debounceTime(1), shareReplay(1));
     return observable as Observable<T>;
   }
 
@@ -129,7 +129,7 @@ export class MargaritaFormValueControl<
    */
   private _setState() {
     return combineLatest([this._validationsState])
-      .pipe(debounceTime(5))
+      .pipe(debounceTime(1))
       .subscribe(([validationStates]) => {
         const valid = Object.values(validationStates).every(
           (state) => state.valid

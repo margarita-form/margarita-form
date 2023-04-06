@@ -14,7 +14,7 @@ export const _createParams = <
 ) => {
   const { field } = control;
   return combineLatest([control.valueChanges, control.stateChanges]).pipe(
-    debounceTime(5),
+    debounceTime(1),
     switchMap(([value, state]) => {
       const context = {
         control,

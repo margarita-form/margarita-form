@@ -242,7 +242,7 @@ export class MargaritaFormGroupControl<
             });
             return Object.fromEntries(entries);
           }),
-          debounceTime(5),
+          debounceTime(1),
           shareReplay(1)
         );
 
@@ -381,7 +381,7 @@ export class MargaritaFormGroupControl<
       );
 
     return combineLatest([this._validationsState, childStates])
-      .pipe(debounceTime(5))
+      .pipe(debounceTime(1))
       .subscribe(([validationStates, children]) => {
         const childrenAreValid = children.every(
           (child) => child.valid || child.inactive

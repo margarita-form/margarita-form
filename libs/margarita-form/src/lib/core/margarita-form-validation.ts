@@ -21,7 +21,7 @@ export const _createValidationsState = <
   _skip: number
 ) => {
   return control.valueChanges.pipe(
-    debounceTime(5),
+    debounceTime(1),
     skip(_skip),
     switchMap((value) => {
       if (!control.field.validation) return Promise.resolve({});

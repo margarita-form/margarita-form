@@ -102,7 +102,7 @@ export class MargaritaFormBase<
   }
 
   public get paramsChanges(): Observable<MargaritaFormControlParams> {
-    return this._params.pipe(debounceTime(5), shareReplay(1));
+    return this._params.pipe(debounceTime(1), shareReplay(1));
   }
 
   // State
@@ -112,7 +112,7 @@ export class MargaritaFormBase<
   }
 
   public get stateChanges(): Observable<MargaritaFormState> {
-    return this._state.pipe(debounceTime(5), shareReplay(1));
+    return this._state.pipe(debounceTime(1), shareReplay(1));
   }
 
   public getState(key: keyof MargaritaFormState) {
