@@ -1,3 +1,4 @@
+import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidatorFunction } from '../margarita-form-types';
 
 export const uniqueValidator: (
@@ -7,7 +8,7 @@ export const uniqueValidator: (
   ({ value, control, params }) => {
     const parentControls = control.parent.controls;
 
-    if (!params || !parentControls) return { valid: true };
+    if (!params || !parentControls || !value) return { valid: true };
 
     const siblings = parentControls.filter((sibling) => {
       const { key, name } = sibling;
@@ -19,11 +20,19 @@ export const uniqueValidator: (
       return params;
     });
 
-    const valueIsInvalid = siblings.some(
-      ({ value: siblingValue }) =>
-        JSON.stringify(siblingValue) === JSON.stringify(value)
+    const changes = siblings.map((sibling) =>
+      sibling.valueChanges.pipe(map(() => sibling))
     );
 
-    const error = valueIsInvalid ? errorMessage : null;
-    return { valid: !valueIsInvalid, error };
+    return combineLatest(changes).pipe(
+      map((_siblings) => {
+        const valueIsInvalid = _siblings.some(
+          ({ value: siblingValue }) =>
+            JSON.stringify(siblingValue) === JSON.stringify(value)
+        );
+
+        const error = valueIsInvalid ? errorMessage : null;
+        return { valid: !valueIsInvalid, error };
+      })
+    );
   };

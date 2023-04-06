@@ -5,7 +5,7 @@ export const patternValidator: (
 ) => MargaritaFormValidatorFunction<string | RegExp> =
   (errorMessage = 'Value does not match required pattern!') =>
   ({ value, params }) => {
-    if (!params) return { valid: true };
+    if (!params || !value) return { valid: true };
     const regex = new RegExp(params);
     const stringValue =
       typeof value === 'string' ? value : JSON.stringify(value);

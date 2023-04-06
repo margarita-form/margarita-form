@@ -5,7 +5,7 @@ export const phoneValidator: (
 ) => MargaritaFormValidatorFunction<boolean> =
   (errorMessage = 'Value must be a valid phone number!') =>
   ({ value, params }) => {
-    if (!params) return { valid: true };
+    if (!params || !value) return { valid: true };
     const regex = new RegExp(/\+?[0-9\s]{3,30}/gi);
     const stringValue = typeof value === 'string' ? value : String(value);
     const valueIsInvalid = !regex.test(stringValue);

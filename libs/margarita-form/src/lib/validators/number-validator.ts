@@ -5,7 +5,8 @@ export const numberValidator: (
 ) => MargaritaFormValidatorFunction<boolean> =
   (errorMessage = 'Please enter a valid number!') =>
   ({ value, params }) => {
-    if (!params) return { valid: true };
+    const invalidValues: unknown[] = [null, undefined, ''];
+    if (!params || invalidValues.includes(value)) return { valid: true };
     const regex = new RegExp(/\d+/g);
     const stringValue = typeof value === 'string' ? value : String(value);
     const valueIsInvalid = !regex.test(stringValue);

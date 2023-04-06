@@ -1,6 +1,6 @@
 import { MargaritaFormValidatorFunction } from '../margarita-form-types';
 
-const invalids: unknown[] = [undefined, null, NaN];
+const invalids: unknown[] = [undefined, null, ''];
 
 const compare = (value: unknown, comparisonFn: (value: number) => boolean) => {
   if (typeof value === 'number') return comparisonFn(value);

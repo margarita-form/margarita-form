@@ -5,7 +5,7 @@ export const colorValidator: (
 ) => MargaritaFormValidatorFunction<boolean> =
   (errorMessage = 'Value must be a valid color code!') =>
   ({ value, params }) => {
-    if (!params) return { valid: true };
+    if (!params || !value) return { valid: true };
     const regex = new RegExp(
       /#[0-9a-zA-Z]{3,8}|(rgba?|hsla?)\([^,]{1,4},[^,]{1,4},[^,]{1,4}(,[^,]{1,3})?\)/gi
     );

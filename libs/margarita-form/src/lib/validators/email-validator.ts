@@ -5,7 +5,7 @@ export const emailValidator: (
 ) => MargaritaFormValidatorFunction<boolean> =
   (errorMessage = 'Value must be a valid email address!') =>
   ({ value, params }) => {
-    if (!params) return { valid: true };
+    if (!params || !value) return { valid: true };
     const regex = new RegExp(/.+@.+\..+/g);
     const stringValue = typeof value === 'string' ? value : String(value);
     const valueIsInvalid = !regex.test(stringValue);

@@ -6,7 +6,7 @@ export const requiredValidator: (
   (errorMessage = 'This field is required!') =>
   ({ value, params }) => {
     if (!params) return { valid: true };
-    const invalidValues: unknown[] = [null, undefined, NaN, ''];
+    const invalidValues: unknown[] = [null, undefined, NaN, Infinity, ''];
     let valueIsInvalid = invalidValues.includes(value);
     if (!valueIsInvalid && value) {
       if (typeof value === 'string') valueIsInvalid = value.trim().length < 1;

@@ -5,7 +5,7 @@ export const urlValidator: (
 ) => MargaritaFormValidatorFunction<boolean> =
   (errorMessage = 'Please enter a valid url!') =>
   ({ value, params }) => {
-    if (!params) return { valid: true };
+    if (!params || !value) return { valid: true };
     const regex = new RegExp(/https?:\/\/.+\..+/g);
     const stringValue = typeof value === 'string' ? value : String(value);
     const valueIsInvalid = !regex.test(stringValue);
