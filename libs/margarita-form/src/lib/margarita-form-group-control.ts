@@ -242,6 +242,7 @@ export class MargaritaFormGroupControl<
             });
             return Object.fromEntries(entries);
           }),
+          debounceTime(5),
           shareReplay(1)
         );
 

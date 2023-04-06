@@ -80,7 +80,7 @@ export class MargaritaFormValueControl<
    * Listen to value changes of the control
    */
   public override get valueChanges(): Observable<T> {
-    const observable = this._value.pipe(shareReplay(1));
+    const observable = this._value.pipe(debounceTime(5), shareReplay(1));
     return observable as Observable<T>;
   }
 
