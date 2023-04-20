@@ -1,127 +1,77 @@
 import type {
-  MargaritaForm,
-  MargaritaFormField,
-  MargaritaFormFieldValidators,
   MargaritaFormOptions,
+  MargaritaFormRootField,
 } from './margarita-form-types';
-import {
-  colorValidator,
-  dateValidator,
-  emailValidator,
-  maxValidator,
-  minValidator,
-  numberValidator,
-  patternValidator,
-  phoneValidator,
-  requiredValidator,
-  sameAsValidator,
-  slugValidator,
-  uniqueValidator,
-  urlValidator,
-} from './validators';
-import { MargaritaFormValueControl } from './margarita-form-value-control';
-import { MargaritaFormGroupControl } from './margarita-form-group-control';
-import { map } from 'rxjs';
+import { OptionsManager } from './managers/margarita-form-options-manager';
+import { MargaritaFormControl } from './margarita-form-control';
+import { Observable, map } from 'rxjs';
 
-const defaultValidators: MargaritaFormFieldValidators = {
-  color: colorValidator(),
-  date: dateValidator(),
-  email: emailValidator(),
-  min: minValidator(),
-  max: maxValidator(),
-  required: requiredValidator(),
-  number: numberValidator(),
-  pattern: patternValidator(),
-  tel: phoneValidator(),
-  phone: phoneValidator(),
-  sameAs: sameAsValidator(),
-  slug: slugValidator(),
-  unique: uniqueValidator(),
-  url: urlValidator(),
-};
+export class MargaritaForm<
+  VALUE = unknown,
+  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+> extends MargaritaFormControl<VALUE, FIELD> {
+  public optionsManager: OptionsManager<typeof this>;
+  constructor(public override field: FIELD) {
+    super(field);
+    this.optionsManager = new OptionsManager(this);
+  }
 
-const createMargaritaFormFn = <
-  T,
-  F extends MargaritaFormField = MargaritaFormField
->(
-  options: MargaritaFormOptions<T, F>
-): MargaritaForm<T, F> => {
-  const {
-    fields,
-    validators = {},
-    initialValue,
-    handleSubmit,
-    detectInputElementValidations = true,
-    asyncFunctionWarningTimeout = 2000,
-    disableFormWhileSubmitting = true,
-    handleSuccesfullSubmit = 'disable',
-    allowConcurrentSubmits = false,
-    addDefaultValidators = true,
-  } = options;
+  public override get form(): this {
+    return this;
+  }
 
-  const initialField = { name: 'root', fields, initialValue } as unknown as F;
+  public override get options(): MargaritaFormOptions {
+    return this.optionsManager.current;
+  }
 
-  const _validators = addDefaultValidators
-    ? { ...defaultValidators, ...validators }
-    : validators;
+  public get onSubmit(): Observable<this> {
+    return this.getStateChanges('submits').pipe(map(() => this));
+  }
 
-  const form = new MargaritaFormGroupControl<T, F>(
-    initialField,
-    null,
-    null,
-    _validators
-  ) as MargaritaForm<T, F>;
-
-  Object.assign(form, {
-    detectInputElementValidations,
-    asyncFunctionWarningTimeout,
-    disableFormWhileSubmitting,
-    handleSuccesfullSubmit,
-  });
-
-  form.onSubmitted = form.getStateChanges('submits').pipe(map(() => form));
-
-  form.submit = async () => {
-    await form.validate();
-    if (!handleSubmit) throw 'Add "handleSubmit" option to submit form!';
-    const canSubmit = allowConcurrentSubmits || !form.state.submitting;
+  public async submit() {
+    await this.validate();
+    if (!this.field.handleSubmit)
+      throw 'Add "handleSubmit" option to submit form!';
+    const canSubmit =
+      this.options.allowConcurrentSubmits || !this.state.submitting;
     if (!canSubmit) throw 'Form is already submitting!';
-
-    form.updateStateValue('submitting', true);
-
-    if (disableFormWhileSubmitting) form.updateStateValue('disabled', true);
-    if (form.state.valid) {
-      return await Promise.resolve(handleSubmit.valid(form))
+    this.updateStateValue('submitting', true);
+    if (this.options.disableFormWhileSubmitting)
+      this.updateStateValue('disabled', true);
+    if (this.state.valid) {
+      return await Promise.resolve(this.field.handleSubmit.valid<this>(this))
         .then((res) => {
-          form.updateStateValue('submitResult', 'success');
-          switch (handleSuccesfullSubmit) {
+          this.updateStateValue('submitResult', 'success');
+          switch (this.options.handleSuccesfullSubmit) {
             case 'disable':
-              form.updateStateValue('disabled', true);
+              this.updateStateValue('disabled', true);
               break;
             case 'reset':
-              form.reset();
+              this.reset();
               break;
             default:
-              form.updateStateValue('disabled', false);
+              this.updateStateValue('disabled', false);
               break;
           }
           return res;
         })
         .catch((error) => {
-          form.updateStateValue('submitResult', 'error');
+          this.updateStateValue('submitResult', 'error');
           return error;
         })
         .finally(() => {
-          form.updateStateValue('submitted', true);
-          form.updateStateValue('submitting', false);
-          const submits = form.state.submits || 0;
-          form.updateStateValue('submits', submits + 1);
+          this.updateStateValue('submitted', true);
+          this.updateStateValue('submitting', false);
+          const submits = this.state.submits || 0;
+          this.updateStateValue('submits', submits + 1);
         });
     }
-    if (handleSubmit?.invalid) {
-      return await Promise.resolve(handleSubmit.invalid(form)).finally(() => {
-        const submits = form.state.submits || 0;
-        form.updateState({
+    if (this.field.handleSubmit?.invalid) {
+      return await Promise.resolve(
+        this.field.handleSubmit.invalid<this>(this)
+      ).finally(() => {
+        const submits = this.state.submits || 0;
+        this.updateState({
           submitting: false,
           submitted: true,
           submitResult: 'form-invalid',
@@ -131,24 +81,14 @@ const createMargaritaFormFn = <
       });
     }
     throw 'Could not handle form submit!';
-  };
+  }
+}
 
-  return form;
+export const createMargaritaForm = <
+  VALUE = unknown,
+  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+>(
+  field: FIELD
+): MargaritaForm<VALUE, FIELD> => {
+  return new MargaritaForm(field);
 };
-
-createMargaritaFormFn.asControl = <T>(
-  options: Omit<MargaritaFormOptions<T>, 'handleSubmit'>
-): MargaritaFormValueControl<T> => {
-  const { fields, validators = defaultValidators, initialValue } = options;
-
-  const form = new MargaritaFormValueControl<T>(
-    { name: 'root', fields, initialValue },
-    null,
-    null,
-    validators
-  );
-
-  return form;
-};
-
-export const createMargaritaForm = createMargaritaFormFn;

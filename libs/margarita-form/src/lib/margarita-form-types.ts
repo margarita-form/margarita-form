@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Observable } from 'rxjs';
-import type { MargaritaFormValueControl } from './margarita-form-value-control';
-import type { MargaritaFormGroupControl } from './margarita-form-group-control';
+import type { MargaritaFormControl } from './margarita-form-control';
+import type { MargaritaForm } from './margarita-form';
 
 export interface MargaritaFormFieldContext<
-  T = unknown,
-  F extends MargaritaFormField = MargaritaFormField,
-  P = any
+  CONTROL extends MargaritaFormControl,
+  PARAMS = any
 > {
-  value: T;
-  field: F;
-  control: MargaritaFormControl<T, F>;
-  params: P;
+  value: CONTROL['value'];
+  params: PARAMS;
+  control: CONTROL;
 }
 
 export interface MargaritaFormFieldValidatorResult {
@@ -29,26 +27,23 @@ export type MargaritaFormFieldFunctionOutput<T> =
   | Observable<T>;
 
 export type MargaritaFormFieldFunction<
-  T = unknown,
-  O = unknown,
-  F1 extends MargaritaFormField = MargaritaFormField,
-  P = any
-> = <F2 extends MargaritaFormField = F1>(
-  context: MargaritaFormFieldContext<T, F2, P>
-) => MargaritaFormFieldFunctionOutput<O>;
+  CONTROL extends MargaritaFormControl = MFC,
+  OUTPUT = unknown,
+  PARAMS = any
+> = (
+  context: MargaritaFormFieldContext<CONTROL, PARAMS>
+) => MargaritaFormFieldFunctionOutput<OUTPUT>;
 
 export interface MargaritaFormFieldValidators<
-  T = unknown,
-  O = unknown,
-  F extends MargaritaFormField = MargaritaFormField
+  CONTROL extends MargaritaFormControl = MFC,
+  OUTPUT = unknown
 > {
-  [key: string]: MargaritaFormFieldFunction<T, O, F>;
+  [key: string]: MargaritaFormFieldFunction<CONTROL, OUTPUT>;
 }
 
 export type MargaritaFormValidatorFunction<Params> = MargaritaFormFieldFunction<
-  unknown,
+  MFC,
   MargaritaFormFieldValidatorResult,
-  MargaritaFormField,
   Params
 >;
 
@@ -70,80 +65,58 @@ export type MargaritaFormFieldStateKeys = 'active' | 'disabled' | 'readOnly';
 
 export type MargaritaFormFieldStates = Record<
   MargaritaFormFieldStateKeys,
-  boolean | MargaritaFormFieldFunction<unknown, boolean>
+  boolean | MargaritaFormFieldFunction<MFC, boolean>
 >;
 
-export type MargaritaFormFieldParams<T = unknown, V = unknown> = Record<
+export type MargaritaFormFieldParams<OUTPUT = any> = Record<
   string,
-  T | MargaritaFormFieldFunction<V, T>
+  OUTPUT | MargaritaFormFieldFunction<MFC, OUTPUT>
 >;
 
 export type MargaritaFormControlParams<T = unknown> = Record<string, T>;
 
-export interface MargaritaFormField<V = unknown, T = unknown>
-  extends Partial<MargaritaFormFieldStates> {
+export interface MargaritaFormField extends Partial<MargaritaFormFieldStates> {
   name: string;
+  title?: string;
   fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
-  template?: Partial<MargaritaFormField<V>>;
-  initialValue?: V;
+  template?: Partial<MargaritaFormField>;
+  initialValue?: any;
   validation?: MargaritaFormFieldValidation;
-  validators?: MargaritaFormFieldValidators<
-    V,
-    MargaritaFormFieldValidatorResult,
-    MargaritaFormField
-  >;
-  control?: MargaritaFormControl<V>;
-  params?: MargaritaFormFieldParams<T, V>;
+  validators?: MargaritaFormFieldValidators;
+  control?: MargaritaFormControl<unknown, this>;
+  params?: MargaritaFormFieldParams;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
-export type MargaritaFormCommonStateKeys =
-  | 'pristine'
-  | 'dirty'
-  | 'untouched'
-  | 'focus'
-  | 'touched'
-  | 'enabled'
-  | 'disabled'
-  | 'editable'
-  | 'readOnly'
-  | 'inactive'
-  | 'active';
-
-export type MargaritaFormStaticState = Record<
-  MargaritaFormCommonStateKeys,
-  boolean
->;
-
-export type MargaritaFormRootStateBooleanKeys = 'submitting' | 'submitted';
-
-export type MargaritaFormRootStateSubmitResult = {
-  submits: number;
-  submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
-};
-
-export type MargaritaFormRootState = Record<
-  MargaritaFormRootStateBooleanKeys,
-  boolean
-> &
-  MargaritaFormRootStateSubmitResult;
-
-export interface MargaritaFormState
-  extends MargaritaFormStaticState,
-    Partial<MargaritaFormRootState> {
+export interface MargaritaFormState {
+  pristine: boolean;
+  dirty: boolean;
+  untouched: boolean;
+  focus: boolean;
+  touched: boolean;
+  enabled: boolean;
+  disabled: boolean;
+  editable: boolean;
+  readOnly: boolean;
+  inactive: boolean;
+  active: boolean;
   valid: boolean;
   invalid: boolean;
-  shouldShowError: boolean;
+  shouldShowError: undefined | boolean;
+  // Root only
+  submitting: boolean;
+  submitted: boolean;
+  submits: number;
+  submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
   errors: MargaritaFormStateErrors;
-  control: MargaritaFormControl | null;
   children?: MargaritaFormStateChildren;
 }
 
-interface MargaritaFormFunctionalityOptions {
+export interface MargaritaFormOptions {
   detectInputElementValidations?: boolean;
   asyncFunctionWarningTimeout?: number;
   disableFormWhileSubmitting?: boolean;
@@ -152,53 +125,21 @@ interface MargaritaFormFunctionalityOptions {
   addDefaultValidators?: boolean;
 }
 
-export interface MargaritaFormOptions<
-  T,
-  F extends MargaritaFormField = MargaritaFormField
-> extends MargaritaFormFunctionalityOptions {
-  // Common options
-  fields: F[];
-  initialValue?: Record<string, unknown>;
-  validators?: MargaritaFormFieldValidators;
+export interface MargaritaFormRootField extends MargaritaFormField {
+  options?: MargaritaFormOptions;
   handleSubmit?: {
-    valid: (form: MargaritaForm<T, F>) => unknown | Promise<unknown>;
-    invalid?: (form: MargaritaForm<T, F>) => unknown | Promise<unknown>;
+    valid: <FORM = MargaritaForm>(form: FORM) => unknown | Promise<unknown>;
+    invalid?: <FORM = MargaritaForm>(form: FORM) => unknown | Promise<unknown>;
   };
 }
-
-export type MargaritaFormControl<
-  T = unknown,
-  F extends MargaritaFormField = MargaritaFormField
-> = MargaritaFormValueControl<T, F> | MargaritaFormGroupControl<T, F>;
-
-export type MargaritaFormControlsGroup<
-  T,
-  F extends MargaritaFormField = MargaritaFormField
-> = Record<string, MargaritaFormControl<T, F>>;
-
-export type MargaritaForm<
-  T = unknown,
-  F extends MargaritaFormField = MargaritaFormField,
-  C = MargaritaFormGroupControl<T, F>
-> = C &
-  MargaritaFormFunctionalityOptions & {
-    submit: () => Promise<any>;
-    onSubmitted: Observable<MargaritaForm<T, F>>;
-  };
-
-export type MargaritaFormControlsArray<
-  T,
-  F extends MargaritaFormField = MargaritaFormField
-> = MargaritaFormControl<T, F>[];
 
 export type CommonRecord = Record<string | number | symbol, unknown>;
 
 export type MargaritaFormBaseElement<
-  F extends MargaritaFormField = MargaritaFormField,
-  T = HTMLElement,
-  C = MargaritaFormControlsArray<unknown, F>
-> = T & {
-  controls?: C;
+  CONTROL extends MFC = MFC,
+  NODE extends HTMLElement = HTMLElement & HTMLOrSVGElement
+> = NODE & {
+  controls?: CONTROL[];
   value?: unknown;
   checked?: boolean;
   multiple?: boolean;
@@ -214,16 +155,14 @@ export type MargaritaFormBaseElement<
 // Shorthands
 
 /** Shorthand for {@link MargaritaForm}  */
-export type MF = MargaritaForm;
+export type MF = MargaritaForm<any, any>;
 /** Shorthand for {@link MargaritaFormField}  */
 export type MFF = MargaritaFormField;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC = MargaritaFormControl;
-/** Shorthand for {@link MargaritaFormValueControl}  */
-export type MFVC = MargaritaFormValueControl;
-/** Shorthand for {@link MargaritaFormGroupControl}  */
-export type MFGC = MargaritaFormGroupControl;
+export type MFC = MargaritaFormControl<any, any>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE = MargaritaFormBaseElement;
-/** Shorthand for {@link MargaritaFormBaseElement}  */
-export type MFVF = MargaritaFormBaseElement;
+/** Margarita form controls as group */
+export type MFCG = Record<string, MFC>;
+/** Margarita form controls as array */
+export type MFCA = MFC[];

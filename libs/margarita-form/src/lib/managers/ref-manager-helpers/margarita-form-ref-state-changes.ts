@@ -1,18 +1,12 @@
 import { distinctUntilChanged, fromEvent, map } from 'rxjs';
-import type {
-  MargaritaFormBaseElement,
-  MargaritaFormControl,
-  MargaritaFormField,
-} from '../../margarita-form-types';
+import type { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
 
-export const handleElementBlur = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const handleElementBlur = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
   return fromEvent<InputEvent>(node, 'blur').subscribe(() => {
     control.updateStateValue('touched', true);
@@ -20,28 +14,24 @@ export const handleElementBlur = <
   });
 };
 
-export const handleElementFocus = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const handleElementFocus = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
   return fromEvent<InputEvent>(node, 'focus').subscribe(() => {
     control.updateStateValue('focus', true);
   });
 };
 
-export const handleControlDisable = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const handleControlDisable = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
   return control.stateChanges
     .pipe(
@@ -53,14 +43,12 @@ export const handleControlDisable = <
     });
 };
 
-export const handleControlReadonly = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const handleControlReadonly = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
   return control.stateChanges
     .pipe(
