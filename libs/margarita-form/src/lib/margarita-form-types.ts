@@ -137,7 +137,7 @@ export type CommonRecord = Record<string | number | symbol, unknown>;
 
 export type MargaritaFormBaseElement<
   CONTROL extends MFC = MFC,
-  NODE extends HTMLElement = HTMLElement & HTMLOrSVGElement
+  NODE extends HTMLElement | null = HTMLElement | any
 > = NODE & {
   controls?: CONTROL[];
   value?: unknown;

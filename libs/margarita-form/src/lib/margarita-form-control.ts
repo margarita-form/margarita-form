@@ -399,7 +399,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * ```
    */
   get setRef() {
-    return (ref: MargaritaFormBaseElement<typeof this>): void => {
+    return (ref: MargaritaFormBaseElement<this>): void => {
       return this.refManager.addRef(ref);
     };
   }
