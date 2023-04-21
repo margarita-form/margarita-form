@@ -10,7 +10,8 @@ export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;
-  return control.valueChanges.subscribe((value) => {
+
+  const setNodeValue = (value: CONTROL['value']) => {
     try {
       if (type === 'checkbox') {
         if (multiple) {
@@ -29,7 +30,9 @@ export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
     } catch (error) {
       //
     }
-  });
+  };
+  setNodeValue(control.value);
+  return control.valueChanges.subscribe(setNodeValue);
 };
 
 export const setControlValueOnNodeValueChanges = <CONTROL extends MFC = MFC>({

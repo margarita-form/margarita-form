@@ -4,6 +4,7 @@ import {
   Observable,
   combineLatest,
   combineLatestWith,
+  debounceTime,
   switchMap,
 } from 'rxjs';
 import {
@@ -14,6 +15,8 @@ import {
   MargaritaFormStateErrors,
   CommonRecord,
   MFC,
+  MargaritaFormFieldValidationsState,
+  MargaritaFormStateChildren,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
 import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
@@ -86,8 +89,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
               }
 
               const validatorFn = control.validators[key];
-              if (typeof validation === 'function') {
-                const result = validatorFn(context);
+              if (typeof validatorFn === 'function') {
+                const result = validatorFn({ ...context, params: validation });
                 acc.push([key, result]);
                 return acc;
               }
@@ -105,38 +108,46 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
               if (!controls.length) return Promise.resolve([]);
               const stateChanges: Observable<StateManager<MFC>>[] =
                 controls.map((control) => control.stateChanges);
-              return combineLatest(stateChanges);
+              return combineLatest(
+                stateChanges
+              ) as Observable<MargaritaFormStateChildren>;
             })
           )
-        )
+        ),
+        debounceTime(1)
       )
-      .subscribe(([validationStates, children]) => {
-        const childrenAreValid = children.every(
-          (child) => child.valid || child.inactive
-        );
-        const currentIsValid = Object.values(validationStates).every(
-          (state) => state.valid
-        );
+      .subscribe(
+        ([validationStates, children]: [
+          MargaritaFormFieldValidationsState,
+          MargaritaFormStateChildren
+        ]) => {
+          const childrenAreValid = children.every(
+            (child) => child.valid || child.inactive
+          );
+          const currentIsValid = Object.values(validationStates).every(
+            (state) => state.valid
+          );
 
-        const valid = currentIsValid && childrenAreValid;
+          const valid = currentIsValid && childrenAreValid;
 
-        const errors = Object.entries(validationStates).reduce(
-          (acc, [key, { error }]) => {
-            if (error) acc[key] = error;
-            return acc;
-          },
-          {} as MargaritaFormStateErrors
-        );
+          const errors = Object.entries(validationStates).reduce(
+            (acc, [key, { error }]) => {
+              if (error) acc[key] = error;
+              return acc;
+            },
+            {} as MargaritaFormStateErrors
+          );
 
-        const hasValue = valueExists(this.control.value);
-        const changes = {
-          valid,
-          errors,
-          // children,
-          hasValue,
-        };
-        this.updateStates(changes);
-      });
+          const hasValue = valueExists(this.control.value);
+          const changes = {
+            valid,
+            errors,
+            children,
+            hasValue,
+          };
+          this.updateStates(changes);
+        }
+      );
 
     this.subscriptions.push(
       userDefinedStateSubscription,

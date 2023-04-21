@@ -2,7 +2,10 @@ import type {
   MargaritaFormOptions,
   MargaritaFormRootField,
 } from './margarita-form-types';
-import { OptionsManager } from './managers/margarita-form-options-manager';
+import {
+  OptionsManager,
+  getDefaultOptions,
+} from './managers/margarita-form-options-manager';
 import { MargaritaFormControl } from './margarita-form-control';
 import { Observable, map } from 'rxjs';
 
@@ -21,6 +24,13 @@ export class MargaritaForm<
   }
 
   public override get options(): MargaritaFormOptions {
+    if (!this.optionsManager) {
+      const defaultOptions = getDefaultOptions();
+      if (this.field.options) {
+        return { ...defaultOptions, ...this.field.options };
+      }
+      return defaultOptions;
+    }
     return this.optionsManager.current;
   }
 

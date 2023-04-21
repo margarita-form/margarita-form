@@ -26,7 +26,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
         if (!ref || !ref.controls) return;
         const { controls = [] } = ref;
         const index = controls.findIndex(
-          (control) => control.key === this.control.key
+          (control: MFC) => control.key === this.control.key
         );
         if (index > -1) ref.controls.splice(index, 1);
       });
@@ -125,7 +125,9 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     const controlInNode = node.controls?.includes(this.control);
     if (controlInNode) {
       const { controls = [] } = node;
-      const index = controls.findIndex((control) => control === this.control);
+      const index = controls.findIndex(
+        (control: MFC) => control === this.control
+      );
       if (index > -1) controls.splice(index, 1);
     }
     const nodeInControl = this.refs.includes(node);

@@ -111,7 +111,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    */
   private _syncParentValue(setAsDirty = true, emitEvent = true) {
     if (!this.control.isRoot) {
-      this.control.parent.valueManager._syncCurrentValue(setAsDirty, emitEvent);
+      if (this.control.parent.valueManager) {
+        this.control.parent.valueManager._syncCurrentValue(
+          setAsDirty,
+          emitEvent
+        );
+      }
     }
   }
 

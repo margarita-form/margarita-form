@@ -11,6 +11,7 @@ export const resolveFunctionOutputs = <T = unknown>(
   context: MargaritaFormFieldContext<MFC>,
   entries: [string, MargaritaFormFieldFunctionOutput<T>][]
 ) => {
+  if (!entries.length) return Promise.resolve({});
   type ObservableEntry = MargaritaFormFieldFunctionOutputResultEntry<T>;
   const observableEntries = entries.reduce((acc, [key, output]) => {
     const longTime = setTimeout(() => {

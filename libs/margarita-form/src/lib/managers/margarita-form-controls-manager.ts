@@ -13,15 +13,14 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     super();
 
     this.#requireUniqueNames = this.control.grouping === 'group';
-    setTimeout(() => {
-      this.rebuild();
-    }, 1);
 
     this.onCleanup = () => {
       this.#controls.forEach((control) => {
         control.cleanup();
       });
     };
+
+    this.rebuild();
   }
 
   public rebuild(replace = false) {
@@ -93,7 +92,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       form: this.control.form,
     });
 
-    if (this.control.state.disabled) control.disable();
+    // if (this.control.state.disabled) control.disable(); // FIX ME, this is not working
     return this.appendControl(control, replace);
   }
 

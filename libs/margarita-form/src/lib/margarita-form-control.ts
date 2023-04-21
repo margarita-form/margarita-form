@@ -63,9 +63,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * Unsubscribe from all subscriptions for current control
    */
   public cleanup() {
+    this.fieldManager.cleanup();
     this.controlsManager.cleanup();
     this.valueManager.cleanup();
     this.stateManager.cleanup();
+    this.refManager.cleanup();
     this.paramsManager.cleanup();
   }
 
@@ -148,7 +150,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * Listen to value changes of the control
    */
   public get valueChanges(): Observable<VALUE> {
-    return this.valueManager.changes.pipe(debounceTime(1), shareReplay(1));
+    return this.valueManager.changes;
   }
 
   /**
@@ -193,7 +195,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   public get validators(): MargaritaFormFieldValidators {
     const fieldValidators = this.field.validators || {};
     if (this.options.addDefaultValidators) {
-      return new Proxy(defaultValidators, fieldValidators);
+      return { ...defaultValidators, ...fieldValidators };
     }
     return fieldValidators;
   }
