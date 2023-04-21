@@ -37,7 +37,7 @@ interface MargaritaFormControlContext {
   parent?: MF | MFC;
 }
 
-class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
+export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   public key: string = nanoid(4);
   public syncId: string = nanoid(4);
 
@@ -419,11 +419,3 @@ class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     this.resetState();
   }
 }
-
-class MargaritaFormControlPrototype {}
-
-Object.assign(MargaritaFormControl.prototype, MargaritaFormControlPrototype);
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-
-export { MargaritaFormControl };
