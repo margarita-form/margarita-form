@@ -2,8 +2,7 @@ import styled from 'styled-components';
 import {
   useMargaritaForm,
   MargaritaFormField,
-  MargaritaFormValueControl,
-  MargaritaFormGroupControl,
+  MargaritaFormControl,
   Form,
 } from '@margarita-form/react';
 import { useState } from 'react';
@@ -92,7 +91,7 @@ interface FormValue {
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
   const form = useMargaritaForm<FormValue>({
-    handleSuccesfullSubmit: 'enable',
+    name: 'root',
     fields,
     handleSubmit: {
       valid: async (form) => {
@@ -108,41 +107,51 @@ export function App() {
         setSubmitResponse('Form is invalid!');
       },
     },
+    options: {
+      handleSuccesfullSubmit: 'enable',
+    },
   });
 
-  const titleControl = form.getControl<MargaritaFormValueControl>('title');
+  const titleControl = form.getControl('title');
   const descriptionControl =
-    form.getControl<MargaritaFormValueControl>('description');
+    form.getControl<MargaritaFormControl>('description');
 
-  const stepsControl = form.getControl<MargaritaFormGroupControl>('steps');
+  const stepsControl = form.getControl('steps');
 
   return (
     <AppWrapper>
       <div className="form-wrapper">
         <Form form={form}>
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            ref={titleControl.setRef}
-            placeholder="How to make a cake"
-          />
-
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            ref={descriptionControl.setRef}
-            placeholder="Lorem ipsum"
-          />
+          {titleControl && (
+            <>
+              {' '}
+              <label htmlFor="title">Title</label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                ref={titleControl.setRef}
+                placeholder="How to make a cake"
+              />
+            </>
+          )}
+          {descriptionControl && (
+            <>
+              <label htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                ref={descriptionControl.setRef}
+                placeholder="Lorem ipsum"
+              />
+            </>
+          )}
 
           {stepsControl &&
             stepsControl.controls.map((stepGroup) => {
-              const stepTitleControl =
-                stepGroup.getControl<MargaritaFormValueControl>('title');
+              const stepTitleControl = stepGroup.getControl('title');
               const stepDescriptionControl =
-                stepGroup.getControl<MargaritaFormValueControl>('description');
+                stepGroup.getControl('description');
 
               return (
                 <div className="step-container" key={stepGroup.key}>
@@ -180,7 +189,7 @@ export function App() {
           <button
             type="button"
             onClick={() => {
-              stepsControl.appendRepeatingControls();
+              stepsControl?.appendRepeatingControls();
             }}
           >
             Add new step
