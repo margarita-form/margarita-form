@@ -140,6 +140,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return this.valueManager.current;
   }
 
+  public set value(value: VALUE) {
+    this.valueManager.updateValue(value);
+  }
+
   /**
    * Listen to value changes of the control
    */
