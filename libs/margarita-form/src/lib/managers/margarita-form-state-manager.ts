@@ -16,6 +16,7 @@ import {
   MFC,
   MargaritaFormFieldValidationsState,
   MargaritaFormStateChildren,
+  MargaritaFormValidatorOutput,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
 import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
@@ -52,15 +53,23 @@ class StateManager<CONTROL extends MFC>
             params: null,
           };
 
-          const { field } = control;
           const entries = fieldStateKeys.reduce((acc, key) => {
-            const state = field[key];
+            const state = control.field[key];
             if (typeof state === 'function') {
               const result = state(context);
               acc.push([key, result]);
+              return acc;
             }
+
+            const resolverFn = control.resolvers[key];
+            if (typeof resolverFn === 'function') {
+              const result = resolverFn({ ...context, params: state });
+              acc.push([key, result]);
+              return acc;
+            }
+
             return acc;
-          }, [] as [keyof MargaritaFormState, MargaritaFormResolverOutput<boolean>][]);
+          }, [] as [string, MargaritaFormResolverOutput][]);
 
           return resolveFunctionOutputs('State', context, entries);
         })
@@ -99,7 +108,7 @@ class StateManager<CONTROL extends MFC>
 
               return acc;
             },
-            [] as [any, any][]
+            [] as [string, MargaritaFormValidatorOutput][]
           );
 
           return resolveFunctionOutputs('Validation', context, entries);
