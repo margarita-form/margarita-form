@@ -194,10 +194,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
 
   public get validators(): MargaritaFormValidators {
     const fieldValidators = this.field.validators || {};
+    const parentValidators = this.context.parent?.field?.validators || {};
     if (this.options.addDefaultValidators) {
-      return { ...defaultValidators, ...fieldValidators };
+      return { ...defaultValidators, ...parentValidators, ...fieldValidators };
     }
-    return fieldValidators;
+    return { ...parentValidators, ...fieldValidators };
   }
 
   public enable() {
