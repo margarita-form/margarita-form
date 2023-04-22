@@ -21,13 +21,15 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       });
     };
 
-    this.rebuild();
-
     const fieldChangesSubscription = control.fieldManager.changes
       .pipe(filter((field) => field !== this.#buildWith))
       .subscribe(() => this.rebuild(control.fieldManager.shouldReplaceControl));
 
     this.subscriptions.push(fieldChangesSubscription);
+
+    if (this.control.field) {
+      this.rebuild();
+    }
   }
 
   public rebuild(replace = false) {
