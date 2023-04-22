@@ -85,9 +85,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
 
     this.#value = value;
-    if (setAsDirty) this.control.updateStateValue('dirty', true);
+    const isActive = this.control.state.active;
+    if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
     if (emitEvent) this.#emitChanges();
-    this._syncParentValue(setAsDirty, emitEvent);
+    if (isActive) this._syncParentValue(setAsDirty, emitEvent);
   }
 
   /**
