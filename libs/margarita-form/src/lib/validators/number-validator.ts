@@ -1,8 +1,8 @@
-import { MargaritaFormValidatorFunction } from '../margarita-form-types';
+import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const numberValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<boolean> =
+) => MargaritaFormValidator<boolean> =
   (errorMessage = 'Please enter a valid number!') =>
   ({ value, params }) => {
     const invalidValues: unknown[] = [null, undefined, ''];

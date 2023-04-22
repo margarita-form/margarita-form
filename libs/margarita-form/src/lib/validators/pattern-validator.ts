@@ -1,8 +1,8 @@
-import { MargaritaFormValidatorFunction } from '../margarita-form-types';
+import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const patternValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<string | RegExp> =
+) => MargaritaFormValidator<string | RegExp> =
   (errorMessage = 'Value does not match required pattern!') =>
   ({ value, params }) => {
     if (!params || !value) return { valid: true };

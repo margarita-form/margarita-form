@@ -1,18 +1,19 @@
 import { combineLatest, map, Observable, ObservableInput } from 'rxjs';
 import {
   MargaritaFormFieldContext,
-  MargaritaFormFieldFunctionOutput,
-  MargaritaFormFieldFunctionOutputResultEntry,
+  MargaritaFormResolverOutput,
   MFC,
 } from '../margarita-form-types';
+
+type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
 
 export const resolveFunctionOutputs = <T = unknown>(
   title: string,
   context: MargaritaFormFieldContext<MFC>,
-  entries: [string, MargaritaFormFieldFunctionOutput<T>][]
+  entries: [string, MargaritaFormResolverOutput<T>][]
 ) => {
   if (!entries.length) return Promise.resolve({});
-  type ObservableEntry = MargaritaFormFieldFunctionOutputResultEntry<T>;
+  type ObservableEntry = MargaritaFormResolverEntry<T>;
   const observableEntries = entries.reduce((acc, [key, output]) => {
     const longTime = setTimeout(() => {
       console.warn(`${title} is taking long time to finish!`, { context });

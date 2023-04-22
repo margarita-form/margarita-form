@@ -4,7 +4,7 @@ import {
   CommonRecord,
   MFC,
   MargaritaFormFieldContext,
-  MargaritaFormFieldFunctionOutput,
+  MargaritaFormResolverOutput,
 } from '../margarita-form-types';
 import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
 
@@ -38,7 +38,7 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager {
               return [key, result];
             }
             return [key, value];
-          }) as [string, MargaritaFormFieldFunctionOutput<unknown>][];
+          }) as [string, MargaritaFormResolverOutput<unknown>][];
 
           return resolveFunctionOutputs('State', context, entries);
         })

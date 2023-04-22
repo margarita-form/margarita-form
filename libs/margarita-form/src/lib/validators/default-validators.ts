@@ -1,4 +1,3 @@
-import { MargaritaFormFieldValidators } from '../margarita-form-types';
 import {
   colorValidator,
   dateValidator,
@@ -15,7 +14,7 @@ import {
   urlValidator,
 } from '.';
 
-export const defaultValidators: MargaritaFormFieldValidators = {
+export const defaultValidators = {
   color: colorValidator(),
   date: dateValidator(),
   email: emailValidator(),

@@ -8,9 +8,8 @@ import {
   switchMap,
 } from 'rxjs';
 import {
-  MargaritaFormFieldStateKeys,
   MargaritaFormFieldContext,
-  MargaritaFormFieldFunctionOutput,
+  MargaritaFormResolverOutput,
   MargaritaFormState,
   MargaritaFormStateErrors,
   CommonRecord,
@@ -23,13 +22,16 @@ import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
 
 // States which can be modfiied in the field
-const fieldStateKeys: MargaritaFormFieldStateKeys[] = [
+const fieldStateKeys: (keyof MargaritaFormState)[] = [
   'active',
   'disabled',
   'readOnly',
 ];
 
-class StateManager<CONTROL extends MFC> extends BaseManager {
+class StateManager<CONTROL extends MFC>
+  extends BaseManager
+  implements MargaritaFormState
+{
   public changes = new BehaviorSubject<typeof this>(this);
 
   constructor(public control: CONTROL) {
@@ -37,8 +39,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
     fieldStateKeys.forEach((key) => {
       const value = control.field[key];
-      if (typeof value === 'boolean') this[key] = value;
-      if (typeof value === 'function') this[key] = false;
+      if (typeof value === 'boolean') Object.assign(this, { [key]: value });
+      if (typeof value === 'function') Object.assign(this, { [key]: false });
     });
 
     const userDefinedStateSubscription = control.valueChanges
@@ -58,7 +60,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
               acc.push([key, result]);
             }
             return acc;
-          }, [] as [MargaritaFormFieldStateKeys, MargaritaFormFieldFunctionOutput<boolean>][]);
+          }, [] as [keyof MargaritaFormState, MargaritaFormResolverOutput<boolean>][]);
 
           return resolveFunctionOutputs('State', context, entries);
         })
@@ -314,12 +316,12 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
     this.#submitting = value;
   }
 
-  #submitResult = 'not-submitted';
+  #submitResult: MargaritaFormState['submitResult'] = 'not-submitted';
   get submitResult() {
     this.#checkRoot('submitResult');
     return this.#submitResult;
   }
-  set submitResult(value: string) {
+  set submitResult(value: MargaritaFormState['submitResult']) {
     this.#checkRoot('submitResult');
     this.#submitResult = value;
   }

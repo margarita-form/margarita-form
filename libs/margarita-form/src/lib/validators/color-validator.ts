@@ -1,8 +1,8 @@
-import { MargaritaFormValidatorFunction } from '../margarita-form-types';
+import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const colorValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<boolean> =
+) => MargaritaFormValidator<boolean> =
   (errorMessage = 'Value must be a valid color code!') =>
   ({ value, params }) => {
     if (!params || !value) return { valid: true };

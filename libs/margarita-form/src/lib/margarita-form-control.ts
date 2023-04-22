@@ -5,12 +5,11 @@ import {
   MFCA,
   MFF,
   MargaritaFormBaseElement,
-  MargaritaFormFieldFunction,
-  MargaritaFormFieldValidators,
   MargaritaFormGroupings,
   MargaritaFormOptions,
   MargaritaFormState,
-  arrayGroupings,
+  MargaritaFormValidator,
+  MargaritaFormValidators,
 } from './margarita-form-types';
 import {
   Observable,
@@ -129,6 +128,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * Check if control's output should be an array
    */
   public get expectArray(): boolean {
+    const arrayGroupings: MargaritaFormGroupings[] = ['array', 'repeat-group'];
     return arrayGroupings.includes(this.grouping);
   }
 
@@ -192,7 +192,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     );
   }
 
-  public get validators(): MargaritaFormFieldValidators {
+  public get validators(): MargaritaFormValidators {
     const fieldValidators = this.field.validators || {};
     if (this.options.addDefaultValidators) {
       return { ...defaultValidators, ...fieldValidators };
@@ -227,12 +227,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     this.stateManager.validate(setAsTouched);
   }
 
-  public registerValidator(
-    name: string,
-    validator: MargaritaFormFieldFunction
-  ) {
+  public registerValidator(name: string, validator: MargaritaFormValidator) {
     const currentValidators = this.validators;
-    const validators: MargaritaFormFieldValidators = {
+    const validators: MargaritaFormValidators = {
       ...currentValidators,
       [name]: validator,
     };
