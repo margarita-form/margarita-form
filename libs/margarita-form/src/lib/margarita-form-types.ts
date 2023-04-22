@@ -17,7 +17,10 @@ export interface MargaritaFormFieldContext<
   control: CONTROL;
 }
 
-export type MargaritaFormResolverOutput<T> = T | Promise<T> | Observable<T>;
+export type MargaritaFormResolverOutput<OUTPUT = unknown> =
+  | OUTPUT
+  | Promise<OUTPUT>
+  | Observable<OUTPUT>;
 
 export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array';
 
@@ -43,8 +46,6 @@ export type MargaritaFormValidator<PARAMS = unknown> = MargaritaFormResolver<
   PARAMS
 >;
 
-export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
-
 export type MargaritaFormFieldValidationsState =
   CommonRecord<MargaritaFormValidatorResult>;
 
@@ -52,7 +53,12 @@ export type MargaritaFormFieldValidation = CommonRecord<
   any | MargaritaFormResolver<MargaritaFormValidatorResult>
 >;
 
-//
+export type MargaritaFormValidatorOutput =
+  MargaritaFormResolverOutput<MargaritaFormValidatorResult>;
+
+export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
+
+export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
 export interface MargaritaFormField extends Partial<MargaritaFormState> {
   name: string;
@@ -62,13 +68,11 @@ export interface MargaritaFormField extends Partial<MargaritaFormState> {
   startWith?: number;
   template?: Partial<MargaritaFormField>;
   initialValue?: any;
-
   control?: MargaritaFormControl<unknown, this>;
-  //
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
-  resolvers?: CommonRecord<MargaritaFormResolver>;
-  validators?: CommonRecord<MargaritaFormValidator>;
+  resolvers?: MargaritaFormResolvers;
+  validators?: MargaritaFormValidators;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
