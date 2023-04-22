@@ -5,7 +5,9 @@ import {
   combineLatest,
   combineLatestWith,
   debounceTime,
-  distinctUntilKeyChanged,
+  distinctUntilChanged,
+  map,
+  skip,
   switchMap,
 } from 'rxjs';
 import {
@@ -162,9 +164,15 @@ class StateManager<CONTROL extends MFC>
       );
 
     const activeChangesSubscription = this.changes
-      .pipe(distinctUntilKeyChanged('active'))
+      .pipe(
+        map((state) => state.active),
+        distinctUntilChanged(),
+        skip(1)
+      )
       .subscribe(() => {
-        control.parent.valueManager._syncCurrentValue(false, true);
+        if (!this.control.isRoot) {
+          this.control.parent.valueManager._syncCurrentValue(false, true);
+        }
       });
 
     this.subscriptions.push(

@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MFCA, MFCG, MFF } from '../margarita-form-types';
@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 
 class ControlsManager<CONTROL extends MFC> extends BaseManager {
   public changes = new BehaviorSubject<MFC[]>([]);
+  #buildWith: CONTROL['field'] = null;
   #controls: MFC[] = [];
   #requireUniqueNames: boolean;
 
@@ -21,11 +22,21 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     };
 
     this.rebuild();
+
+    const fieldChangesSubscription = control.fieldManager.changes
+      .pipe(filter((field) => field !== this.#buildWith))
+      .subscribe(() => this.rebuild(control.fieldManager.shouldReplaceControl));
+
+    this.subscriptions.push(fieldChangesSubscription);
   }
 
   public rebuild(replace = false) {
-    const { grouping } = this.control;
-    const { startWith = 1, fields, template } = this.control.field;
+    const { grouping, field } = this.control;
+
+    if (!field) throw 'No field provided for control!';
+    this.#buildWith = field;
+
+    const { startWith = 1, fields, template } = field;
     for (let i = 0; i < startWith; i++) {
       if (grouping === 'repeat-group') {
         const _template = fields ? { fields } : template;

@@ -5,10 +5,10 @@ import { MFC, MFF } from '../margarita-form-types';
 class FieldManager<CONTROL extends MFC> extends BaseManager {
   #field: CONTROL['field'] = null;
   public changes = new BehaviorSubject<CONTROL['field']>(null);
-
+  public shouldReplaceControl = false;
   constructor(public control: CONTROL) {
     super();
-    this.#field = control.field;
+    this.setField(control.field);
   }
 
   #emitChanges() {
@@ -20,17 +20,21 @@ class FieldManager<CONTROL extends MFC> extends BaseManager {
     return this.#field;
   }
 
-  public setField(field: MFF | CONTROL['field'], replaceControl = false) {
-    this.#field = field;
-    this.#emitChanges();
-    this.control.controlsManager.rebuild(replaceControl);
-  }
-
-  public updateField(
-    field: Partial<MFF | CONTROL['field']>,
+  public async setField<FIELD extends MFF = MFF | CONTROL['field']>(
+    field: FIELD | Promise<FIELD>,
     replaceControl = false
   ) {
-    const patchField = { ...this.current, ...field };
+    this.#field = await field;
+    this.shouldReplaceControl = replaceControl;
+    this.#emitChanges();
+  }
+
+  public async updateField<FIELD extends MFF = MFF | CONTROL['field']>(
+    partialField: Partial<FIELD> | Promise<Partial<FIELD>>,
+    replaceControl = false
+  ) {
+    const resolved = await partialField;
+    const patchField = { ...this.current, ...resolved };
     this.setField(patchField, replaceControl);
   }
 }
