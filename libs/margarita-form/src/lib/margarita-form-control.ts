@@ -348,10 +348,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param field The field to use as a template for the new control
    * @returns Control that was added
    */
-  public addControl<CONTROL extends MFC = MFC>(
-    field: CONTROL['field']
-  ): CONTROL {
-    return this.controlsManager.addControl(field) as CONTROL;
+  public addControl<FIELD extends MFF = this['field'], VALUE = unknown>(
+    field: FIELD
+  ): MargaritaFormControl<VALUE, FIELD> {
+    return this.controlsManager.addControl(field);
   }
 
   /**
