@@ -208,7 +208,25 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   }
 
   public disable() {
-    this.updateStateValue('disabled', true);
+    this.updateStateValue('enabled', false);
+  }
+
+  public toggleEnabled() {
+    const current = this.getState('enabled');
+    this.updateStateValue('enabled', !current);
+  }
+
+  public activate() {
+    this.updateStateValue('active', true);
+  }
+
+  public deactivate() {
+    this.updateStateValue('active', false);
+  }
+
+  public toggleActive() {
+    const current = this.getState('active');
+    this.updateStateValue('active', !current);
   }
 
   public updateStateValue(
