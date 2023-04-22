@@ -7,6 +7,8 @@ import {
   MargaritaFormBaseElement,
   MargaritaFormGroupings,
   MargaritaFormOptions,
+  MargaritaFormResolver,
+  MargaritaFormResolvers,
   MargaritaFormState,
   MargaritaFormValidator,
   MargaritaFormValidators,
@@ -247,6 +249,26 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
 
   public get paramsChanges(): Observable<Params> {
     return this.paramsManager.changes.pipe(debounceTime(1), shareReplay(1));
+  }
+
+  public get resolvers(): MargaritaFormResolvers {
+    const fieldResolvers = this.field.resolvers || {};
+    const parentResolvers = this.context.parent?.field?.resolvers || {};
+    if (this.options.addDefaultValidators) {
+      return { ...defaultValidators, ...parentResolvers, ...fieldResolvers };
+    }
+    return { ...parentResolvers, ...fieldResolvers };
+  }
+
+  public registerResolver(name: string, resolver: MargaritaFormResolver) {
+    const currentResolvers = this.resolvers;
+    const resolvers: MargaritaFormResolvers = {
+      ...currentResolvers,
+      [name]: resolver,
+    };
+    this.fieldManager.updateField({
+      resolvers,
+    });
   }
 
   // Controls
