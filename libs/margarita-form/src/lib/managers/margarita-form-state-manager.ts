@@ -43,8 +43,8 @@ class StateManager<CONTROL extends MFC>
 
     fieldStateKeys.forEach((key) => {
       const value = control.field[key];
-      if (typeof value === 'boolean') Object.assign(this, { [key]: value });
-      if (typeof value === 'function') Object.assign(this, { [key]: false });
+      if (typeof value === 'boolean') this.updateStates({ [key]: value });
+      if (typeof value === 'function') this.updateStates({ [key]: false });
     });
 
     const userDefinedStateSubscription = control.valueChanges
@@ -78,7 +78,7 @@ class StateManager<CONTROL extends MFC>
         })
       )
       .subscribe((state) => {
-        Object.assign(this, state);
+        this.updateStates(state);
         this.#emitChanges();
       });
 

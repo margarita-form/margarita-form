@@ -105,7 +105,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       form: this.control.form,
     });
 
-    // if (this.control.state.disabled) control.disable(); // FIX ME, this is not working
+    if (this.control.state?.disabled) control.disable();
     return this.appendControl(control, replace);
   }
 
