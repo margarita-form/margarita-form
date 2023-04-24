@@ -7,13 +7,40 @@ import {
 
 type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
 
-export const resolveFunctionOutputs = <T = unknown>(
+export const mapResolverEntries = <OUTPUT = unknown>(
+  title: string,
+  from: Record<string, unknown>,
+  context: MargaritaFormFieldContext,
+  resolveStaticValues = true
+) => {
+  if (!from) return Promise.resolve({});
+  const entries = Object.entries(from).reduce((acc, [key, param]) => {
+    if (typeof param === 'function') {
+      const result = param(context);
+      acc.push([key, result]);
+      return acc;
+    }
+
+    const resolverFn = context.control.resolvers[key];
+    if (typeof resolverFn === 'function') {
+      const result = resolverFn({ ...context, params: param });
+      acc.push([key, result]);
+      return acc;
+    }
+    if (resolveStaticValues) acc.push([key, param as OUTPUT]);
+    return acc;
+  }, [] as [string, MargaritaFormResolverOutput<OUTPUT>][]);
+
+  return resolveFunctionOutputs(title, context, entries);
+};
+
+export const resolveFunctionOutputs = <OUTPUT = unknown>(
   title: string,
   context: MargaritaFormFieldContext<MFC>,
-  entries: [string, MargaritaFormResolverOutput<T>][]
+  entries: [string, MargaritaFormResolverOutput<OUTPUT>][]
 ) => {
   if (!entries.length) return Promise.resolve({});
-  type ObservableEntry = MargaritaFormResolverEntry<T>;
+  type ObservableEntry = MargaritaFormResolverEntry<OUTPUT>;
   const observableEntries = entries.reduce((acc, [key, output]) => {
     const longTime = setTimeout(() => {
       console.warn(`${title} is taking long time to finish!`, { context });
