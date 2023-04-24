@@ -11,18 +11,15 @@ import {
   switchMap,
 } from 'rxjs';
 import {
-  MargaritaFormFieldContext,
-  MargaritaFormResolverOutput,
   MargaritaFormState,
   MargaritaFormStateErrors,
   CommonRecord,
   MFC,
-  MargaritaFormFieldValidationsState,
   MargaritaFormStateChildren,
-  MargaritaFormValidatorOutput,
+  MargaritaFormValidatorResult,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
-import { resolveFunctionOutputs } from '../helpers/resolve-function-outputs';
+import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
 
 // States which can be modfiied in the field
@@ -50,31 +47,11 @@ class StateManager<CONTROL extends MFC>
     const userDefinedStateSubscription = control.valueChanges
       .pipe(
         switchMap((value) => {
-          const context: MargaritaFormFieldContext<CONTROL> = {
+          return mapResolverEntries('State', control.field.state, {
             control,
             value,
             params: null,
-          };
-
-          const entries = fieldStateKeys.reduce((acc, key) => {
-            const state = control.field[key];
-            if (typeof state === 'function') {
-              const result = state(context);
-              acc.push([key, result]);
-              return acc;
-            }
-
-            const resolverFn = control.resolvers[key];
-            if (typeof resolverFn === 'function') {
-              const result = resolverFn({ ...context, params: state });
-              acc.push([key, result]);
-              return acc;
-            }
-
-            return acc;
-          }, [] as [string, MargaritaFormResolverOutput][]);
-
-          return resolveFunctionOutputs('State', context, entries);
+          });
         })
       )
       .subscribe((state) => {
@@ -85,36 +62,15 @@ class StateManager<CONTROL extends MFC>
     const validationStateSubscription = control.valueChanges
       .pipe(
         switchMap((value) => {
-          if (!control.field.validation) return Promise.resolve({});
-
-          const context: MargaritaFormFieldContext<CONTROL> = {
-            control,
-            value,
-            params: null,
-          };
-
-          const { field } = control;
-          const entries = Object.entries(field.validation).reduce(
-            (acc, [key, validation]) => {
-              if (typeof validation === 'function') {
-                const result = validation(context);
-                acc.push([key, result]);
-                return acc;
-              }
-
-              const validatorFn = control.validators[key];
-              if (typeof validatorFn === 'function') {
-                const result = validatorFn({ ...context, params: validation });
-                acc.push([key, result]);
-                return acc;
-              }
-
-              return acc;
-            },
-            [] as [string, MargaritaFormValidatorOutput][]
+          return mapResolverEntries<MargaritaFormValidatorResult>(
+            'State',
+            control.field.validation,
+            {
+              control,
+              value,
+              params: null,
+            }
           );
-
-          return resolveFunctionOutputs('Validation', context, entries);
         }),
         combineLatestWith(
           control.controlsManager.changes.pipe(
@@ -130,38 +86,33 @@ class StateManager<CONTROL extends MFC>
         ),
         debounceTime(1)
       )
-      .subscribe(
-        ([validationStates, children]: [
-          MargaritaFormFieldValidationsState,
-          MargaritaFormStateChildren
-        ]) => {
-          const childrenAreValid = children.every(
-            (child) => child.valid || child.inactive
-          );
-          const currentIsValid = Object.values(validationStates).every(
-            (state) => state.valid
-          );
+      .subscribe(([validationStates, children]) => {
+        const childrenAreValid = children.every(
+          (child) => child.valid || child.inactive
+        );
+        const currentIsValid = Object.values(validationStates).every(
+          (state) => state.valid
+        );
 
-          const valid = currentIsValid && childrenAreValid;
+        const valid = currentIsValid && childrenAreValid;
 
-          const errors = Object.entries(validationStates).reduce(
-            (acc, [key, { error }]) => {
-              if (error) acc[key] = error;
-              return acc;
-            },
-            {} as MargaritaFormStateErrors
-          );
+        const errors = Object.entries(validationStates).reduce(
+          (acc, [key, { error }]) => {
+            if (error) acc[key] = error;
+            return acc;
+          },
+          {} as MargaritaFormStateErrors
+        );
 
-          const hasValue = valueExists(this.control.value);
-          const changes = {
-            valid,
-            errors,
-            children,
-            hasValue,
-          };
-          this.updateStates(changes);
-        }
-      );
+        const hasValue = valueExists(this.control.value);
+        const changes = {
+          valid,
+          errors,
+          children,
+          hasValue,
+        };
+        this.updateStates(changes);
+      });
 
     const activeChangesSubscription = this.changes
       .pipe(

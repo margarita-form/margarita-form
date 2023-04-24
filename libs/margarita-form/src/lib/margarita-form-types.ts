@@ -9,7 +9,7 @@ export type CommonRecord<TYPE = unknown> = Record<
 >;
 
 export interface MargaritaFormFieldContext<
-  CONTROL extends MargaritaFormControl,
+  CONTROL extends MargaritaFormControl = MFC,
   PARAMS = any
 > {
   value: CONTROL['value'];
@@ -36,6 +36,10 @@ export type MargaritaFormFieldParams = CommonRecord<
   any | MargaritaFormResolver<any>
 >;
 
+export type MargaritaFormFieldAttributes = CommonRecord<
+  any | MargaritaFormResolver<any>
+>;
+
 export interface MargaritaFormValidatorResult {
   valid: boolean;
   error?: unknown;
@@ -53,14 +57,11 @@ export type MargaritaFormFieldValidation = CommonRecord<
   any | MargaritaFormResolver<MargaritaFormValidatorResult>
 >;
 
-export type MargaritaFormValidatorOutput =
-  MargaritaFormResolverOutput<MargaritaFormValidatorResult>;
-
 export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
-export interface MargaritaFormField extends Partial<MargaritaFormState> {
+export interface MargaritaFormField {
   name: string;
   title?: string;
   fields?: MargaritaFormField[];
@@ -71,6 +72,8 @@ export interface MargaritaFormField extends Partial<MargaritaFormState> {
   control?: MargaritaFormControl<unknown, this>;
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
+  state?: Partial<MargaritaFormState>;
+  attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
 }
