@@ -63,18 +63,18 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   /**
    * Unsubscribe from all subscriptions for current control
    */
-  public cleanup() {
+  public cleanup = () => {
     this.fieldManager.cleanup();
     this.controlsManager.cleanup();
     this.valueManager.cleanup();
     this.stateManager.cleanup();
     this.refManager.cleanup();
     this.paramsManager.cleanup();
-  }
+  };
 
-  public updateSyncId() {
+  public updateSyncId = () => {
     this.syncId = nanoid(4);
-  }
+  };
 
   // Context getters
 
@@ -134,9 +134,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return arrayGroupings.includes(this.grouping);
   }
 
-  public updateField(changes: Partial<FIELD>) {
+  public updateField = (changes: Partial<FIELD>) => {
     this.fieldManager.updateField(changes);
-  }
+  };
 
   // Value
 
@@ -160,18 +160,18 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param value value to set
    * @param setAsDirty update dirty state to true
    */
-  public setValue(value: unknown, setAsDirty = true, emitEvent = true) {
+  public setValue = (value: unknown, setAsDirty = true, emitEvent = true) => {
     this.valueManager.updateValue(value, setAsDirty, emitEvent);
-  }
+  };
 
   /**
    * Set value of the control group by updating it's childrens values. Unlike setValue, this method will not delete children values if they are not present in the new value.
    * @param values value to set
    * @param setAsDirty update dirty state to true
    */
-  public patchValue(values: unknown, setAsDirty = true) {
+  public patchValue = (values: unknown, setAsDirty = true) => {
     this.valueManager.updateValue(values, setAsDirty, true, true);
-  }
+  };
 
   // States
 
@@ -183,16 +183,16 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return this.state.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
-  public getState(key: keyof StateManager<this>) {
+  public getState = (key: keyof StateManager<this>) => {
     return this.state[key];
-  }
+  };
 
-  public getStateChanges(key: keyof StateManager<this>) {
+  public getStateChanges = (key: keyof StateManager<this>) => {
     return this.stateChanges.pipe(
       map((state) => state[key]),
       distinctUntilChanged()
     );
-  }
+  };
 
   public get validators(): MargaritaFormValidators {
     const fieldValidators = this.field.validators || {};
@@ -203,52 +203,55 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return { ...parentValidators, ...fieldValidators };
   }
 
-  public enable() {
+  public enable = () => {
     this.updateStateValue('enabled', true);
-  }
+  };
 
-  public disable() {
+  public disable = () => {
     this.updateStateValue('enabled', false);
-  }
+  };
 
-  public toggleEnabled() {
+  public toggleEnabled = () => {
     const current = this.getState('enabled');
     this.updateStateValue('enabled', !current);
-  }
+  };
 
-  public activate() {
+  public activate = () => {
     this.updateStateValue('active', true);
-  }
+  };
 
-  public deactivate() {
+  public deactivate = () => {
     this.updateStateValue('active', false);
-  }
+  };
 
-  public toggleActive() {
+  public toggleActive = () => {
     const current = this.getState('active');
     this.updateStateValue('active', !current);
-  }
+  };
 
-  public updateStateValue(
+  public updateStateValue = (
     key: keyof MargaritaFormState,
     value: MargaritaFormState[typeof key]
-  ) {
+  ) => {
     this.stateManager.updateState(key, value);
-  }
+  };
 
-  public updateState(changes: Partial<MargaritaFormState>) {
+  public updateState = (changes: Partial<MargaritaFormState>) => {
     this.stateManager.updateStates(changes);
-  }
+  };
 
   /**
    * Validate the control and update state. Mark the control as touched to show errors.
    * @param setAsTouched Set the touched state to true
    */
-  public async validate(setAsTouched = true) {
-    this.stateManager.validate(setAsTouched);
-  }
+  public validate = async (setAsTouched = true) => {
+    await this.stateManager.validate(setAsTouched);
+  };
 
-  public registerValidator(name: string, validator: MargaritaFormValidator) {
+  public registerValidator = (
+    name: string,
+    validator: MargaritaFormValidator
+  ) => {
     const currentValidators = this.validators;
     const validators: MargaritaFormValidators = {
       ...currentValidators,
@@ -257,7 +260,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     this.fieldManager.updateField({
       validators,
     });
-  }
+  };
 
   // Params
 
@@ -278,7 +281,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return { ...parentResolvers, ...fieldResolvers };
   }
 
-  public registerResolver(name: string, resolver: MargaritaFormResolver) {
+  public registerResolver = (name: string, resolver: MargaritaFormResolver) => {
     const currentResolvers = this.resolvers;
     const resolvers: MargaritaFormResolvers = {
       ...currentResolvers,
@@ -287,7 +290,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     this.fieldManager.updateField({
       resolvers,
     });
-  }
+  };
 
   // Controls
 
@@ -324,9 +327,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
    * @returns The control that was found or added or null if control doesn't exist.
    */
-  public getControl<CONTROL extends MFC = MFC>(
+  public getControl = <CONTROL extends MFC = MFC>(
     identifier: string | number | (string | number)[]
-  ): CONTROL | null {
+  ): CONTROL | null => {
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
       const control = this.controlsManager.getControl(first);
@@ -334,18 +337,18 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
       return control.getControl(rest);
     }
     return this.controlsManager.getControl<CONTROL>(identifier);
-  }
+  };
 
   /**
    * Check if control exists
    * @param identifier name, index or key of the control
    * @returns boolean
    */
-  public hasControl(identifier: string | number): boolean {
+  public hasControl = (identifier: string | number): boolean => {
     const control = this.controlsManager.getControl(identifier);
     const exists = Boolean(control);
     return exists;
-  }
+  };
 
   /**
    * Get control or add it if it doesn't exist.
@@ -353,49 +356,49 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
-  public getOrAddControl<CONTROL extends MFC = MFC>(
+  public getOrAddControl = <CONTROL extends MFC = MFC>(
     field: CONTROL['field']
-  ): CONTROL {
+  ): CONTROL => {
     const control = this.controlsManager.getControl<CONTROL>(field.name);
     if (!control) return this.controlsManager.addControl(field) as CONTROL;
     return control;
-  }
+  };
 
   /**
    * Add new control to the form group.
    * @param field The field to use as a template for the new control
    * @returns Control that was added
    */
-  public addControl<FIELD extends MFF = this['field'], VALUE = unknown>(
+  public addControl = <FIELD extends MFF = this['field'], VALUE = unknown>(
     field: FIELD
-  ): MargaritaFormControl<VALUE, FIELD> {
+  ): MargaritaFormControl<VALUE, FIELD> => {
     return this.controlsManager.addControl(field);
-  }
+  };
 
   /**
    * Removes a child control from the form group.
    * @param identifier name, index or key of the control to remove
    */
-  public removeControl(identifier: string) {
+  public removeControl = (identifier: string) => {
     this.controlsManager.removeControl(identifier);
-  }
+  };
 
   /**
    * Moves a child control to a new index in the array.
    * @param identifier name, index or key of the control to move
    * @param toIndex index to move the control to
    */
-  public moveControl(identifier: string, toIndex: number) {
+  public moveControl = (identifier: string, toIndex: number) => {
     this.controlsManager.moveControl(identifier, toIndex);
-  }
+  };
 
   /**
    * Add new controls to the form group array. If no field is provided, the template field or fields will be used.
    * @param field The field to use as a template for the new controls
    */
-  public appendRepeatingControls<FIELD extends MFF = MFF>(
+  public appendRepeatingControls = <FIELD extends MFF = MFF>(
     field?: Partial<FIELD> | FIELD[]
-  ) {
+  ) => {
     if (!field) {
       const { fields, template } = this.field;
       if (fields) this.appendRepeatingControls({ fields });
@@ -407,26 +410,26 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
         this.appendRepeatingControls({ fields: field });
       } else this.controlsManager.addTemplatedControl(field);
     }
-  }
+  };
 
   /**
    * Remove the control from the parent
    */
-  public remove() {
+  public remove = () => {
     this.parent.removeControl(this.key);
-  }
+  };
 
   /**
    * Move control to another index
    * @param toIndex index to move the control to
    */
-  public moveToIndex(toIndex: number) {
+  public moveToIndex = (toIndex: number) => {
     if (this.isRoot) {
       console.warn('Could not move control, already in root!');
     } else {
       this.parent.controlsManager.moveControl(this.key, toIndex);
     }
-  }
+  };
 
   // Common
 
@@ -442,24 +445,22 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * control.setRef(el);
    * ```
    */
-  get setRef() {
-    return (ref: MargaritaFormBaseElement<this>): void => {
-      return this.refManager.addRef(ref);
-    };
-  }
+  public setRef = (ref: MargaritaFormBaseElement<this>): void => {
+    return this.refManager.addRef(ref);
+  };
 
   // Misc
 
-  public resetValue() {
+  public resetValue = () => {
     this.setValue(undefined);
-  }
+  };
 
-  public resetState(respectField = false) {
+  public resetState = (respectField = false) => {
     this.stateManager.resetState(respectField);
-  }
+  };
 
-  public reset() {
+  public reset = () => {
     this.resetValue();
     this.resetState();
-  }
+  };
 }
