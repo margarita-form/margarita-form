@@ -46,7 +46,11 @@ export default defineConfig({
       external: ['rxjs'],
     },
   },
-
+  esbuild: {
+    minifyIdentifiers: false,
+    minifySyntax: true,
+    minifyWhitespace: true,
+  },
   test: {
     globals: true,
     cache: {
