@@ -142,7 +142,6 @@ export function App() {
 
   const form = useMargaritaForm<FormValue>(
     {
-      name: 'root',
       fields: currentFields,
       handleSubmit: {
         valid: async (form) => {

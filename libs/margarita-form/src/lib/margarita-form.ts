@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   MargaritaFormOptions,
   MargaritaFormRootField,
@@ -51,7 +52,7 @@ export class MargaritaForm<
 
     // Handle valid submit
     if (this.state.valid) {
-      return await Promise.resolve(this.field.handleSubmit.valid<this>(this))
+      return await Promise.resolve(this.field.handleSubmit.valid<any>(this))
         .then((res) => {
           this.updateStateValue('submitResult', 'success');
           switch (this.options.handleSuccesfullSubmit) {
@@ -82,7 +83,7 @@ export class MargaritaForm<
     // Handle invalid submit
     if (this.field.handleSubmit?.invalid) {
       return await Promise.resolve(
-        this.field.handleSubmit.invalid<this>(this)
+        this.field.handleSubmit.invalid<any>(this)
       ).finally(() => {
         const submits = this.state.submits || 0;
         this.updateState({
@@ -102,7 +103,8 @@ export const createMargaritaForm = <
   VALUE = unknown,
   FIELD extends MargaritaFormRootField = MargaritaFormRootField
 >(
-  field: FIELD
+  field: Partial<FIELD>
 ): MargaritaForm<VALUE, FIELD> => {
-  return new MargaritaForm(field);
+  if (!field.name) field.name = 'root';
+  return new MargaritaForm(field as FIELD);
 };

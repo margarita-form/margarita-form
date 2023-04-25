@@ -78,12 +78,12 @@ export const useMargaritaForm = <
   VALUE = unknown,
   FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 >(
-  field: FIELD,
+  field: Partial<FIELD>,
   options: MargaritaFormHookOptions = {},
   deps: any[] = []
 ) => {
   const formId = useId();
-  if (!stores[formId]) stores[formId] = createFormStore(formId, field);
+  if (!stores[formId]) stores[formId] = createFormStore(formId, field as FIELD);
   const store = stores[formId] as FormStore<VALUE, FIELD>;
   useSyncExternalStore(
     store.subscribe,
