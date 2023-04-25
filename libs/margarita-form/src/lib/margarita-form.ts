@@ -11,7 +11,7 @@ import { Observable, map } from 'rxjs';
 
 export class MargaritaForm<
   VALUE = unknown,
-  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+  FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 > extends MargaritaFormControl<VALUE, FIELD> {
   public optionsManager: OptionsManager<typeof this>;
   constructor(public override field: FIELD) {
@@ -48,6 +48,8 @@ export class MargaritaForm<
     this.updateStateValue('submitting', true);
     if (this.options.disableFormWhileSubmitting)
       this.updateStateValue('disabled', true);
+
+    // Handle valid submit
     if (this.state.valid) {
       return await Promise.resolve(this.field.handleSubmit.valid<this>(this))
         .then((res) => {
@@ -76,6 +78,8 @@ export class MargaritaForm<
           this.updateStateValue('submits', submits + 1);
         });
     }
+
+    // Handle invalid submit
     if (this.field.handleSubmit?.invalid) {
       return await Promise.resolve(
         this.field.handleSubmit.invalid<this>(this)

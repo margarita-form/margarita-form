@@ -78,6 +78,19 @@ export interface MargaritaFormField {
   validators?: MargaritaFormValidators;
 }
 
+export interface MargaritaFormRootField<VALUE = unknown>
+  extends MargaritaFormField {
+  options?: MargaritaFormOptions;
+  handleSubmit?: {
+    valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(
+      form: FORM
+    ) => unknown | Promise<unknown>;
+    invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(
+      form: FORM
+    ) => unknown | Promise<unknown>;
+  };
+}
+
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
@@ -112,14 +125,6 @@ export interface MargaritaFormOptions {
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
   allowConcurrentSubmits?: boolean;
   addDefaultValidators?: boolean;
-}
-
-export interface MargaritaFormRootField extends MargaritaFormField {
-  options?: MargaritaFormOptions;
-  handleSubmit?: {
-    valid: <FORM = MargaritaForm>(form: FORM) => unknown | Promise<unknown>;
-    invalid?: <FORM = MargaritaForm>(form: FORM) => unknown | Promise<unknown>;
-  };
 }
 
 export type MargaritaFormBaseElement<
