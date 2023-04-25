@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useId, useSyncExternalStore } from 'react';
+import { useEffect, useId, useMemo, useSyncExternalStore } from 'react';
 import { combineLatest, debounceTime } from 'rxjs';
 import {
   createMargaritaForm,
@@ -70,11 +70,16 @@ const createFormStore = <
   };
 };
 
+interface MargaritaFormHookOptions {
+  resetFormOnFieldChanges?: boolean;
+}
+
 export const useMargaritaForm = <
   VALUE = unknown,
   FIELD extends MargaritaFormRootField = MargaritaFormRootField
 >(
   field: FIELD,
+  options: MargaritaFormHookOptions = {},
   deps: any[] = []
 ) => {
   const formId = useId();
@@ -87,9 +92,26 @@ export const useMargaritaForm = <
   );
   const { form } = store;
 
+  const computedFieldValue = useMemo(() => {
+    try {
+      return JSON.stringify(field);
+    } catch (error) {
+      return null;
+    }
+  }, [field]);
+
+  const { resetFormOnFieldChanges = false } = options;
+
   useEffect(() => {
-    form.updateField(field);
-  }, deps);
+    form.updateField(field, resetFormOnFieldChanges);
+  }, [computedFieldValue, resetFormOnFieldChanges, ...deps]);
+
+  useEffect(() => {
+    form.resubscribe();
+    return () => {
+      form.cleanup();
+    };
+  }, []);
 
   return form;
 };
