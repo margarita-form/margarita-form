@@ -76,7 +76,7 @@ interface MargaritaFormHookOptions {
 
 export const useMargaritaForm = <
   VALUE = unknown,
-  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+  FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 >(
   field: FIELD,
   options: MargaritaFormHookOptions = {},
