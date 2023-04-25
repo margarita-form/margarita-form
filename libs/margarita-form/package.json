@@ -12,9 +12,7 @@
     "url": "https://github.com/margarita-form/margarita-form/issues"
   },
   "dependencies": {
-    "lodash.get": "^4.4.2",
-    "nanoid": "^4.0.1",
-    "rxjs": "^7.8.0"
+    "rxjs": "7.x"
   },
   "exports": {
     ".": {

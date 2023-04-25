@@ -20,7 +20,7 @@
     "build:all": "npm run build:core && npm run build:react",
     "publish:core": "cd dist/libs/margarita-form && npm publish",
     "publish:react": "cd dist/libs/margarita-form-react && npm publish",
-    "publish:all": "lerna version --force-publish -m \"chore(release): version %v\" && node ./scripts/update-dependencies.mjs && npm run build:all && node ./scripts/add-readme.mjs && npm run publish:core && npm run publish:react",
+    "publish:all": "lerna version --force-publish -m \"chore(release): version %v\" && npm run build:all && node ./scripts/add-readme.mjs && npm run publish:core && npm run publish:react",
     "create-docs": "typedoc"
   },
   "private": true,
