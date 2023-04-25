@@ -1,13 +1,10 @@
-import { getFile, setFile, runCommand } from './script-helpers.mjs';
+import { getFile, setFile } from './script-helpers.mjs';
 
-// const rootPath = '../package.json';
 const corePath = '../dist/libs/margarita-form/package.json';
 const reactPath = '../dist/libs/margarita-form-react/package.json';
 
 const { version } = await getFile(corePath);
-// const { dependencies } = await getFile(rootPath);
 
-// const dependenciesToUpdate = ['lodash.get', 'nanoid', 'rxjs'];
 const libsToUpdate = [corePath, reactPath];
 
 await Promise.all(
@@ -24,20 +21,6 @@ await Promise.all(
       setPeerDependency('@margarita-form/core', `${version}`);
     }
 
-    /*
-    // Update others
-    dependenciesToUpdate.forEach((dependency) => {
-      if (hasDependency(dependency)) {
-        const current = dependencies[dependency];
-        setDependency(dependency, current);
-      }
-    });
-      */
-
     await setFile(dist, contents);
   })
 );
-
-await runCommand('git add .');
-await runCommand('git commit -m chore:\\supdate\\slib\\sdependencies');
-await runCommand('git push');
