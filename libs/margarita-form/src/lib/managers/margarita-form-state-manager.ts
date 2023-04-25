@@ -44,49 +44,52 @@ class StateManager<CONTROL extends MFC>
       if (typeof value === 'function') this.updateStates({ [key]: false });
     });
 
-    const userDefinedStateSubscription = control.valueChanges
-      .pipe(
-        switchMap((value) => {
-          return mapResolverEntries('State', control.field.state, {
+    const userDefinedStateSubscriptionObservable = control.valueChanges.pipe(
+      switchMap((value) => {
+        return mapResolverEntries('State', control.field.state, {
+          control,
+          value,
+          params: null,
+        });
+      })
+    );
+
+    this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
+      this.updateStates(state);
+      this.#emitChanges();
+    });
+
+    const validationStateSubscriptionObservable = control.valueChanges.pipe(
+      switchMap((value) => {
+        return mapResolverEntries<MargaritaFormValidatorResult>(
+          'State',
+          control.field.validation,
+          {
             control,
             value,
             params: null,
-          });
-        })
-      )
-      .subscribe((state) => {
-        this.updateStates(state);
-        this.#emitChanges();
-      });
+          }
+        );
+      }),
+      combineLatestWith(
+        control.controlsManager.changes.pipe(
+          switchMap((controls) => {
+            if (!controls.length) return Promise.resolve([]);
+            const stateChanges: Observable<StateManager<MFC>>[] = controls.map(
+              (control) => control.stateChanges
+            );
+            return combineLatest(
+              stateChanges
+            ) as Observable<MargaritaFormStateChildren>;
+          })
+        )
+      ),
+      debounceTime(1)
+    );
 
-    const validationStateSubscription = control.valueChanges
-      .pipe(
-        switchMap((value) => {
-          return mapResolverEntries<MargaritaFormValidatorResult>(
-            'State',
-            control.field.validation,
-            {
-              control,
-              value,
-              params: null,
-            }
-          );
-        }),
-        combineLatestWith(
-          control.controlsManager.changes.pipe(
-            switchMap((controls) => {
-              if (!controls.length) return Promise.resolve([]);
-              const stateChanges: Observable<StateManager<MFC>>[] =
-                controls.map((control) => control.stateChanges);
-              return combineLatest(
-                stateChanges
-              ) as Observable<MargaritaFormStateChildren>;
-            })
-          )
-        ),
-        debounceTime(1)
-      )
-      .subscribe(([validationStates, children]) => {
+    this.createSubscription(
+      validationStateSubscriptionObservable,
+      ([validationStates, children]) => {
         const childrenAreValid = children.every(
           (child) => child.valid || child.inactive
         );
@@ -112,25 +115,20 @@ class StateManager<CONTROL extends MFC>
           hasValue,
         };
         this.updateStates(changes);
-      });
-
-    const activeChangesSubscription = this.changes
-      .pipe(
-        map((state) => state.active),
-        distinctUntilChanged(),
-        skip(1)
-      )
-      .subscribe(() => {
-        if (!this.control.isRoot) {
-          this.control.parent.valueManager._syncCurrentValue(false, true);
-        }
-      });
-
-    this.subscriptions.push(
-      userDefinedStateSubscription,
-      validationStateSubscription,
-      activeChangesSubscription
+      }
     );
+
+    const activeChangesSubscriptionObservable = this.changes.pipe(
+      map((state) => state.active),
+      distinctUntilChanged(),
+      skip(1)
+    );
+
+    this.createSubscription(activeChangesSubscriptionObservable, () => {
+      if (!this.control.isRoot) {
+        this.control.parent.valueManager._syncCurrentValue(false, true);
+      }
+    });
   }
 
   #emitChanges() {

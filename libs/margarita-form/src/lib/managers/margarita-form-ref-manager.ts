@@ -40,13 +40,21 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
         }
       });
     };
+
+    this.onResubscribe = () => {
+      const refs = [...this.#refs];
+      refs.forEach(({ node }) => {
+        this.#deleteNodeRef(node);
+        this.addRef(node);
+      });
+    };
   }
 
   #emitChanges() {
     this.changes.next(this.#refs);
   }
 
-  public get refs(): MargaritaFormBaseElement<CONTROL>[] {
+  public get refs() {
     return this.#refs;
   }
 
@@ -54,11 +62,12 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     node: MargaritaFormBaseElement<CONTROL['field']> | null
   ) {
     if (!node) return;
+    this.#deleteNodeRef(node);
   }
 
   public addRef(node: MargaritaFormBaseElement<CONTROL> | null | undefined) {
     if (!node) return;
-    const alreadyIncluded = this.#connectNodeToControl(node);
+    const alreadyIncluded = this.#connectNodeAndControl(node);
     if (alreadyIncluded) return;
 
     const params = { node, control: this.control };
@@ -76,16 +85,19 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     const handleAttributes = handleControlAttributeChanges(params);
 
     const unsubscribe = () => {
-      this.#disconnectNodeFromControl(node);
-      handleControlValueChange?.unsubscribe();
-      handleNodeValueChange?.unsubscribe();
-      handleDisable?.unsubscribe();
-      handleReadOnly?.unsubscribe();
-      handleBlur?.unsubscribe();
-      handleFocus?.unsubscribe();
-      handleSubmit?.unsubscribe();
-      handleAttributes?.unsubscribe();
-      mutationObserver.disconnect();
+      try {
+        handleControlValueChange?.unsubscribe();
+        handleNodeValueChange?.unsubscribe();
+        handleDisable?.unsubscribe();
+        handleReadOnly?.unsubscribe();
+        handleBlur?.unsubscribe();
+        handleFocus?.unsubscribe();
+        handleSubmit?.unsubscribe();
+        handleAttributes?.unsubscribe();
+        mutationObserver.disconnect();
+      } catch (error) {
+        //
+      }
     };
 
     const mutationObserver = new MutationObserver((events) => {
@@ -126,7 +138,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  #connectNodeToControl(node: MargaritaFormBaseElement<CONTROL>) {
+  #connectNodeAndControl(node: MargaritaFormBaseElement<CONTROL>) {
     if (!node) return;
     this.#defineControlsToNode(node);
 
@@ -135,14 +147,11 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
       node.controls?.push(this.control);
     }
     const nodeInControl = this.refs.includes(node);
-    if (!nodeInControl) {
-      this.refs.push(node);
-    }
     const alreadyIncluded = controlInNode || nodeInControl;
     return alreadyIncluded;
   }
 
-  #disconnectNodeFromControl(node: MargaritaFormBaseElement<CONTROL>) {
+  #removeControlFromNode(node: MargaritaFormBaseElement<CONTROL>) {
     if (!node) return;
     this.#defineControlsToNode(node);
 
@@ -154,11 +163,13 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
       );
       if (index > -1) controls.splice(index, 1);
     }
-    const nodeInControl = this.refs.includes(node);
-    if (nodeInControl) {
-      const index = this.refs.findIndex((ref) => ref === node);
-      if (index > -1) this.refs.splice(index, 1);
-    }
+  }
+
+  #deleteNodeRef(node: MargaritaFormBaseElement<CONTROL>) {
+    if (!node) return;
+    this.#removeControlFromNode(node);
+    const index = this.refs.findIndex((ref) => ref.node === node);
+    if (index > -1) this.refs.splice(index, 1);
   }
 }
 

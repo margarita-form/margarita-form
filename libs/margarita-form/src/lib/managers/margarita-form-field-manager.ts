@@ -5,7 +5,7 @@ import { MFC, MFF } from '../margarita-form-types';
 class FieldManager<CONTROL extends MFC> extends BaseManager {
   #field: CONTROL['field'] = null;
   public changes = new BehaviorSubject<CONTROL['field']>(null);
-  public shouldReplaceControl = false;
+  public shouldResetControl = false;
   constructor(public control: CONTROL) {
     super();
     this.setField(control.field);
@@ -22,20 +22,20 @@ class FieldManager<CONTROL extends MFC> extends BaseManager {
 
   public async setField<FIELD extends MFF = MFF | CONTROL['field']>(
     field: FIELD | Promise<FIELD>,
-    replaceControl = false
+    resetControl = false
   ) {
     this.#field = await field;
-    this.shouldReplaceControl = replaceControl;
+    this.shouldResetControl = resetControl;
     this.#emitChanges();
   }
 
   public async updateField<FIELD extends MFF = MFF | CONTROL['field']>(
     partialField: Partial<FIELD> | Promise<Partial<FIELD>>,
-    replaceControl = false
+    resetControl = false
   ) {
     const resolved = await partialField;
     const patchField = { ...this.current, ...resolved };
-    this.setField(patchField, replaceControl);
+    this.setField(patchField, resetControl);
   }
 }
 

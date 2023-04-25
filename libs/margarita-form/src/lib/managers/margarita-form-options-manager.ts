@@ -15,12 +15,10 @@ class OptionsManager<CONTROL extends MF> extends BaseManager {
 
   constructor(public control: CONTROL) {
     super();
-    const fieldSubscription = control.fieldManager.changes.subscribe(
-      (field) => {
-        if (field) this.updateOptions(field.options);
-      }
-    );
-    this.subscriptions.push(fieldSubscription);
+
+    this.createSubscription(control.fieldManager.changes, (field) => {
+      if (field) this.updateOptions(field.options);
+    });
   }
 
   public get current(): MargaritaFormOptions {

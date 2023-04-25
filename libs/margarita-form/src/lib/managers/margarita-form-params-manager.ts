@@ -11,26 +11,25 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager {
 
   constructor(public control: CONTROL) {
     super();
-    const paramsSubscription = combineLatest([
+
+    const paramsSubscriptionObservable = combineLatest([
       control.valueChanges,
       control.stateChanges,
-    ])
-      .pipe(
-        debounceTime(1),
-        switchMap(([value]) => {
-          return mapResolverEntries('Params', control.field.params, {
-            control,
-            value,
-            params: null,
-          });
-        })
-      )
-      .subscribe((params) => {
-        this.#params = params;
-        this.#emitChanges();
-      });
+    ]).pipe(
+      debounceTime(1),
+      switchMap(([value]) => {
+        return mapResolverEntries('Params', control.field.params, {
+          control,
+          value,
+          params: null,
+        });
+      })
+    );
 
-    this.subscriptions.push(paramsSubscription);
+    this.createSubscription(paramsSubscriptionObservable, (params) => {
+      this.#params = params;
+      this.#emitChanges();
+    });
   }
 
   #emitChanges() {

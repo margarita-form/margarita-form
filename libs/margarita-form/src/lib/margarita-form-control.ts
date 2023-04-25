@@ -48,6 +48,8 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   public stateManager: StateManager<typeof this>;
   public refManager: RefManager<typeof this>;
   public paramsManager: ParamsManager<typeof this>;
+
+  #listeningToChanges = true;
   constructor(
     public field: FIELD,
     public context: MargaritaFormControlContext = {}
@@ -70,6 +72,22 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     this.stateManager.cleanup();
     this.refManager.cleanup();
     this.paramsManager.cleanup();
+    this.#listeningToChanges = false;
+  };
+
+  /**
+   * Resubscribe to all subscriptions for current control
+   */
+  public resubscribe = () => {
+    if (this.#listeningToChanges === false) {
+      this.fieldManager.resubscribe();
+      this.controlsManager.resubscribe();
+      this.valueManager.resubscribe();
+      this.stateManager.resubscribe();
+      this.refManager.resubscribe();
+      this.paramsManager.resubscribe();
+    }
+    this.#listeningToChanges = true;
   };
 
   public updateSyncId = () => {
@@ -141,8 +159,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return !this.expectArray;
   }
 
-  public updateField = (changes: Partial<FIELD>) => {
-    this.fieldManager.updateField(changes);
+  public updateField = async (
+    changes: Partial<FIELD>,
+    resetControl = false
+  ) => {
+    await this.fieldManager.updateField(changes, resetControl);
   };
 
   // Value

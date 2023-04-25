@@ -10,10 +10,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   constructor(public control: CONTROL) {
     super();
     if (control.field.initialValue) this.#value = control.field.initialValue;
-    const controlsSubscription = this.control.controlsManager.changes.subscribe(
-      () => this._syncCurrentValue(false)
-    );
-    this.subscriptions.push(controlsSubscription);
+    this.createSubscription(this.control.controlsManager.changes, () => {
+      this._syncCurrentValue(false);
+    });
   }
 
   #emitChanges() {
@@ -39,24 +38,29 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     patch = false
   ) {
     if (this.control.hasControls) {
-      if (typeof value !== 'object') throw new Error('Value must be an object');
+      if (value && typeof value !== 'object')
+        throw new Error('Value must be an object');
       try {
-        const isArray = Array.isArray(value);
-        if (this.control.expectArray && isArray) {
-          this.control.controls.forEach((control, index) => {
-            const hasValue = control && value[index];
+        if (this.control.expectArray) {
+          const isArray = Array.isArray(value);
+
+          const controls = [...this.control.controls]; // Copy array to avoid problems caused by mutation of original array
+          controls.forEach((control, index) => {
+            const hasValue = isArray && value[index];
             if (!hasValue && !patch) control.remove();
           });
 
-          value.forEach((_value, index) => {
-            const control = this.control.getControl(index);
-            if (control) return control.setValue(_value, setAsDirty);
+          if (isArray) {
+            value.forEach((_value, index) => {
+              const control = this.control.getControl(index);
+              if (control) return control.setValue(_value, setAsDirty);
 
-            return this.control.controlsManager.addTemplatedControl({
-              initialValue: _value,
+              return this.control.controlsManager.addTemplatedControl({
+                initialValue: _value,
+              });
             });
-          });
-        } else if (!isArray) {
+          }
+        } else {
           return Object.values(this.control.controlsManager.group).forEach(
             (control) => {
               const { name } = control.field;
@@ -68,12 +72,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
               control.setValue(updatedValue, setAsDirty);
             }
           );
-        } else {
-          console.error('Could not set values!', {
-            control: this,
-            value,
-            error: 'Trying to add array od values to non repeating controls!',
-          });
         }
       } catch (error) {
         console.error('Could not set values!', {

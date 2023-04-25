@@ -21,38 +21,63 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       });
     };
 
-    const fieldChangesSubscription = control.fieldManager.changes
-      .pipe(filter((field) => field !== this.#buildWith))
-      .subscribe(() => this.rebuild(control.fieldManager.shouldReplaceControl));
+    this.onResubscribe = () => {
+      this.#controls.forEach((control) => {
+        control.resubscribe();
+      });
+    };
 
-    this.subscriptions.push(fieldChangesSubscription);
+    this.createSubscription(
+      control.fieldManager.changes.pipe(
+        filter((field) => field !== this.#buildWith)
+      ),
+      () => this.rebuild(control.fieldManager.shouldResetControl)
+    );
 
     if (this.control.field) {
       this.rebuild();
     }
   }
 
-  public rebuild(replace = false) {
+  public rebuild(resetControls = false) {
     const { grouping, field } = this.control;
-
     if (!field) throw 'No field provided for control!';
     this.#buildWith = field;
-
     const { startWith = 1, fields, template } = field;
-    for (let i = 0; i < startWith; i++) {
-      if (grouping === 'repeat-group') {
-        const _template = fields ? { fields } : template;
-        this.addTemplatedControl(_template, replace);
-      } else if (grouping === 'array') {
-        if (fields) {
-          this.addControls(fields, replace);
-        } else {
-          this.addTemplatedControl(template, replace);
-        }
-      } else if (fields) {
-        this.addControls(fields, replace);
-      }
+
+    if (this.#buildWith && field.fields && this.control.expectGroup) {
+      const controlsToRemove = this.#controls.filter((control) => {
+        return !field.fields.some((field: MFF) => field.name === control.name);
+      });
+
+      controlsToRemove.forEach((control) => {
+        control.remove();
+      });
     }
+
+    if (this.control.expectArray) {
+      const startFrom = this.#controls.length;
+      if (resetControls || startFrom <= 0) {
+        for (let i = startFrom; i < startWith; i++) {
+          if (grouping === 'repeat-group') {
+            const _template = fields ? { fields } : template;
+            this.addTemplatedControl(_template, resetControls, false);
+          }
+
+          if (grouping === 'array') {
+            if (fields) {
+              this.addControls(fields, resetControls, false);
+            } else {
+              this.addTemplatedControl(template, resetControls, false);
+            }
+          }
+        }
+      }
+    } else if (fields) {
+      this.addControls(fields, resetControls, false);
+    }
+
+    this.#emitChanges();
   }
 
   #emitChanges() {
@@ -71,17 +96,19 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
 
   public addControls<FIELD extends MFF = CONTROL['field'], VALUE = unknown>(
     fields: FIELD[],
-    replace = false
+    resetControl = false,
+    emit = true
   ): MargaritaFormControl<VALUE, FIELD>[] {
     if (!fields) throw 'No fields provided!';
     return fields.map((field) => {
-      return this.addControl(field, replace);
+      return this.addControl(field, resetControl, emit);
     });
   }
 
   public addTemplatedControl<CHILD_FIELD extends MFF = CONTROL['field']>(
     fieldTemplate?: Partial<CHILD_FIELD>,
-    replace = false
+    resetControl = false,
+    emit = true
   ): MargaritaFormControl<unknown, CHILD_FIELD> {
     if (!fieldTemplate) throw 'No template for repeating field provided!';
 
@@ -90,14 +117,23 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       ...fieldTemplate,
     } as CHILD_FIELD;
 
-    return this.addControl<CHILD_FIELD>(field, replace);
+    return this.addControl<CHILD_FIELD>(field, resetControl, emit);
   }
 
   public addControl<FIELD extends MFF = CONTROL['field'], VALUE = unknown>(
     field: FIELD,
-    replace = false
+    resetControl = false,
+    emit = true
   ): MargaritaFormControl<VALUE, FIELD> {
     if (!field) throw 'No field provided!';
+
+    if (this.control.expectGroup && !resetControl) {
+      const existingControl = this.getControl(field.name);
+      if (existingControl) {
+        existingControl.updateField(field);
+        return existingControl as MargaritaFormControl<VALUE, FIELD>;
+      }
+    }
 
     const control = new MargaritaFormControl<VALUE, FIELD>(field, {
       parent: this.control,
@@ -106,29 +142,31 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     });
 
     if (this.control.state?.disabled) control.disable();
-    return this.appendControl(control, replace);
+    return this.appendControl(control, resetControl, emit);
   }
 
   public appendControl<CHILD_CONTROL extends MFC>(
     control: CHILD_CONTROL,
-    replace = false
+    resetControl = false,
+    emit = true
   ): CHILD_CONTROL {
     if (this.#requireUniqueNames) {
       const prevControl = this.getControl<CHILD_CONTROL>(control.name);
-      if (replace) {
+      if (resetControl) {
         this.removeControl(control.name);
       } else if (prevControl) {
         prevControl.fieldManager.setField(control.field);
-        this.#emitChanges();
+        if (emit) this.#emitChanges();
         return prevControl;
       }
     }
 
     this.#controls.push(control);
-    this.#emitChanges();
+    if (emit) this.#emitChanges();
     return control;
   }
-  public removeControl(identifier: string | number) {
+
+  public removeControl(identifier: string | number, emit = true) {
     if (typeof identifier === 'number') {
       this.#controls.splice(identifier, 1);
     } else {
@@ -140,7 +178,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         control.cleanup();
       }
     }
-    this.#emitChanges();
+    if (emit) this.#emitChanges();
   }
 
   public getControl<
@@ -160,11 +198,11 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     );
   }
 
-  public moveControl(identifier: string, toIndex: number) {
+  public moveControl(identifier: string, toIndex: number, emit = true) {
     const currentIndex = this.getControlIndex(identifier);
     const [item] = this.#controls.splice(currentIndex, 1);
     this.#controls.splice(toIndex, 0, item);
-    this.#emitChanges();
+    if (emit) this.#emitChanges();
   }
 }
 
