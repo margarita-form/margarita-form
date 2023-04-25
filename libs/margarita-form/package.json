@@ -1,6 +1,6 @@
 {
   "name": "@margarita-form/core",
-  "version": "0.2.8",
+  "version": "0.3.1",
   "type": "module",
   "license": "MIT",
   "private": false,
@@ -11,10 +11,9 @@
   "bugs": {
     "url": "https://github.com/margarita-form/margarita-form/issues"
   },
-  "dependencies": {
-    "lodash.get": "^4.4.2",
-    "nanoid": "^4.0.1",
-    "rxjs": "^7.8.0"
+  "peerDependencies": {
+    "nanoid": "^3.2.0 || 4.x",
+    "rxjs": ">=7.x"
   },
   "exports": {
     ".": {

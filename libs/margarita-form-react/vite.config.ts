@@ -43,7 +43,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'nanoid', 'rxjs', 'lodash.get'],
+      external: ['react', 'react-dom', 'rxjs', 'nanoid'],
       output: {
         globals: {
           react: 'React',
@@ -52,7 +52,11 @@ export default defineConfig({
       },
     },
   },
-
+  esbuild: {
+    minifyIdentifiers: false,
+    minifySyntax: true,
+    minifyWhitespace: true,
+  },
   test: {
     globals: true,
     cache: {

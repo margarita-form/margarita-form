@@ -1,8 +1,8 @@
-import { MargaritaFormValidatorFunction } from '../margarita-form-types';
+import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const slugValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<boolean> =
+) => MargaritaFormValidator<boolean> =
   (errorMessage = 'Value must be a valid slug!') =>
   ({ value, params }) => {
     if (!params || !value) return { valid: true };

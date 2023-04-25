@@ -2,11 +2,10 @@ import styled from 'styled-components';
 import {
   useMargaritaForm,
   MargaritaFormField,
-  MargaritaFormValueControl,
-  MargaritaFormGroupControl,
+  MargaritaFormControl,
   Form,
 } from '@margarita-form/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;
@@ -19,7 +18,7 @@ const AppWrapper = styled.div`
   gap: 50px;
   margin: auto;
   form {
-    min-width: clamp(400px, 25vw, 620px);
+    min-width: clamp(500px, 25vw, 720px);
     display: grid;
     gap: 10px;
     input,
@@ -46,9 +45,14 @@ const AppWrapper = styled.div`
   }
 `;
 
-const fields: MargaritaFormField[] = [
+interface CustomField extends MargaritaFormField {
+  title?: string;
+}
+
+const fields: CustomField[] = [
   {
     name: 'title',
+    title: 'Title',
     initialValue: 'Hello world',
     validation: {
       required: true,
@@ -56,14 +60,56 @@ const fields: MargaritaFormField[] = [
   },
   {
     name: 'description',
+    title: 'Description',
     validation: {
       required: true,
     },
   },
   {
     name: 'steps',
+    title: 'Steps',
     grouping: 'repeat-group',
     startWith: 2,
+    template: {
+      fields: [
+        {
+          name: 'title',
+          validation: {
+            required: true,
+          },
+        },
+        {
+          name: 'description',
+          validation: {
+            required: true,
+          },
+        },
+      ],
+    },
+  },
+];
+
+const simpler: CustomField[] = [
+  {
+    name: 'title',
+    title: 'Short title',
+    initialValue: 'Hello world',
+    validation: {
+      required: true,
+    },
+  },
+  {
+    name: 'description',
+    title: 'Short description',
+    validation: {
+      required: true,
+    },
+  },
+  {
+    name: 'steps',
+    title: 'Steps',
+    grouping: 'repeat-group',
+    startWith: 0,
     template: {
       fields: [
         {
@@ -91,58 +137,105 @@ interface FormValue {
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const form = useMargaritaForm<FormValue>({
-    handleSuccesfullSubmit: 'enable',
-    fields,
-    handleSubmit: {
-      valid: async (form) => {
-        setSubmitResponse('Fake submitting for 2s...');
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log('Valid submit', { form });
-        setSubmitResponse('Form is valid!');
+  const [currentFields, setCurrentFields] = useState(fields);
+  const [shouldReset, setShouldReset] = useState(false);
+
+  const form = useMargaritaForm<FormValue>(
+    {
+      fields: currentFields,
+      handleSubmit: {
+        valid: async (form) => {
+          setSubmitResponse('Fake submitting for 1s...');
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log('Valid submit', { form });
+          setSubmitResponse('Form is valid!');
+        },
+        invalid: async (form) => {
+          setSubmitResponse('Fake submitting for 1s...');
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log('Invalid submit', { form });
+          setSubmitResponse('Form is invalid!');
+        },
       },
-      invalid: async (form) => {
-        setSubmitResponse('Fake submitting for 2s...');
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log('Invalid submit', { form });
-        setSubmitResponse('Form is invalid!');
+      options: {
+        handleSuccesfullSubmit: 'enable',
       },
     },
-  });
+    {
+      resetFormOnFieldChanges: shouldReset,
+    }
+  );
 
-  const titleControl = form.getControl<MargaritaFormValueControl>('title');
+  const titleControl = form.getControl('title');
   const descriptionControl =
-    form.getControl<MargaritaFormValueControl>('description');
+    form.getControl<MargaritaFormControl>('description');
 
-  const stepsControl = form.getControl<MargaritaFormGroupControl>('steps');
+  const stepsControl = form.getControl('steps');
+
+  const changeFields = useCallback(() => {
+    if (currentFields === fields) {
+      setCurrentFields(simpler);
+    } else {
+      setCurrentFields(fields);
+    }
+  }, [currentFields]);
 
   return (
     <AppWrapper>
       <div className="form-wrapper">
         <Form form={form}>
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            ref={titleControl.setRef}
-            placeholder="How to make a cake"
-          />
+          <div>
+            <input
+              type="checkbox"
+              id="should-reset"
+              name="should-reset"
+              onChange={(e) => {
+                setShouldReset(e.target.checked);
+              }}
+            />
+            <label htmlFor="should-reset">
+              Form should reset on field changes?
+            </label>
+          </div>
 
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            ref={descriptionControl.setRef}
-            placeholder="Lorem ipsum"
-          />
+          <button type="button" onClick={changeFields}>
+            Change fields
+          </button>
+
+          <hr />
+
+          {titleControl && (
+            <>
+              {' '}
+              <label htmlFor="title">{titleControl.field.title}</label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                ref={titleControl.setRef}
+                placeholder="How to make a cake"
+              />
+            </>
+          )}
+          {descriptionControl && (
+            <>
+              <label htmlFor="description">
+                {descriptionControl.field.title}
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                ref={descriptionControl.setRef}
+                placeholder="Lorem ipsum"
+              />
+            </>
+          )}
 
           {stepsControl &&
             stepsControl.controls.map((stepGroup) => {
-              const stepTitleControl =
-                stepGroup.getControl<MargaritaFormValueControl>('title');
+              const stepTitleControl = stepGroup.getControl('title');
               const stepDescriptionControl =
-                stepGroup.getControl<MargaritaFormValueControl>('description');
+                stepGroup.getControl('description');
 
               return (
                 <div className="step-container" key={stepGroup.key}>
@@ -180,7 +273,7 @@ export function App() {
           <button
             type="button"
             onClick={() => {
-              stepsControl.appendRepeatingControls();
+              stepsControl?.appendRepeatingControls();
             }}
           >
             Add new step
@@ -189,6 +282,12 @@ export function App() {
           <hr />
 
           <button type="submit">Submit</button>
+
+          <hr />
+
+          <button type="button" onClick={form.reset}>
+            Reset
+          </button>
 
           {submitResponse && <span>{submitResponse}</span>}
         </Form>

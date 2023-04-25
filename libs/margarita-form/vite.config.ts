@@ -43,10 +43,14 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['nanoid', 'rxjs', 'lodash.get'],
+      external: ['rxjs', 'nanoid'],
     },
   },
-
+  esbuild: {
+    minifyIdentifiers: false,
+    minifySyntax: true,
+    minifyWhitespace: true,
+  },
   test: {
     globals: true,
     cache: {

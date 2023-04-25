@@ -1,8 +1,8 @@
-import { MargaritaFormValidatorFunction } from '../margarita-form-types';
+import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const requiredValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<boolean> =
+) => MargaritaFormValidator<boolean> =
   (errorMessage = 'This field is required!') =>
   ({ value, params }) => {
     if (!params) return { valid: true };

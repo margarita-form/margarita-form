@@ -1,46 +1,53 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useId, useSyncExternalStore } from 'react';
+import { useEffect, useId, useMemo, useSyncExternalStore } from 'react';
 import { combineLatest, debounceTime } from 'rxjs';
 import {
   createMargaritaForm,
   MargaritaForm,
-  MargaritaFormField,
-  MargaritaFormGroupControl,
-  MargaritaFormOptions,
+  MargaritaFormRootField,
 } from '@margarita-form/core';
 
 const forms: Record<string, unknown> = {};
 
-const getForm = <T, F extends MargaritaFormField = MargaritaFormField>(
+const getForm = <
+  VALUE = unknown,
+  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+>(
   formId: string,
-  options: MargaritaFormOptions<T, F> | MargaritaForm<T, F>
+  options: FIELD
 ) => {
   if (formId in forms) {
-    return forms[formId] as MargaritaForm<T, F>;
+    return forms[formId] as MargaritaForm<VALUE, FIELD>;
   }
-  const isForm = options instanceof MargaritaFormGroupControl;
+  const isForm = options instanceof MargaritaForm;
   if (isForm) {
     forms[formId] = options;
-    return options as MargaritaForm<T, F>;
+    return options;
   }
-  const newForm = createMargaritaForm<T, F>(options);
+  const newForm = createMargaritaForm<VALUE, FIELD>(options);
   forms[formId] = newForm;
-  return newForm as MargaritaForm<T, F>;
+  return newForm as MargaritaForm<VALUE, FIELD>;
 };
 
-interface FormStore<T, F extends MargaritaFormField = MargaritaFormField> {
-  form: MargaritaForm<T, F>;
+interface FormStore<
+  VALUE = unknown,
+  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+> {
+  form: MargaritaForm<VALUE, FIELD>;
   getSnapshot: () => unknown;
   subscribe: (listener: () => void) => () => void;
 }
 
 const stores: Record<string, FormStore<unknown, any>> = {};
 
-const createFormStore = <T, F extends MargaritaFormField = MargaritaFormField>(
+const createFormStore = <
+  VALUE = unknown,
+  FIELD extends MargaritaFormRootField = MargaritaFormRootField
+>(
   id: string,
-  options: MargaritaFormOptions<T, F> | MargaritaForm<T, F>
-): FormStore<T, F> => {
-  const form = getForm<T, F>(id, options);
+  options: FIELD
+): FormStore<VALUE, FIELD> => {
+  const form = getForm<VALUE, FIELD>(id, options);
 
   const subscribe = (listener: () => void) => {
     const subscription = combineLatest([form.valueChanges, form.stateChanges])
@@ -63,20 +70,48 @@ const createFormStore = <T, F extends MargaritaFormField = MargaritaFormField>(
   };
 };
 
+interface MargaritaFormHookOptions {
+  resetFormOnFieldChanges?: boolean;
+}
+
 export const useMargaritaForm = <
-  T = unknown,
-  F extends MargaritaFormField = MargaritaFormField
+  VALUE = unknown,
+  FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 >(
-  options: MargaritaFormOptions<T, F> | MargaritaForm<T, F>
+  field: Partial<FIELD>,
+  options: MargaritaFormHookOptions = {},
+  deps: any[] = []
 ) => {
   const formId = useId();
-  if (!stores[formId]) stores[formId] = createFormStore(formId, options);
-  const store = stores[formId] as FormStore<T, F>;
+  if (!stores[formId]) stores[formId] = createFormStore(formId, field as FIELD);
+  const store = stores[formId] as FormStore<VALUE, FIELD>;
   useSyncExternalStore(
     store.subscribe,
     () => store.getSnapshot(),
     () => store.getSnapshot()
   );
   const { form } = store;
+
+  const computedFieldValue = useMemo(() => {
+    try {
+      return JSON.stringify(field);
+    } catch (error) {
+      return null;
+    }
+  }, [field]);
+
+  const { resetFormOnFieldChanges = false } = options;
+
+  useEffect(() => {
+    form.updateField(field, resetFormOnFieldChanges);
+  }, [computedFieldValue, resetFormOnFieldChanges, ...deps]);
+
+  useEffect(() => {
+    form.resubscribe();
+    return () => {
+      form.cleanup();
+    };
+  }, []);
+
   return form;
 };

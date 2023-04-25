@@ -1,20 +1,17 @@
 import {
+  MFC,
   MargaritaFormBaseElement,
-  MargaritaFormControl,
-  MargaritaFormField,
   MargaritaFormFieldValidation,
 } from '../../margarita-form-types';
 
-export const setControlValidationFromNode = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
-  if (!control.root.detectInputElementValidations) return;
+  if (!control.form.options.detectInputElementValidations) return;
   if (!control.field.validation) control.field.validation = {};
 
   const validation = control.field.validation as MargaritaFormFieldValidation;

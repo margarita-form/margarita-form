@@ -1,9 +1,9 @@
-import { MargaritaFormControl } from '@margarita-form/core';
+import { MFC, MargaritaFormControl } from '@margarita-form/core';
 import { useControlContext } from './control-provider-hooks';
 
-export const useControl = <T = MargaritaFormControl,>(
+export const useControl = <CONTROL extends MargaritaFormControl = MFC>(
   identifier: string | number
-): T | null => {
+): CONTROL | null => {
   const control = useControlContext();
   if (!control) return null;
   if (control.controls) return control.getControl(identifier);

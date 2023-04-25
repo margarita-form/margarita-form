@@ -1,4 +1,4 @@
-import { MargaritaFormValidatorFunction } from '../margarita-form-types';
+import { MargaritaFormValidator } from '../margarita-form-types';
 
 const invalids: unknown[] = [undefined, null, ''];
 
@@ -13,7 +13,7 @@ const compare = (value: unknown, comparisonFn: (value: number) => boolean) => {
 
 export const minValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<number> =
+) => MargaritaFormValidator<number> =
   (errorMessage = 'Value is too low!') =>
   ({ value, params: minValue }) => {
     if (invalids.includes(minValue)) return { valid: true };
@@ -25,7 +25,7 @@ export const minValidator: (
 
 export const maxValidator: (
   errorMessage?: string
-) => MargaritaFormValidatorFunction<number> =
+) => MargaritaFormValidator<number> =
   (errorMessage = 'Value is too high!') =>
   ({ value, params: maxValue }) => {
     if (invalids.includes(maxValue)) return { valid: true };

@@ -1,54 +1,46 @@
 import { fromEvent } from 'rxjs';
-import { MargaritaFormValueControl } from '../../margarita-form-value-control';
-import { MargaritaFormGroupControl } from '../../margarita-form-group-control';
-import {
-  MargaritaFormBaseElement,
-  MargaritaFormControl,
-  MargaritaFormField,
-} from '../../margarita-form-types';
+import { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
 
-export const setNodeValueOnControlValueChanges = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;
-  return control.valueChanges.subscribe((value) => {
+
+  const setNodeValue = (value: CONTROL['value']) => {
     try {
       if (type === 'checkbox') {
         if (multiple) {
-          //
-        } else if (control.refs.length > 1) {
+          // Do someting?
+        } else if (control.refManager.refs.length > 1) {
           console.warn('Applying checked to multiple fields!');
           node.checked = Boolean(value);
         }
       } else if ('value' in node) {
-        if (control instanceof MargaritaFormValueControl) {
-          node.value = value || '';
-        }
-        if (control instanceof MargaritaFormGroupControl) {
+        if (typeof value === 'object') {
           node.value = JSON.stringify(control.value, null, 2);
+        } else {
+          node.value = value || '';
         }
       }
     } catch (error) {
       //
     }
-  });
+  };
+  setNodeValue(control.value);
+  return control.valueChanges.subscribe(setNodeValue);
 };
 
-export const setControlValueOnNodeValueChanges = <
-  F extends MargaritaFormField = MargaritaFormField
->({
+export const setControlValueOnNodeValueChanges = <CONTROL extends MFC = MFC>({
   node,
   control,
 }: {
-  node: MargaritaFormBaseElement<F>;
-  control: MargaritaFormControl<unknown, F>;
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
 }) => {
   const type = node.type || node.nodeName;
   const multiple = node.multiple;
@@ -85,11 +77,7 @@ export const setControlValueOnNodeValueChanges = <
       const value = getNodeValue();
 
       if (value !== undefined) {
-        if (control instanceof MargaritaFormValueControl) {
-          return control.setValue(value);
-        }
-
-        if (control instanceof MargaritaFormGroupControl) {
+        if (control.hasControls) {
           if (typeof value === 'string') {
             const object = JSON.parse(value);
             return control.setValue(object);
@@ -97,6 +85,8 @@ export const setControlValueOnNodeValueChanges = <
           if (typeof value === 'object') {
             return control.setValue(value);
           }
+        } else {
+          return control.setValue(value);
         }
       }
     } catch (error) {
