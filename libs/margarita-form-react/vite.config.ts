@@ -43,7 +43,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'rxjs'],
+      external: ['react', 'react-dom', 'rxjs', 'nanoid'],
       output: {
         globals: {
           react: 'React',

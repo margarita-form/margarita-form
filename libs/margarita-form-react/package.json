@@ -13,7 +13,8 @@
   },
   "peerDependencies": {
     "react": ">=18.2.0",
-    "rxjs": "7.x"
+    "rxjs": "7.x",
+    "nanoid": "4.x"
   },
   "exports": {
     ".": {
