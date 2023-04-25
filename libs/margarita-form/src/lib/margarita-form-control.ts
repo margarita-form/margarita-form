@@ -134,6 +134,13 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return arrayGroupings.includes(this.grouping);
   }
 
+  /**
+   * Check if control's output should be an group / object
+   */
+  public get expectGroup(): boolean {
+    return !this.expectArray;
+  }
+
   public updateField = (changes: Partial<FIELD>) => {
     this.fieldManager.updateField(changes);
   };
@@ -367,11 +374,19 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   /**
    * Add new control to the form group.
    * @param field The field to use as a template for the new control
+   * @param replaceExisting Replace existing control with the same name when parent is not an array type
    * @returns Control that was added
    */
   public addControl = <FIELD extends MFF = this['field'], VALUE = unknown>(
-    field: FIELD
+    field: FIELD,
+    replaceExisting?: boolean
   ): MargaritaFormControl<VALUE, FIELD> => {
+    const exists = this.hasControl(field.name);
+    if (this.expectGroup && exists && replaceExisting === undefined) {
+      console.warn(
+        `Control with name "${field.name}" already exists and will be replaced!`
+      );
+    }
     return this.controlsManager.addControl(field);
   };
 
