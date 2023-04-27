@@ -9,7 +9,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
   constructor(public control: CONTROL) {
     super();
-    if (control.field.initialValue) this.#value = control.field.initialValue;
+
+    if (control.field.initialValue) {
+      this.updateValue(control.field.initialValue, false, true, false, true);
+    }
+
     this.createSubscription(this.control.controlsManager.changes, () => {
       this._syncCurrentValue(false);
     });
@@ -35,7 +39,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     value: unknown,
     setAsDirty = true,
     emitEvent = true,
-    patch = false
+    patch = false,
+    initialValue = false
   ) {
     if (this.control.hasControls) {
       if (value && typeof value !== 'object')
@@ -82,11 +87,16 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       }
     }
 
-    this.#value = value;
-    const isActive = this.control.state.active;
-    if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
-    if (emitEvent) this.#emitChanges();
-    if (isActive) this._syncParentValue(setAsDirty, emitEvent);
+    if (initialValue) {
+      this.#value = value;
+      if (emitEvent) this.#emitChanges();
+    } else {
+      this.#value = value;
+      const isActive = this.control.state.active;
+      if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
+      if (emitEvent) this.#emitChanges();
+      if (isActive) this._syncParentValue(setAsDirty, emitEvent);
+    }
   }
 
   /**
