@@ -2,6 +2,7 @@
 import type {
   MargaritaFormOptions,
   MargaritaFormRootField,
+  MargaritaFormRootFieldParams,
 } from './margarita-form-types';
 import {
   OptionsManager,
@@ -15,7 +16,9 @@ export class MargaritaForm<
   FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 > extends MargaritaFormControl<VALUE, FIELD> {
   public optionsManager: OptionsManager<typeof this>;
-  constructor(public override field: FIELD) {
+  constructor(
+    public override field: FIELD & MargaritaFormRootFieldParams<VALUE>
+  ) {
     super(field);
     this.optionsManager = new OptionsManager(this);
   }

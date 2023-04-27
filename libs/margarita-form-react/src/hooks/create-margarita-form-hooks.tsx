@@ -5,6 +5,7 @@ import {
   createMargaritaForm,
   MargaritaForm,
   MargaritaFormRootField,
+  MargaritaFormRootFieldParams,
 } from '@margarita-form/core';
 
 const forms: Record<string, unknown> = {};
@@ -78,7 +79,7 @@ export const useMargaritaForm = <
   VALUE = unknown,
   FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 >(
-  field: Partial<FIELD>,
+  field: Partial<FIELD & MargaritaFormRootFieldParams<VALUE>>,
   options: MargaritaFormHookOptions = {},
   deps: any[] = []
 ) => {

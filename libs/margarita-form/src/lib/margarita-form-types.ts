@@ -78,8 +78,7 @@ export interface MargaritaFormField {
   validators?: MargaritaFormValidators;
 }
 
-export interface MargaritaFormRootField<VALUE = unknown>
-  extends MargaritaFormField {
+export interface MargaritaFormRootFieldParams<VALUE> {
   options?: MargaritaFormOptions;
   handleSubmit?: {
     valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(
@@ -90,6 +89,9 @@ export interface MargaritaFormRootField<VALUE = unknown>
     ) => unknown | Promise<unknown>;
   };
 }
+
+export type MargaritaFormRootField<VALUE = unknown> = MargaritaFormField &
+  MargaritaFormRootFieldParams<VALUE>;
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
