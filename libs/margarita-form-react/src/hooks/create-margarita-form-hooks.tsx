@@ -22,7 +22,7 @@ const getForm = <
   const isForm = options instanceof MargaritaForm;
   if (isForm) {
     forms[formId] = options;
-    return options;
+    return options as unknown as MargaritaForm<VALUE, FIELD>;
   }
   const newForm = createMargaritaForm<VALUE, FIELD>(options);
   forms[formId] = newForm;
@@ -46,7 +46,7 @@ const createFormStore = <
 >(
   id: string,
   options: FIELD
-): FormStore<VALUE, FIELD> => {
+) => {
   const form = getForm<VALUE, FIELD>(id, options);
 
   const subscribe = (listener: () => void) => {
