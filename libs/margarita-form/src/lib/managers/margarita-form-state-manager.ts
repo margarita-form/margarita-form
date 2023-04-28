@@ -23,16 +23,9 @@ import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
 
 // States which can be modfiied in the field
-const fieldStateKeys: (keyof MargaritaFormState)[] = [
-  'active',
-  'disabled',
-  'readOnly',
-];
+const fieldStateKeys: (keyof MargaritaFormState)[] = ['active', 'disabled', 'readOnly'];
 
-class StateManager<CONTROL extends MFC>
-  extends BaseManager
-  implements MargaritaFormState
-{
+class StateManager<CONTROL extends MFC> extends BaseManager implements MargaritaFormState {
   public changes = new BehaviorSubject<typeof this>(this);
 
   constructor(public control: CONTROL) {
@@ -61,62 +54,44 @@ class StateManager<CONTROL extends MFC>
 
     const validationStateSubscriptionObservable = control.valueChanges.pipe(
       switchMap((value) => {
-        return mapResolverEntries<MargaritaFormValidatorResult>(
-          'State',
-          control.field.validation,
-          {
-            control,
-            value,
-            params: null,
-          }
-        );
+        return mapResolverEntries<MargaritaFormValidatorResult>('State', control.field.validation, {
+          control,
+          value,
+          params: null,
+        });
       }),
       combineLatestWith(
         control.controlsManager.changes.pipe(
           switchMap((controls) => {
             if (!controls.length) return Promise.resolve([]);
-            const stateChanges: Observable<StateManager<MFC>>[] = controls.map(
-              (control) => control.stateChanges
-            );
-            return combineLatest(
-              stateChanges
-            ) as Observable<MargaritaFormStateChildren>;
+            const stateChanges: Observable<StateManager<MFC>>[] = controls.map((control) => control.stateChanges);
+            return combineLatest(stateChanges) as Observable<MargaritaFormStateChildren>;
           })
         )
       ),
       debounceTime(1)
     );
 
-    this.createSubscription(
-      validationStateSubscriptionObservable,
-      ([validationStates, children]) => {
-        const childrenAreValid = children.every(
-          (child) => child.valid || child.inactive
-        );
-        const currentIsValid = Object.values(validationStates).every(
-          (state) => state.valid
-        );
+    this.createSubscription(validationStateSubscriptionObservable, ([validationStates, children]) => {
+      const childrenAreValid = children.every((child) => child.valid || child.inactive);
+      const currentIsValid = Object.values(validationStates).every((state) => state.valid);
 
-        const valid = currentIsValid && childrenAreValid;
+      const valid = currentIsValid && childrenAreValid;
 
-        const errors = Object.entries(validationStates).reduce(
-          (acc, [key, { error }]) => {
-            if (error) acc[key] = error;
-            return acc;
-          },
-          {} as MargaritaFormStateErrors
-        );
+      const errors = Object.entries(validationStates).reduce((acc, [key, { error }]) => {
+        if (error) acc[key] = error;
+        return acc;
+      }, {} as MargaritaFormStateErrors);
 
-        const hasValue = valueExists(this.control.value);
-        const changes = {
-          valid,
-          errors,
-          children,
-          hasValue,
-        };
-        this.updateStates(changes);
-      }
-    );
+      const hasValue = valueExists(this.control.value);
+      const changes = {
+        valid,
+        errors,
+        children,
+        hasValue,
+      };
+      this.updateStates(changes);
+    });
 
     const activeChangesSubscriptionObservable = this.changes.pipe(
       map((state) => state.active),
@@ -137,11 +112,7 @@ class StateManager<CONTROL extends MFC>
 
   // Methods
 
-  public updateState(
-    key: keyof MargaritaFormState,
-    value: MargaritaFormState[typeof key],
-    emit = true
-  ) {
+  public updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
     Object.assign(this, { [key]: value });
     if (key === 'enabled') this.#enableChildren(!!value);
     if (key === 'disabled') this.#enableChildren(!value);
@@ -266,8 +237,7 @@ class StateManager<CONTROL extends MFC>
   // Root states
 
   #checkRoot(name: string) {
-    if (!this.control.isRoot)
-      throw `State "${name}" is only available in root!`;
+    if (!this.control.isRoot) throw `State "${name}" is only available in root!`;
   }
 
   #submitted = false;

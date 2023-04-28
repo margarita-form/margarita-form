@@ -1,13 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type {
-  MargaritaFormOptions,
-  MargaritaFormRootField,
-  MargaritaFormRootFieldParams,
-} from './margarita-form-types';
-import {
-  OptionsManager,
-  getDefaultOptions,
-} from './managers/margarita-form-options-manager';
+import type { MargaritaFormOptions, MargaritaFormRootField, MargaritaFormRootFieldParams } from './margarita-form-types';
+import { OptionsManager, getDefaultOptions } from './managers/margarita-form-options-manager';
 import { MargaritaFormControl } from './margarita-form-control';
 import { Observable, map } from 'rxjs';
 
@@ -16,9 +9,7 @@ export class MargaritaForm<
   FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
 > extends MargaritaFormControl<VALUE, FIELD> {
   public optionsManager: OptionsManager<typeof this>;
-  constructor(
-    public override field: FIELD & MargaritaFormRootFieldParams<VALUE>
-  ) {
+  constructor(public override field: FIELD & MargaritaFormRootFieldParams<VALUE>) {
     super(field);
     this.optionsManager = new OptionsManager(this);
   }
@@ -44,14 +35,11 @@ export class MargaritaForm<
 
   public async submit() {
     await this.validate();
-    if (!this.field.handleSubmit)
-      throw 'Add "handleSubmit" option to submit form!';
-    const canSubmit =
-      this.options.allowConcurrentSubmits || !this.state.submitting;
+    if (!this.field.handleSubmit) throw 'Add "handleSubmit" option to submit form!';
+    const canSubmit = this.options.allowConcurrentSubmits || !this.state.submitting;
     if (!canSubmit) throw 'Form is already submitting!';
     this.updateStateValue('submitting', true);
-    if (this.options.disableFormWhileSubmitting)
-      this.updateStateValue('disabled', true);
+    if (this.options.disableFormWhileSubmitting) this.updateStateValue('disabled', true);
 
     // Handle valid submit
     if (this.state.valid) {
@@ -85,9 +73,7 @@ export class MargaritaForm<
 
     // Handle invalid submit
     if (this.field.handleSubmit?.invalid) {
-      return await Promise.resolve(
-        this.field.handleSubmit.invalid<any>(this)
-      ).finally(() => {
+      return await Promise.resolve(this.field.handleSubmit.invalid<any>(this)).finally(() => {
         const submits = this.state.submits || 0;
         this.updateState({
           submitting: false,
@@ -102,10 +88,7 @@ export class MargaritaForm<
   }
 }
 
-export const createMargaritaForm = <
-  VALUE = unknown,
-  FIELD extends MargaritaFormRootField = MargaritaFormRootField
->(
+export const createMargaritaForm = <VALUE = unknown, FIELD extends MargaritaFormRootField = MargaritaFormRootField>(
   field: Partial<FIELD>
 ): MargaritaForm<VALUE, FIELD> => {
   if (!field.name) field.name = 'root';

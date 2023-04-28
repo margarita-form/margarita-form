@@ -1,8 +1,6 @@
 import { MargaritaFormValidator } from '../margarita-form-types';
 
-export const emailValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<boolean> =
+export const emailValidator: (errorMessage?: string) => MargaritaFormValidator<boolean> =
   (errorMessage = 'Value must be a valid email address!') =>
   ({ value, params }) => {
     if (!params || !value) return { valid: true };

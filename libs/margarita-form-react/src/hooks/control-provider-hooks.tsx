@@ -11,11 +11,7 @@ interface ProvideControlProps {
 export const ControlContext = createContext<ControlContextType>(null);
 
 export const ProvideControl = ({ control, children }: ProvideControlProps) => {
-  return (
-    <ControlContext.Provider value={control}>
-      {children}
-    </ControlContext.Provider>
-  );
+  return <ControlContext.Provider value={control}>{children}</ControlContext.Provider>;
 };
 
 export const useControlContext = () => {

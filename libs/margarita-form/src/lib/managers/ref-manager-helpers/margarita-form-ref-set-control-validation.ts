@@ -1,8 +1,4 @@
-import {
-  MFC,
-  MargaritaFormBaseElement,
-  MargaritaFormFieldValidation,
-} from '../../margarita-form-types';
+import { MFC, MargaritaFormBaseElement, MargaritaFormFieldValidation } from '../../margarita-form-types';
 
 export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   node,
@@ -16,8 +12,7 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
 
   const validation = control.field.validation as MargaritaFormFieldValidation;
 
-  const setValidation = (key: string, params: unknown) =>
-    (validation[key] = params);
+  const setValidation = (key: string, params: unknown) => (validation[key] = params);
 
   /* Required */
   if (!validation['required'] && node.required) {

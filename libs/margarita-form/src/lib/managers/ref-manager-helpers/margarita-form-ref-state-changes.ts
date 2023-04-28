@@ -1,11 +1,4 @@
-import {
-  combineLatest,
-  debounceTime,
-  distinctUntilChanged,
-  fromEvent,
-  map,
-  switchMap,
-} from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, fromEvent, map, switchMap } from 'rxjs';
 import type { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
 import { mapResolverEntries } from '../../helpers/resolve-function-outputs';
 

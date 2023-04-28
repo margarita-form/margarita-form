@@ -1,9 +1,5 @@
 import { combineLatest, map, Observable, ObservableInput } from 'rxjs';
-import {
-  MargaritaFormFieldContext,
-  MargaritaFormResolverOutput,
-  MFC,
-} from '../margarita-form-types';
+import { MargaritaFormFieldContext, MargaritaFormResolverOutput, MFC } from '../margarita-form-types';
 
 type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
 

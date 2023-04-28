@@ -3,59 +3,36 @@ import type { Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
 
-export type CommonRecord<TYPE = unknown> = Record<
-  string | number | symbol,
-  TYPE
->;
+export type CommonRecord<TYPE = unknown> = Record<string | number | symbol, TYPE>;
 
-export interface MargaritaFormFieldContext<
-  CONTROL extends MargaritaFormControl = MFC,
-  PARAMS = any
-> {
+export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl = MFC, PARAMS = any> {
   value: CONTROL['value'];
   params: PARAMS;
   control: CONTROL;
 }
 
-export type MargaritaFormResolverOutput<OUTPUT = unknown> =
-  | OUTPUT
-  | Promise<OUTPUT>
-  | Observable<OUTPUT>;
+export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
 export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array';
 
-export type MargaritaFormResolver<
-  OUTPUT = unknown,
-  PARAMS = unknown,
-  CONTROL extends MFC = MFC
-> = (
+export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC> = (
   context: MargaritaFormFieldContext<CONTROL, PARAMS>
 ) => MargaritaFormResolverOutput<OUTPUT>;
 
-export type MargaritaFormFieldParams = CommonRecord<
-  any | MargaritaFormResolver<any>
->;
+export type MargaritaFormFieldParams = CommonRecord<any | MargaritaFormResolver<any>>;
 
-export type MargaritaFormFieldAttributes = CommonRecord<
-  any | MargaritaFormResolver<any>
->;
+export type MargaritaFormFieldAttributes = CommonRecord<any | MargaritaFormResolver<any>>;
 
 export interface MargaritaFormValidatorResult {
   valid: boolean;
   error?: unknown;
 }
 
-export type MargaritaFormValidator<PARAMS = unknown> = MargaritaFormResolver<
-  MargaritaFormValidatorResult,
-  PARAMS
->;
+export type MargaritaFormValidator<PARAMS = unknown> = MargaritaFormResolver<MargaritaFormValidatorResult, PARAMS>;
 
-export type MargaritaFormFieldValidationsState =
-  CommonRecord<MargaritaFormValidatorResult>;
+export type MargaritaFormFieldValidationsState = CommonRecord<MargaritaFormValidatorResult>;
 
-export type MargaritaFormFieldValidation = CommonRecord<
-  any | MargaritaFormResolver<MargaritaFormValidatorResult>
->;
+export type MargaritaFormFieldValidation = CommonRecord<any | MargaritaFormResolver<MargaritaFormValidatorResult>>;
 
 export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
 
@@ -81,17 +58,12 @@ export interface MargaritaFormField {
 export interface MargaritaFormRootFieldParams<VALUE> {
   options?: MargaritaFormOptions;
   handleSubmit?: {
-    valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(
-      form: FORM
-    ) => unknown | Promise<unknown>;
-    invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(
-      form: FORM
-    ) => unknown | Promise<unknown>;
+    valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
+    invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
   };
 }
 
-export type MargaritaFormRootField<VALUE = unknown> = MargaritaFormField &
-  MargaritaFormRootFieldParams<VALUE>;
+export type MargaritaFormRootField<VALUE = unknown> = MargaritaFormField & MargaritaFormRootFieldParams<VALUE>;
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
@@ -129,10 +101,7 @@ export interface MargaritaFormOptions {
   addDefaultValidators?: boolean;
 }
 
-export type MargaritaFormBaseElement<
-  CONTROL extends MFC = MFC,
-  NODE extends HTMLElement | null = HTMLElement | any
-> = NODE & {
+export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {
   controls?: CONTROL[];
   value?: unknown;
   checked?: boolean;

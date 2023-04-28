@@ -20,10 +20,7 @@ class FieldManager<CONTROL extends MFC> extends BaseManager {
     return this.#field;
   }
 
-  public async setField<FIELD extends MFF = MFF | CONTROL['field']>(
-    field: FIELD | Promise<FIELD>,
-    resetControl = false
-  ) {
+  public async setField<FIELD extends MFF = MFF | CONTROL['field']>(field: FIELD | Promise<FIELD>, resetControl = false) {
     this.#field = await field;
     this.shouldResetControl = resetControl;
     this.#emitChanges();

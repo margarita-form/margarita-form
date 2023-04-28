@@ -1,9 +1,7 @@
 import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../margarita-form-types';
 
-export const sameAsValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<boolean | string[]> =
+export const sameAsValidator: (errorMessage?: string) => MargaritaFormValidator<boolean | string[]> =
   (errorMessage = 'Please enter same value!') =>
   ({ value, control, params }) => {
     const parentControls = control.parent.controls;
@@ -20,9 +18,7 @@ export const sameAsValidator: (
       return params;
     });
 
-    const changes = siblings.map((sibling) =>
-      sibling.valueChanges.pipe(map(() => sibling))
-    );
+    const changes = siblings.map((sibling) => sibling.valueChanges.pipe(map(() => sibling)));
 
     return combineLatest(changes).pipe(
       map((_siblings) => {

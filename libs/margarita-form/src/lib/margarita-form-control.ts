@@ -13,21 +13,12 @@ import {
   MargaritaFormValidator,
   MargaritaFormValidators,
 } from './margarita-form-types';
-import {
-  Observable,
-  debounceTime,
-  distinctUntilChanged,
-  map,
-  shareReplay,
-} from 'rxjs';
+import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { StateManager } from './managers/margarita-form-state-manager';
 import { ControlsManager } from './managers/margarita-form-controls-manager';
 import { ValueManager } from './managers/margarita-form-value-manager';
 import { RefManager } from './managers/margarita-form-ref-manager';
-import {
-  Params,
-  ParamsManager,
-} from './managers/margarita-form-params-manager';
+import { Params, ParamsManager } from './managers/margarita-form-params-manager';
 import { FieldManager } from './managers/margarita-form-field-manager';
 import { getDefaultOptions } from './managers/margarita-form-options-manager';
 import { defaultValidators } from './validators/default-validators';
@@ -50,10 +41,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   public paramsManager: ParamsManager<typeof this>;
 
   #listeningToChanges = true;
-  constructor(
-    public field: FIELD,
-    public context: MargaritaFormControlContext = {}
-  ) {
+  constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
     this.fieldManager = new FieldManager(this);
     this.controlsManager = new ControlsManager(this);
     this.valueManager = new ValueManager(this);
@@ -159,10 +147,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     return !this.expectArray;
   }
 
-  public updateField = async (
-    changes: Partial<FIELD>,
-    resetControl = false
-  ) => {
+  public updateField = async (changes: Partial<FIELD>, resetControl = false) => {
     await this.fieldManager.updateField(changes, resetControl);
   };
 
@@ -257,10 +242,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     this.updateStateValue('active', !current);
   };
 
-  public updateStateValue = (
-    key: keyof MargaritaFormState,
-    value: MargaritaFormState[typeof key]
-  ) => {
+  public updateStateValue = (key: keyof MargaritaFormState, value: MargaritaFormState[typeof key]) => {
     this.stateManager.updateState(key, value);
   };
 
@@ -276,10 +258,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
     await this.stateManager.validate(setAsTouched);
   };
 
-  public registerValidator = (
-    name: string,
-    validator: MargaritaFormValidator
-  ) => {
+  public registerValidator = (name: string, validator: MargaritaFormValidator) => {
     const currentValidators = this.validators;
     const validators: MargaritaFormValidators = {
       ...currentValidators,
@@ -355,9 +334,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
    * @returns The control that was found or added or null if control doesn't exist.
    */
-  public getControl = <CONTROL extends MFC = MFC>(
-    identifier: string | number | (string | number)[]
-  ): CONTROL | null => {
+  public getControl = <CONTROL extends MFC = MFC>(identifier: string | number | (string | number)[]): CONTROL | null => {
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
       const control = this.controlsManager.getControl(first);
@@ -384,9 +361,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
-  public getOrAddControl = <CONTROL extends MFC = MFC>(
-    field: CONTROL['field']
-  ): CONTROL => {
+  public getOrAddControl = <CONTROL extends MFC = MFC>(field: CONTROL['field']): CONTROL => {
     const control = this.controlsManager.getControl<CONTROL>(field.name);
     if (!control) return this.controlsManager.addControl(field) as CONTROL;
     return control;
@@ -404,9 +379,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   ): MargaritaFormControl<VALUE, FIELD> => {
     const exists = this.hasControl(field.name);
     if (this.expectGroup && exists && replaceExisting === undefined) {
-      console.warn(
-        `Control with name "${field.name}" already exists and will be replaced!`
-      );
+      console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
     }
     return this.controlsManager.addControl(field);
   };
@@ -432,15 +405,12 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * Add new controls to the form group array. If no field is provided, the template field or fields will be used.
    * @param field The field to use as a template for the new controls
    */
-  public appendRepeatingControls = <FIELD extends MFF = MFF>(
-    field?: Partial<FIELD> | FIELD[]
-  ) => {
+  public appendRepeatingControls = <FIELD extends MFF = MFF>(field?: Partial<FIELD> | FIELD[]) => {
     if (!field) {
       const { fields, template } = this.field;
       if (fields) this.appendRepeatingControls({ fields });
       else if (template) this.controlsManager.addTemplatedControl(template);
-      else
-        console.warn('No template or fields provided for repeating controls!');
+      else console.warn('No template or fields provided for repeating controls!');
     } else {
       if (Array.isArray(field)) {
         this.appendRepeatingControls({ fields: field });

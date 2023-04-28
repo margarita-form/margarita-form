@@ -1,9 +1,7 @@
 import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../margarita-form-types';
 
-export const uniqueValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<boolean | string[]> =
+export const uniqueValidator: (errorMessage?: string) => MargaritaFormValidator<boolean | string[]> =
   (errorMessage = 'Please enter an unique value!') =>
   ({ value, control, params }) => {
     const parentControls = control.parent.controls;
@@ -20,16 +18,11 @@ export const uniqueValidator: (
       return params;
     });
 
-    const changes = siblings.map((sibling) =>
-      sibling.valueChanges.pipe(map(() => sibling))
-    );
+    const changes = siblings.map((sibling) => sibling.valueChanges.pipe(map(() => sibling)));
 
     return combineLatest(changes).pipe(
       map((_siblings) => {
-        const valueIsInvalid = _siblings.some(
-          ({ value: siblingValue }) =>
-            JSON.stringify(siblingValue) === JSON.stringify(value)
-        );
+        const valueIsInvalid = _siblings.some(({ value: siblingValue }) => JSON.stringify(siblingValue) === JSON.stringify(value));
 
         const error = valueIsInvalid ? errorMessage : null;
         return { valid: !valueIsInvalid, error };

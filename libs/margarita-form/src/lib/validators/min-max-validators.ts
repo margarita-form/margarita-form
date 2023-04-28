@@ -6,14 +6,11 @@ const compare = (value: unknown, comparisonFn: (value: number) => boolean) => {
   if (typeof value === 'number') return comparisonFn(value);
   if (typeof value === 'string') return comparisonFn(value.trim().length);
   if (Array.isArray(value)) return comparisonFn(value.length);
-  if (typeof value === 'object' && value !== null)
-    comparisonFn(Object.keys(value).length);
+  if (typeof value === 'object' && value !== null) comparisonFn(Object.keys(value).length);
   return true;
 };
 
-export const minValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<number> =
+export const minValidator: (errorMessage?: string) => MargaritaFormValidator<number> =
   (errorMessage = 'Value is too low!') =>
   ({ value, params: minValue }) => {
     if (invalids.includes(minValue)) return { valid: true };
@@ -23,9 +20,7 @@ export const minValidator: (
     return { valid: !valueIsInvalid, error };
   };
 
-export const maxValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<number> =
+export const maxValidator: (errorMessage?: string) => MargaritaFormValidator<number> =
   (errorMessage = 'Value is too high!') =>
   ({ value, params: maxValue }) => {
     if (invalids.includes(maxValue)) return { valid: true };

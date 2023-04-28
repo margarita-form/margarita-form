@@ -15,6 +15,7 @@
     "dev": "nx run baking-oven:serve",
     "gen:lib": "./generate-lib.sh",
     "test:core": "nx run margarita-form:test",
+    "pretty": "prettier --write \"libs/**/*.{js,jsx,ts,tsx,json,md}\"",
     "build:core": "nx run margarita-form:build",
     "build:react": "nx run margarita-form-react:build",
     "build:all": "npm run build:core && npm run build:react",

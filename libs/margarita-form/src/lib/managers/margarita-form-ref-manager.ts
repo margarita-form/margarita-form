@@ -31,9 +31,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
       this.#refs.forEach(({ node, cleanup }) => {
         if (!node || !node.controls) return;
         const { controls = [] } = node;
-        const index = controls.findIndex(
-          (control: MFC) => control.key === this.control.key
-        );
+        const index = controls.findIndex((control: MFC) => control.key === this.control.key);
         if (index > -1) {
           node.controls.splice(index, 1);
           cleanup();
@@ -58,9 +56,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     return this.#refs;
   }
 
-  public disconnectRef(
-    node: MargaritaFormBaseElement<CONTROL['field']> | null
-  ) {
+  public disconnectRef(node: MargaritaFormBaseElement<CONTROL['field']> | null) {
     if (!node) return;
     this.#deleteNodeRef(node);
   }
@@ -158,9 +154,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     const controlInNode = node.controls?.includes(this.control);
     if (controlInNode) {
       const { controls = [] } = node;
-      const index = controls.findIndex(
-        (control: MFC) => control === this.control
-      );
+      const index = controls.findIndex((control: MFC) => control === this.control);
       if (index > -1) controls.splice(index, 1);
     }
   }

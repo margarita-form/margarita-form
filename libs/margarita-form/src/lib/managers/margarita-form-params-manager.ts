@@ -12,10 +12,7 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager {
   constructor(public control: CONTROL) {
     super();
 
-    const paramsSubscriptionObservable = combineLatest([
-      control.valueChanges,
-      control.stateChanges,
-    ]).pipe(
+    const paramsSubscriptionObservable = combineLatest([control.valueChanges, control.stateChanges]).pipe(
       debounceTime(1),
       switchMap(([value]) => {
         return mapResolverEntries('Params', control.field.params, {

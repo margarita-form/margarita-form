@@ -13,8 +13,7 @@ interface WithSchema {
 
 type WithFormOrSchema = WithForm | WithSchema;
 
-type FormComponentProps = FormHTMLAttributes<HTMLFormElement> &
-  WithFormOrSchema;
+type FormComponentProps = FormHTMLAttributes<HTMLFormElement> & WithFormOrSchema;
 
 export const Form = (props: FormComponentProps) => {
   if ('schema' in props) {

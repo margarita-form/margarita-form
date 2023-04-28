@@ -1,8 +1,6 @@
 import { MargaritaFormValidator } from '../margarita-form-types';
 
-export const urlValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<boolean> =
+export const urlValidator: (errorMessage?: string) => MargaritaFormValidator<boolean> =
   (errorMessage = 'Please enter a valid url!') =>
   ({ value, params }) => {
     if (!params || !value) return { valid: true };

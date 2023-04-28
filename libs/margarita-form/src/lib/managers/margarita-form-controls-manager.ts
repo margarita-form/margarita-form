@@ -27,11 +27,8 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       });
     };
 
-    this.createSubscription(
-      control.fieldManager.changes.pipe(
-        filter((field) => field !== this.#buildWith)
-      ),
-      () => this.rebuild(control.fieldManager.shouldResetControl)
+    this.createSubscription(control.fieldManager.changes.pipe(filter((field) => field !== this.#buildWith)), () =>
+      this.rebuild(control.fieldManager.shouldResetControl)
     );
 
     if (this.control.field) {
@@ -145,11 +142,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     return this.appendControl(control, resetControl, emit);
   }
 
-  public appendControl<CHILD_CONTROL extends MFC>(
-    control: CHILD_CONTROL,
-    resetControl = false,
-    emit = true
-  ): CHILD_CONTROL {
+  public appendControl<CHILD_CONTROL extends MFC>(control: CHILD_CONTROL, resetControl = false, emit = true): CHILD_CONTROL {
     if (this.#requireUniqueNames) {
       const prevControl = this.getControl<CHILD_CONTROL>(control.name);
       if (resetControl) {
@@ -170,9 +163,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     if (typeof identifier === 'number') {
       this.#controls.splice(identifier, 1);
     } else {
-      const index = this.#controls.findIndex((control) =>
-        [control.name, control.key].includes(identifier)
-      );
+      const index = this.#controls.findIndex((control) => [control.name, control.key].includes(identifier));
       if (index > -1) {
         const [control] = this.#controls.splice(index, 1);
         control.cleanup();
@@ -181,21 +172,17 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     if (emit) this.#emitChanges();
   }
 
-  public getControl<
-    CHILD_CONTROL extends MFC = MargaritaFormControl<unknown, CONTROL['field']>
-  >(identifier: string | number): CHILD_CONTROL {
+  public getControl<CHILD_CONTROL extends MFC = MargaritaFormControl<unknown, CONTROL['field']>>(
+    identifier: string | number
+  ): CHILD_CONTROL {
     if (typeof identifier === 'number') {
       return this.#controls[identifier] as CHILD_CONTROL;
     }
-    return this.#controls.find((control) =>
-      [control.name, control.key].includes(identifier)
-    ) as CHILD_CONTROL;
+    return this.#controls.find((control) => [control.name, control.key].includes(identifier)) as CHILD_CONTROL;
   }
 
   public getControlIndex(identifier: string) {
-    return this.#controls.findIndex((control) =>
-      [control.name, control.key].includes(identifier)
-    );
+    return this.#controls.findIndex((control) => [control.name, control.key].includes(identifier));
   }
 
   public moveControl(identifier: string, toIndex: number, emit = true) {

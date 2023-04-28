@@ -35,16 +35,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * @param value value to set
    * @param setAsDirty update dirty state to true
    */
-  public updateValue(
-    value: unknown,
-    setAsDirty = true,
-    emitEvent = true,
-    patch = false,
-    initialValue = false
-  ) {
+  public updateValue(value: unknown, setAsDirty = true, emitEvent = true, patch = false, initialValue = false) {
     if (this.control.hasControls) {
-      if (value && typeof value !== 'object')
-        throw new Error('Value must be an object');
+      if (value && typeof value !== 'object') throw new Error('Value must be an object');
       try {
         if (this.control.expectArray) {
           const isArray = Array.isArray(value);
@@ -66,17 +59,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
             });
           }
         } else {
-          return Object.values(this.control.controlsManager.group).forEach(
-            (control) => {
-              const { name } = control.field;
-              const updatedValue = _get(
-                value,
-                [name],
-                patch ? control.value : undefined
-              );
-              control.setValue(updatedValue, setAsDirty);
-            }
-          );
+          return Object.values(this.control.controlsManager.group).forEach((control) => {
+            const { name } = control.field;
+            const updatedValue = _get(value, [name], patch ? control.value : undefined);
+            control.setValue(updatedValue, setAsDirty);
+          });
         }
       } catch (error) {
         console.error('Could not set values!', {
@@ -121,10 +108,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _syncParentValue(setAsDirty = true, emitEvent = true) {
     if (!this.control.isRoot) {
       if (this.control.parent.valueManager) {
-        this.control.parent.valueManager._syncCurrentValue(
-          setAsDirty,
-          emitEvent
-        );
+        this.control.parent.valueManager._syncCurrentValue(setAsDirty, emitEvent);
       }
     }
   }

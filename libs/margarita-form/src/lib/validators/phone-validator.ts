@@ -1,8 +1,6 @@
 import { MargaritaFormValidator } from '../margarita-form-types';
 
-export const phoneValidator: (
-  errorMessage?: string
-) => MargaritaFormValidator<boolean> =
+export const phoneValidator: (errorMessage?: string) => MargaritaFormValidator<boolean> =
   (errorMessage = 'Value must be a valid phone number!') =>
   ({ value, params }) => {
     if (!params || !value) return { valid: true };
