@@ -40,7 +40,6 @@ export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
 export interface MargaritaFormField {
   name: string;
-  title?: string;
   fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
@@ -117,15 +116,15 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTM
 
 // Shorthands
 
-/** Shorthand for {@link MargaritaForm}  */
-export type MF = MargaritaForm<any, any>;
 /** Shorthand for {@link MargaritaFormField}  */
 export type MFF = MargaritaFormField;
+/** Shorthand for {@link MargaritaForm}  */
+export type MF<VALUE = any, FIELD extends MFF = any> = MargaritaForm<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC = MargaritaFormControl<any, any>;
+export type MFC<VALUE = any, FIELD extends MFF = any> = MargaritaFormControl<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
-export type MFBE = MargaritaFormBaseElement;
+export type MFBE<CONTROL extends MFC = MFC> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */
-export type MFCG = Record<string, MFC>;
+export type MFCG<VALUE = any, FIELD extends MFF = any> = Record<string, MFC<VALUE, FIELD>>;
 /** Margarita form controls as array */
-export type MFCA = MFC[];
+export type MFCA<VALUE = any, FIELD extends MFF = any> = MFC<VALUE, FIELD>[];
