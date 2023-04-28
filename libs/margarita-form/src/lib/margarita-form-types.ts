@@ -40,7 +40,6 @@ export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
 export interface MargaritaFormField {
   name: string;
-  title?: string;
   fields?: MargaritaFormField[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
