@@ -318,14 +318,14 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
   /**
    * Get all controls as an array
    */
-  public get controls(): MFCA {
+  public get controls(): MFCA<unknown, FIELD> {
     return this.controlsManager.array;
   }
 
   /**
    * Get all active controls as an array
    */
-  public get activeControls(): MFCA {
+  public get activeControls(): MFCA<unknown, FIELD> {
     return this.controlsManager.array.filter((control) => control.state.active);
   }
 
@@ -334,7 +334,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
    * @returns The control that was found or added or null if control doesn't exist.
    */
-  public getControl = <CONTROL extends MFC = MFC>(identifier: string | number | (string | number)[]): CONTROL | null => {
+  public getControl = <VALUE = unknown, FIELD extends MFF = this['field']>(
+    identifier: string | number | (string | number)[]
+  ): MFC<VALUE, FIELD> | null => {
+    type CONTROL = MFC<VALUE, FIELD>;
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
       const control = this.controlsManager.getControl(first);
@@ -361,9 +364,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
-  public getOrAddControl = <CONTROL extends MFC = MFC>(field: CONTROL['field']): CONTROL => {
+  public getOrAddControl = <VALUE = unknown, FIELD extends MFF = this['field']>(field: FIELD): MFC<VALUE, FIELD> => {
+    type CONTROL = MFC<VALUE, FIELD>;
     const control = this.controlsManager.getControl<CONTROL>(field.name);
-    if (!control) return this.controlsManager.addControl(field) as CONTROL;
+    if (!control) return this.controlsManager.addControl<FIELD, VALUE>(field);
     return control;
   };
 
@@ -373,10 +377,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
    * @param replaceExisting Replace existing control with the same name when parent is not an array type
    * @returns Control that was added
    */
-  public addControl = <FIELD extends MFF = this['field'], VALUE = unknown>(
-    field: FIELD,
-    replaceExisting?: boolean
-  ): MargaritaFormControl<VALUE, FIELD> => {
+  public addControl = <FIELD extends MFF = this['field'], VALUE = unknown>(field: FIELD, replaceExisting?: boolean): MFC<VALUE, FIELD> => {
     const exists = this.hasControl(field.name);
     if (this.expectGroup && exists && replaceExisting === undefined) {
       console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
