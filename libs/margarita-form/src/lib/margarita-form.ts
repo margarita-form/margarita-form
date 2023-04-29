@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { MargaritaFormOptions, MargaritaFormRootField, MargaritaFormRootFieldParams } from './margarita-form-types';
+import type { MFF, MFRF, MargaritaFormOptions } from './margarita-form-types';
 import { OptionsManager, getDefaultOptions } from './managers/margarita-form-options-manager';
 import { MargaritaFormControl } from './margarita-form-control';
 import { Observable, map } from 'rxjs';
 
-export class MargaritaForm<
-  VALUE = unknown,
-  FIELD extends MargaritaFormRootField<VALUE> = MargaritaFormRootField<VALUE>
-> extends MargaritaFormControl<VALUE, FIELD> {
+export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> extends MargaritaFormControl<VALUE, FIELD> {
   public optionsManager: OptionsManager<typeof this>;
-  constructor(public override field: FIELD & MargaritaFormRootFieldParams<VALUE>) {
+
+  constructor(public override field: FIELD & MFRF<VALUE>) {
     super(field);
     this.optionsManager = new OptionsManager(this);
   }
@@ -88,9 +86,10 @@ export class MargaritaForm<
   }
 }
 
-export const createMargaritaForm = <VALUE = unknown, FIELD extends MargaritaFormRootField = MargaritaFormRootField>(
-  field: Partial<FIELD>
+export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
+  field: Partial<FIELD & MFRF<VALUE, FIELD>>
 ): MargaritaForm<VALUE, FIELD> => {
   if (!field.name) field.name = 'root';
-  return new MargaritaForm(field as FIELD);
+  type ROOTFIELD = FIELD & MFRF<VALUE>;
+  return new MargaritaForm<VALUE, FIELD>(field as ROOTFIELD);
 };

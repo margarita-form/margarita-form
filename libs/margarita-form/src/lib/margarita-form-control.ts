@@ -29,7 +29,7 @@ interface MargaritaFormControlContext {
   parent?: MF | MFC;
 }
 
-export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF = MFF> {
+export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
   public key: string = nanoid(4);
   public syncId: string = nanoid(4);
 

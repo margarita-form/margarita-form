@@ -38,14 +38,13 @@ export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
-export interface MargaritaFormField {
+export interface MargaritaFormField<EXTENDS = null> {
   name: string;
-  fields?: MargaritaFormField[];
+  fields?: EXTENDS extends null ? MFF[] : EXTENDS[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
-  template?: Partial<MargaritaFormField>;
+  template?: Partial<EXTENDS extends null ? MFF : EXTENDS>;
   initialValue?: any;
-  control?: MargaritaFormControl<unknown, this>;
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
   state?: Partial<MargaritaFormState>;
@@ -62,7 +61,7 @@ export interface MargaritaFormRootFieldParams<VALUE> {
   };
 }
 
-export type MargaritaFormRootField<VALUE = unknown> = MargaritaFormField & MargaritaFormRootFieldParams<VALUE>;
+export type MargaritaFormRootField<VALUE = unknown, EXTENDS = null> = MargaritaFormField<EXTENDS> & MargaritaFormRootFieldParams<VALUE>;
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
@@ -117,7 +116,9 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTM
 // Shorthands
 
 /** Shorthand for {@link MargaritaFormField}  */
-export type MFF = MargaritaFormField;
+export type MFF<EXTENDS = any> = MargaritaFormField<EXTENDS>;
+/** Shorthand for {@link MargaritaFormRootField}  */
+export type MFRF<VALUE = unknown, EXTENDS = null> = MargaritaFormRootField<VALUE, EXTENDS>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<VALUE = any, FIELD extends MFF = any> = MargaritaForm<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
