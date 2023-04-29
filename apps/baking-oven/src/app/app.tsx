@@ -1,10 +1,5 @@
 import styled from 'styled-components';
-import {
-  useMargaritaForm,
-  MargaritaFormField,
-  MargaritaFormControl,
-  Form,
-} from '@margarita-form/react';
+import { useMargaritaForm, MargaritaFormField, Form } from '@margarita-form/react';
 import { useCallback, useState } from 'react';
 
 const AppWrapper = styled.div`
@@ -45,7 +40,7 @@ const AppWrapper = styled.div`
   }
 `;
 
-interface CustomField extends MargaritaFormField {
+interface CustomField extends MargaritaFormField<CustomField> {
   title?: string;
 }
 
@@ -140,7 +135,7 @@ export function App() {
   const [currentFields, setCurrentFields] = useState(fields);
   const [shouldReset, setShouldReset] = useState(false);
 
-  const form = useMargaritaForm<FormValue>(
+  const form = useMargaritaForm<FormValue, CustomField>(
     {
       fields: currentFields,
       handleSubmit: {
@@ -167,8 +162,7 @@ export function App() {
   );
 
   const titleControl = form.getControl('title');
-  const descriptionControl =
-    form.getControl<MargaritaFormControl>('description');
+  const descriptionControl = form.getControl('description');
 
   const stepsControl = form.getControl('steps');
 
@@ -193,9 +187,7 @@ export function App() {
                 setShouldReset(e.target.checked);
               }}
             />
-            <label htmlFor="should-reset">
-              Form should reset on field changes?
-            </label>
+            <label htmlFor="should-reset">Form should reset on field changes?</label>
           </div>
 
           <button type="button" onClick={changeFields}>
@@ -208,54 +200,26 @@ export function App() {
             <>
               {' '}
               <label htmlFor="title">{titleControl.field.title}</label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                ref={titleControl.setRef}
-                placeholder="How to make a cake"
-              />
+              <input id="title" name="title" type="text" ref={titleControl.setRef} placeholder="How to make a cake" />
             </>
           )}
           {descriptionControl && (
             <>
-              <label htmlFor="description">
-                {descriptionControl.field.title}
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                ref={descriptionControl.setRef}
-                placeholder="Lorem ipsum"
-              />
+              <label htmlFor="description">{descriptionControl.field.title}</label>
+              <textarea id="description" name="description" ref={descriptionControl.setRef} placeholder="Lorem ipsum" />
             </>
           )}
 
           {stepsControl &&
             stepsControl.controls.map((stepGroup) => {
               const stepTitleControl = stepGroup.getControl('title');
-              const stepDescriptionControl =
-                stepGroup.getControl('description');
+              const stepDescriptionControl = stepGroup.getControl('description');
 
               return (
                 <div className="step-container" key={stepGroup.key}>
-                  {stepTitleControl && (
-                    <input
-                      id="title"
-                      name="title"
-                      type="text"
-                      ref={stepTitleControl.setRef}
-                      placeholder="Title"
-                    />
-                  )}
+                  {stepTitleControl && <input id="title" name="title" type="text" ref={stepTitleControl.setRef} placeholder="Title" />}
                   {stepDescriptionControl && (
-                    <input
-                      id="description"
-                      name="description"
-                      type="text"
-                      ref={stepDescriptionControl.setRef}
-                      placeholder="Description"
-                    />
+                    <input id="description" name="description" type="text" ref={stepDescriptionControl.setRef} placeholder="Description" />
                   )}
 
                   <button
