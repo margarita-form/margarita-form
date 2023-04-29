@@ -1,6 +1,8 @@
 import styled from 'styled-components';
-import { useMargaritaForm, MargaritaFormField, Form } from '@margarita-form/react';
-import { useCallback, useState } from 'react';
+import { useMargaritaForm, MargaritaFormField, Form, MFC } from '@margarita-form/react';
+import { useState } from 'react';
+import { recipeFields } from './fields/receipe';
+import { websiteFields } from './fields/website';
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;
@@ -21,10 +23,32 @@ const AppWrapper = styled.div`
       font-family: Arial, sans-serif;
       padding: 0.5em;
     }
+    .field-wrapper {
+      display: grid;
+      gap: 4px;
+      &.repeatable {
+        gap: 10px;
+      }
+      h2,
+      h3,
+      h4 {
+        margin: 0;
+      }
+    }
     .step-container {
       display: grid;
       gap: 10px;
-      grid-template-columns: 1fr 1fr max-content;
+      grid-template-columns: 1fr max-content;
+      padding: 10px;
+      border: 1px solid #ccc;
+      button {
+        height: fit-content;
+      }
+      .step-fields {
+        grid-column: 1 / -1;
+        display: grid;
+        gap: 10px;
+      }
     }
     hr {
       width: 100%;
@@ -40,89 +64,10 @@ const AppWrapper = styled.div`
   }
 `;
 
-interface CustomField extends MargaritaFormField<CustomField> {
-  title?: string;
+export interface CustomField extends MargaritaFormField<CustomField> {
+  type: 'text' | 'textarea' | 'repeatable';
+  title: string;
 }
-
-const fields: CustomField[] = [
-  {
-    name: 'title',
-    title: 'Title',
-    initialValue: 'Hello world',
-    validation: {
-      required: true,
-    },
-  },
-  {
-    name: 'description',
-    title: 'Description',
-    validation: {
-      required: true,
-    },
-  },
-  {
-    name: 'steps',
-    title: 'Steps',
-    grouping: 'repeat-group',
-    startWith: 2,
-    template: {
-      fields: [
-        {
-          name: 'title',
-          validation: {
-            required: true,
-          },
-        },
-        {
-          name: 'description',
-          validation: {
-            required: true,
-          },
-        },
-      ],
-    },
-  },
-];
-
-const simpler: CustomField[] = [
-  {
-    name: 'title',
-    title: 'Short title',
-    initialValue: 'Hello world',
-    validation: {
-      required: true,
-    },
-  },
-  {
-    name: 'description',
-    title: 'Short description',
-    validation: {
-      required: true,
-    },
-  },
-  {
-    name: 'steps',
-    title: 'Steps',
-    grouping: 'repeat-group',
-    startWith: 0,
-    template: {
-      fields: [
-        {
-          name: 'title',
-          validation: {
-            required: true,
-          },
-        },
-        {
-          name: 'description',
-          validation: {
-            required: true,
-          },
-        },
-      ],
-    },
-  },
-];
 
 interface FormValue {
   title: string;
@@ -132,8 +77,8 @@ interface FormValue {
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(fields);
-  const [shouldReset, setShouldReset] = useState(false);
+  const [currentFields, setCurrentFields] = useState(recipeFields);
+  const [shouldReset, setShouldReset] = useState(true);
 
   const form = useMargaritaForm<FormValue, CustomField>(
     {
@@ -161,28 +106,18 @@ export function App() {
     }
   );
 
-  const titleControl = form.getControl('title');
-  const descriptionControl = form.getControl('description');
-
-  const stepsControl = form.getControl('steps');
-
-  const changeFields = useCallback(() => {
-    if (currentFields === fields) {
-      setCurrentFields(simpler);
-    } else {
-      setCurrentFields(fields);
-    }
-  }, [currentFields]);
-
   return (
     <AppWrapper>
       <div className="form-wrapper">
         <Form form={form}>
+          <h2>Options</h2>
+
           <div>
             <input
               type="checkbox"
               id="should-reset"
               name="should-reset"
+              checked={shouldReset}
               onChange={(e) => {
                 setShouldReset(e.target.checked);
               }}
@@ -190,25 +125,127 @@ export function App() {
             <label htmlFor="should-reset">Form should reset on field changes?</label>
           </div>
 
-          <button type="button" onClick={changeFields}>
-            Change fields
-          </button>
+          <hr />
+
+          <div className="change-fields-wrapper">
+            <h2>Change fields</h2>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(recipeFields);
+              }}
+            >
+              Recipe fields
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(websiteFields);
+              }}
+            >
+              Website fields
+            </button>
+          </div>
 
           <hr />
 
-          {titleControl && (
-            <>
-              {' '}
-              <label htmlFor="title">{titleControl.field.title}</label>
-              <input id="title" name="title" type="text" ref={titleControl.setRef} placeholder="How to make a cake" />
-            </>
-          )}
-          {descriptionControl && (
-            <>
-              <label htmlFor="description">{descriptionControl.field.title}</label>
-              <textarea id="description" name="description" ref={descriptionControl.setRef} placeholder="Lorem ipsum" />
-            </>
-          )}
+          <h2>Fields</h2>
+
+          {form.controls.map((control) => (
+            <FormField key={control.key} control={control} />
+          ))}
+
+          <hr />
+
+          <button type="submit">Submit</button>
+
+          <hr />
+
+          <button type="button" onClick={form.reset}>
+            Reset
+          </button>
+
+          {submitResponse && <span>{submitResponse}</span>}
+        </Form>
+      </div>
+      <pre>{JSON.stringify(form.value, null, 2)}</pre>
+    </AppWrapper>
+  );
+}
+
+interface FormFieldProps {
+  control: MFC<unknown, CustomField>;
+}
+
+const FormField = ({ control }: FormFieldProps) => {
+  const uid = control.name + '-' + control.key;
+  switch (control.field.type) {
+    case 'text':
+      return (
+        <div className="field-wrapper">
+          <label htmlFor={uid}>{control.field.title}</label>
+          <input id={uid} name={uid} type="text" ref={control.setRef} />
+        </div>
+      );
+
+    case 'textarea':
+      return (
+        <div className="field-wrapper">
+          <label htmlFor={uid}>{control.field.title}</label>
+          <textarea id={uid} name={uid} ref={control.setRef} />
+        </div>
+      );
+
+    case 'repeatable':
+      return (
+        <div className="field-wrapper repeatable">
+          <h3>{control.field.title}</h3>
+
+          {control.controls.map((childGroup) => {
+            return (
+              <div className="step-container" key={childGroup.key}>
+                <h3>
+                  {childGroup.field.title}: {childGroup.index + 1}
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    childGroup.remove();
+                  }}
+                >
+                  Delete step
+                </button>
+
+                <div className="step-fields">
+                  {childGroup.controls.map((control) => (
+                    <FormField key={control.key} control={control} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => {
+              control.appendRepeatingControls();
+            }}
+          >
+            Add new step
+          </button>
+        </div>
+      );
+
+    default:
+      return <p>Unknown field type: {control.field.type}</p>;
+  }
+};
+
+export default App;
+
+/* 
+
 
           {stepsControl &&
             stepsControl.controls.map((stepGroup) => {
@@ -243,22 +280,5 @@ export function App() {
             Add new step
           </button>
 
-          <hr />
 
-          <button type="submit">Submit</button>
-
-          <hr />
-
-          <button type="button" onClick={form.reset}>
-            Reset
-          </button>
-
-          {submitResponse && <span>{submitResponse}</span>}
-        </Form>
-      </div>
-      <pre>{JSON.stringify(form.value, null, 2)}</pre>
-    </AppWrapper>
-  );
-}
-
-export default App;
+*/
