@@ -122,6 +122,7 @@ export function App() {
         handleSuccesfullSubmit: 'enable',
         addMetadataToArrays: true,
         useStorage: 'localStorage',
+        useSyncronization: true,
       },
     },
     {
@@ -279,42 +280,3 @@ const FormField = ({ control }: FormFieldProps) => {
 };
 
 export default App;
-
-/* 
-
-
-          {stepsControl &&
-            stepsControl.controls.map((stepGroup) => {
-              const stepTitleControl = stepGroup.getControl('title');
-              const stepDescriptionControl = stepGroup.getControl('description');
-
-              return (
-                <div className="step-container" key={stepGroup.key}>
-                  {stepTitleControl && <input id="title" name="title" type="text" ref={stepTitleControl.setRef} placeholder="Title" />}
-                  {stepDescriptionControl && (
-                    <input id="description" name="description" type="text" ref={stepDescriptionControl.setRef} placeholder="Description" />
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      stepGroup.remove();
-                    }}
-                  >
-                    Delete step
-                  </button>
-                </div>
-              );
-            })}
-
-          <button
-            type="button"
-            onClick={() => {
-              stepsControl?.appendRepeatingControls();
-            }}
-          >
-            Add new step
-          </button>
-
-
-*/

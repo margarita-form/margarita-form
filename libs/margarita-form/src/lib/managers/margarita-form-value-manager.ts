@@ -1,4 +1,4 @@
-import { BehaviorSubject, debounceTime } from 'rxjs';
+import { BehaviorSubject, debounceTime, fromEvent } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
@@ -29,9 +29,39 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     });
 
     if (this.control.isRoot) {
-      this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
-        this.#saveStorageValue();
-      });
+      if (this.control.options.useStorage) {
+        this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
+          this.#saveStorageValue();
+        });
+      }
+      if (this.control.options.useSyncronization) {
+        try {
+          const cache = { value: null };
+          const broadcaster = new BroadcastChannel(this.control.name);
+          broadcaster.postMessage({ key: this.control.key, requestSend: true });
+
+          this.createSubscription(this.changes.pipe(debounceTime(10)), (value) => {
+            const valueChanged = JSON.stringify(value) !== JSON.stringify(cache.value);
+            if (valueChanged) {
+              broadcaster.postMessage({ key: this.control.key, value });
+            }
+          });
+
+          this.createSubscription(fromEvent<MessageEvent>(broadcaster, 'message'), (event) => {
+            if (event.data.requestSend) {
+              broadcaster.postMessage({ key: this.control.key, value: this.#value });
+            } else if (event.data.key !== this.control.key) {
+              const valueChanged = JSON.stringify(event.data.value) !== JSON.stringify(this.#value);
+              if (valueChanged) {
+                this.updateValue(event.data.value, false, false, false, false);
+                cache.value = event.data.value;
+              }
+            }
+          });
+        } catch (error) {
+          console.error(`Could not syncronize value!`, { control: this.control, error });
+        }
+      }
     }
   }
 
@@ -164,19 +194,20 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * @Internal
    */
   #resolveValue(): CONTROL['value'] {
-    if (this.control.hasControls) {
-      if (this.control.expectArray) {
-        return this.control.activeControls.map((control) => {
-          if (control.options.addMetadataToArrays) {
-            return {
-              value: control.value,
-              key: control.key,
-              name: control.name,
-            };
-          }
-          return control.value;
-        });
-      }
+    if (!this.control.hasControls) return undefined;
+    if (this.control.expectArray) {
+      return this.control.activeControls.map((control) => {
+        if (control.options.addMetadataToArrays) {
+          return {
+            value: control.value,
+            key: control.key,
+            name: control.name,
+          };
+        }
+        return control.value;
+      });
+    }
+    if (this.control.expectGroup) {
       const entries = this.control.activeControls.map((control) => {
         return [control.name, control.value];
       });

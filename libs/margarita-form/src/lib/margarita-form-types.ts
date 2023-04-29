@@ -123,6 +123,7 @@ export interface MargaritaFormOptions {
   addMetadataToArrays?: boolean;
   useStorage?: 'localStorage' | 'sessionStorage';
   clearStorageOnSuccessfullSubmit?: boolean;
+  useSyncronization?: boolean;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {
