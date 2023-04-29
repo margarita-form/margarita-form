@@ -120,6 +120,7 @@ export interface MargaritaFormOptions {
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
   allowConcurrentSubmits?: boolean;
   addDefaultValidators?: boolean;
+  addMetadataToArrays?: boolean;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {

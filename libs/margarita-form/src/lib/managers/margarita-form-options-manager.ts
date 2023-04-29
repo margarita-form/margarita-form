@@ -8,6 +8,7 @@ export const getDefaultOptions = (): MargaritaFormOptions => ({
   handleSuccesfullSubmit: 'disable',
   allowConcurrentSubmits: false,
   addDefaultValidators: true,
+  addMetadataToArrays: false,
 });
 
 class OptionsManager<CONTROL extends MF> extends BaseManager {

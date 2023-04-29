@@ -119,6 +119,7 @@ export function App() {
       },
       options: {
         handleSuccesfullSubmit: 'enable',
+        addMetadataToArrays: true,
       },
     },
     {
