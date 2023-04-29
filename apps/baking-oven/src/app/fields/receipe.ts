@@ -30,6 +30,7 @@ export const recipeFields: CustomField[] = [
     startWith: 2,
     template: {
       title: 'Step',
+      name: 'step',
       fields: [
         {
           name: 'title',

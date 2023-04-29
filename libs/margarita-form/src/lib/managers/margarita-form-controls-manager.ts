@@ -171,6 +171,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       parent: this.control,
       root: this.control.root,
       form: this.control.form,
+      keyStore: this.control.keyStore,
     });
 
     if (this.control.state?.disabled) control.disable();

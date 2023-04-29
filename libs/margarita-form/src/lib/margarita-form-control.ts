@@ -27,12 +27,13 @@ interface MargaritaFormControlContext {
   form?: MF;
   root?: MF | MFC;
   parent?: MF | MFC;
+  keyStore?: Set<string>;
 }
 
 export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
   public key: string = nanoid(4);
   public syncId: string = nanoid(4);
-
+  public keyStore: Set<string>;
   public fieldManager: FieldManager<typeof this>;
   public controlsManager: ControlsManager<typeof this>;
   public valueManager: ValueManager<typeof this>;
@@ -42,14 +43,15 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   #listeningToChanges = true;
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
+    this.keyStore = context.keyStore || new Set<string>();
     this.fieldManager = new FieldManager(this);
     this.controlsManager = new ControlsManager(this);
     this.valueManager = new ValueManager(this);
     this.stateManager = new StateManager(this);
     this.refManager = new RefManager(this);
     this.paramsManager = new ParamsManager(this);
+    this.keyStore.add(this.key);
   }
-
   /**
    * Unsubscribe from all subscriptions for current control
    */
@@ -61,6 +63,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     this.refManager.cleanup();
     this.paramsManager.cleanup();
     this.#listeningToChanges = false;
+    this.keyStore.delete(this.key);
   };
 
   /**
@@ -74,12 +77,23 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
       this.stateManager.resubscribe();
       this.refManager.resubscribe();
       this.paramsManager.resubscribe();
+      this.keyStore.add(this.key);
     }
     this.#listeningToChanges = true;
   };
 
-  public updateSyncId = () => {
-    this.syncId = nanoid(4);
+  public updateSyncId = (syncId = nanoid(4)) => {
+    this.syncId = syncId;
+  };
+
+  public updateKey = (key = nanoid(4)) => {
+    if (key !== this.key) {
+      if (this.keyStore.has(key)) {
+        return console.warn(`Key ${key} already exists, all keys must be unique!`);
+      }
+      this.key = key;
+      this.keyStore.add(key);
+    }
   };
 
   // Context getters

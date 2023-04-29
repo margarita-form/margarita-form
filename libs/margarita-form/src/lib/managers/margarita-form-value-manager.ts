@@ -50,12 +50,18 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
           if (isArray) {
             value.forEach((_value, index) => {
+              const __value = this.control.options.addMetadataToArrays ? _value?.value : _value;
               const control = this.control.getControl(index);
-              if (control) return control.setValue(_value, setAsDirty);
+              if (control) {
+                control.updateKey(_value?.key);
+                return control.setValue(__value, setAsDirty);
+              }
 
-              return this.control.controlsManager.addTemplatedControl({
-                initialValue: _value,
-              });
+              return this.control.controlsManager
+                .addTemplatedControl({
+                  initialValue: __value,
+                })
+                .updateKey(_value?.key);
             });
           }
         } else {
@@ -92,7 +98,16 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   #resolveValue(): CONTROL['value'] {
     if (this.control.hasControls) {
       if (this.control.expectArray) {
-        return this.control.activeControls.map((control) => control.value);
+        return this.control.activeControls.map((control) => {
+          if (control.options.addMetadataToArrays) {
+            return {
+              value: control.value,
+              key: control.key,
+              name: control.name,
+            };
+          }
+          return control.value;
+        });
       }
       const entries = this.control.activeControls.map((control) => {
         return [control.name, control.value];
