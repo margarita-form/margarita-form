@@ -121,6 +121,8 @@ export interface MargaritaFormOptions {
   allowConcurrentSubmits?: boolean;
   addDefaultValidators?: boolean;
   addMetadataToArrays?: boolean;
+  useStorage?: 'localStorage' | 'sessionStorage';
+  clearStorageOnSuccessfullSubmit?: boolean;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {

@@ -89,6 +89,7 @@ export function App() {
 
   const form = useMargaritaForm<FormValue, CustomField>(
     {
+      name: currentFields === recipeFields ? 'recipe' : 'website',
       fields: currentFields,
       locales: ['en', 'fi'],
       handleLocalize: {
@@ -120,6 +121,7 @@ export function App() {
       options: {
         handleSuccesfullSubmit: 'enable',
         addMetadataToArrays: true,
+        useStorage: 'localStorage',
       },
     },
     {

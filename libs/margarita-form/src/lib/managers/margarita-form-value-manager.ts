@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, debounceTime } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
@@ -10,17 +10,85 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   constructor(public control: CONTROL) {
     super();
 
-    if (control.field.initialValue) {
-      this.updateValue(control.field.initialValue, false, true, false, true);
+    const initialValue = this.#getInitialValue();
+    if (initialValue) {
+      this.updateValue(initialValue, false, false, true, true);
     }
 
     this.createSubscription(this.control.controlsManager.changes, () => {
       this._syncCurrentValue(false);
     });
+
+    this.createSubscription(this.control.fieldManager.changes, () => {
+      if (this.control.fieldManager.shouldResetControl) {
+        const initialValue = this.#getInitialValue();
+        if (initialValue) {
+          this.updateValue(initialValue, false, false, true, true);
+        }
+      }
+    });
+
+    if (this.control.isRoot) {
+      this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
+        this.#saveStorageValue();
+      });
+    }
   }
 
   #emitChanges() {
     this.changes.next(this.#value);
+  }
+
+  #getStorage(): Storage | null {
+    if (typeof window === 'undefined') return null;
+    if (this.control.isRoot && this.control.options.useStorage) {
+      const { useStorage } = this.control.options;
+      if (useStorage === 'localStorage') {
+        return localStorage;
+      }
+      if (useStorage === 'sessionStorage') {
+        return sessionStorage;
+      }
+    }
+    return null;
+  }
+
+  #getInitialValue() {
+    const storage = this.#getStorage();
+    if (storage) {
+      try {
+        const sessionStorageValue = storage.getItem(this.control.name);
+        if (sessionStorageValue) return JSON.parse(sessionStorageValue);
+      } catch (error) {
+        console.error(`Could not get value from ${this.control.options.useStorage}!`, { control: this.control, error });
+      }
+    }
+
+    return this.control.field.initialValue;
+  }
+
+  #saveStorageValue() {
+    const storage = this.#getStorage();
+    if (storage) {
+      try {
+        const stringified = JSON.stringify(this.#value);
+        storage.setItem(this.control.name, stringified);
+      } catch (error) {
+        console.error(`Could not save value to ${this.control.options.useStorage}!`, { control: this.control, error });
+      }
+    }
+  }
+
+  public clearStorageValue() {
+    const storage = this.#getStorage();
+    if (storage) {
+      try {
+        const sessionStorageValue = storage.getItem(this.control.name);
+        if (sessionStorageValue) storage.removeItem(this.control.name);
+      } catch (error) {
+        console.error(`Could not clear value from ${this.control.options.useStorage}!`, { control: this.control, error });
+      }
+    }
   }
 
   /**

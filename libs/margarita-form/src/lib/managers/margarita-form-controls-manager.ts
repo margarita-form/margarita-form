@@ -109,8 +109,12 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
   ): MargaritaFormControl<unknown, CHILD_FIELD> {
     if (!fieldTemplate) throw 'No template for repeating field provided!';
 
+    const { fields, template = {} } = this.control.field;
+    const _template = fields ? { fields, ...template } : template;
+
     const field = {
       name: nanoid(4),
+      ..._template,
       ...fieldTemplate,
     } as CHILD_FIELD;
 
@@ -123,14 +127,6 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     emit = true
   ): MargaritaFormControl<VALUE, FIELD> {
     if (!field) throw 'No field provided!';
-
-    if (this.control.expectGroup && !resetControl) {
-      const existingControl = this.getControl(field.name);
-      if (existingControl) {
-        existingControl.updateField(field);
-        return existingControl as MargaritaFormControl<VALUE, FIELD>;
-      }
-    }
 
     const shouldLocalize = field.localize && this.control.locales;
 
@@ -164,7 +160,23 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         }),
       };
 
+      if (!resetControl) {
+        const existingControl = this.getControl(field.name);
+        if (existingControl) {
+          existingControl.updateField(localizedField);
+          return existingControl as MargaritaFormControl<VALUE, FIELD>;
+        }
+      }
+
       return this.addControl(localizedField, resetControl, emit);
+    }
+
+    if (this.control.expectGroup && !resetControl) {
+      const existingControl = this.getControl(field.name);
+      if (existingControl) {
+        existingControl.updateField(field);
+        return existingControl as MargaritaFormControl<VALUE, FIELD>;
+      }
     }
 
     const control = new MargaritaFormControl<VALUE, FIELD>(field, {
@@ -174,6 +186,16 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       keyStore: this.control.keyStore,
     });
 
+    /*
+    const prevControl = this.getControl(field.name);
+    if (prevControl) {
+      try {
+        control.setValue(prevControl.value, false, true);
+      } catch (error) {
+        //
+      }
+    }
+    */
     if (this.control.state?.disabled) control.disable();
     return this.appendControl(control, resetControl, emit);
   }
