@@ -112,6 +112,14 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     }
   }
 
+  public get locales(): undefined | string[] {
+    return this.form.locales;
+  }
+
+  public get currentLocale(): undefined | string {
+    return this.field.locale || this.context.parent?.currentLocale;
+  }
+
   // Field and metadata getters
 
   public get name(): string {
@@ -469,5 +477,31 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public reset = () => {
     this.resetValue();
     this.resetState();
+  };
+
+  /**
+   * Get the control's parent's field's parameter
+   * @param key The parameter to get
+   * @param checkSelf If true, will check the control's own field for the parameter
+   * @param deep If true, will search for the parameter in the parent's parent and so on
+   * @returns The parameter value
+   */
+  public getParentFieldValue = <OUTPUT = unknown>(key: keyof FIELD, fallback: OUTPUT, checkSelf = true, deep = true): OUTPUT => {
+    if (checkSelf && this.field[key]) return this.field[key] as OUTPUT;
+    if (!this.isRoot && this.parent && this.parent.field[key]) return this.parent.field[key];
+    if (deep && !this.isRoot && this.parent) return this.parent.getParentFieldValue<OUTPUT>(key, fallback, false, deep);
+    return fallback as OUTPUT;
+  };
+
+  /**
+   * Get the control's parent's field's parameter
+   * @param key The parameter to get
+   * @param checkSelf If true, will check the control's own field for the parameter
+   * @returns The parameter value
+   */
+  public getRootFieldValue = <OUTPUT = unknown>(key: keyof FIELD, fallback: OUTPUT, checkSelf = true): OUTPUT => {
+    if (checkSelf && this.field[key]) return this.field[key] as OUTPUT;
+    if (!this.isRoot && this.root && this.root.field[key]) return this.parent.field[key];
+    return fallback as OUTPUT;
   };
 }

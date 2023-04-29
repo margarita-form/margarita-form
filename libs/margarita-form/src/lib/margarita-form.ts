@@ -16,6 +16,14 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
     return this;
   }
 
+  public override get locales(): undefined | string[] {
+    return this.field.locales;
+  }
+
+  public override get currentLocale(): undefined | string {
+    return this.field.locale || undefined;
+  }
+
   public override get options(): MargaritaFormOptions {
     if (!this.optionsManager) {
       const defaultOptions = getDefaultOptions();

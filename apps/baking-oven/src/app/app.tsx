@@ -35,6 +35,13 @@ const AppWrapper = styled.div`
         margin: 0;
       }
     }
+    .locales-fields {
+      display: grid;
+      gap: 10px;
+      border-left: 1px solid #ccc;
+      padding: 0 10px;
+      margin: 10px 0;
+    }
     .step-container {
       display: grid;
       gap: 10px;
@@ -65,7 +72,7 @@ const AppWrapper = styled.div`
 `;
 
 export interface CustomField extends MargaritaFormField<CustomField> {
-  type: 'text' | 'textarea' | 'repeatable';
+  type: 'text' | 'textarea' | 'repeatable' | 'localized';
   title: string;
 }
 
@@ -83,6 +90,19 @@ export function App() {
   const form = useMargaritaForm<FormValue, CustomField>(
     {
       fields: currentFields,
+      locales: ['en', 'fi'],
+      handleLocalize: {
+        parent: () => {
+          return {
+            type: 'localized',
+          };
+        },
+        child: ({ locale }) => {
+          return {
+            title: locale.toUpperCase(),
+          };
+        },
+      },
       handleSubmit: {
         valid: async (form) => {
           setSubmitResponse('Fake submitting for 1s...');
@@ -179,6 +199,7 @@ interface FormFieldProps {
 
 const FormField = ({ control }: FormFieldProps) => {
   const uid = control.name + '-' + control.key;
+
   switch (control.field.type) {
     case 'text':
       return (
@@ -193,6 +214,18 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
           <textarea id={uid} name={uid} ref={control.setRef} />
+        </div>
+      );
+
+    case 'localized':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          <div className="locales-fields">
+            {control.controls.map((localeControl) => {
+              return <FormField key={localeControl.key} control={localeControl} />;
+            })}
+          </div>
         </div>
       );
 

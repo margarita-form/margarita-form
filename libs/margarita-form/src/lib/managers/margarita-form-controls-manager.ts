@@ -1,7 +1,7 @@
 import { BehaviorSubject, filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
-import { MFC, MFCA, MFCG, MFF } from '../margarita-form-types';
+import { MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
 import { nanoid } from 'nanoid';
 
 class ControlsManager<CONTROL extends MFC> extends BaseManager {
@@ -130,6 +130,41 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         existingControl.updateField(field);
         return existingControl as MargaritaFormControl<VALUE, FIELD>;
       }
+    }
+
+    const shouldLocalize = field.localize && this.control.locales;
+
+    if (shouldLocalize) {
+      const locales = this.control.locales || [];
+      const initialValue = field.initialValue && typeof field.initialValue === 'object' ? field.initialValue : undefined;
+
+      const fallbackFn = () => ({});
+      const { parent = fallbackFn, child = fallbackFn } = this.control.getRootFieldValue<MargaritaFormHandleLocalize<FIELD>>(
+        'handleLocalize',
+        {}
+      );
+
+      const localizedField: FIELD = {
+        ...field,
+        localize: false,
+        wasLocalized: true,
+        validation: null,
+        initialValue,
+        ...parent({ field, parent: this.control, locales }),
+        fields: locales.map((locale) => {
+          return {
+            ...field,
+            locale,
+            localize: false,
+            isLocale: true,
+            name: locale,
+            initialValue: initialValue ? undefined : field.initialValue,
+            ...child({ field, parent: this.control, locale }),
+          };
+        }),
+      };
+
+      return this.addControl(localizedField, resetControl, emit);
     }
 
     const control = new MargaritaFormControl<VALUE, FIELD>(field, {

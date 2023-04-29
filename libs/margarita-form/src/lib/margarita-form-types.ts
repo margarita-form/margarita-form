@@ -38,6 +38,23 @@ export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
+export type MargaritaFormHandleLocalizeParentFn<FIELD> = (params: {
+  field: FIELD;
+  parent: MFC<unknown, MFF>;
+  locales: string[];
+}) => Partial<FIELD> | CommonRecord;
+
+export type MargaritaFormHandleLocalizeChildFn<FIELD> = (params: {
+  field: FIELD;
+  parent: MFC<unknown, MFF>;
+  locale: string;
+}) => Partial<FIELD> | CommonRecord;
+
+export interface MargaritaFormHandleLocalize<FIELD> {
+  parent?: MargaritaFormHandleLocalizeParentFn<FIELD>;
+  child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
+}
+
 export interface MargaritaFormField<EXTENDS = null> {
   name: string;
   fields?: EXTENDS extends null ? MFF[] : EXTENDS[];
@@ -51,9 +68,15 @@ export interface MargaritaFormField<EXTENDS = null> {
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
+  localize?: boolean;
+  wasLocalized?: boolean;
+  isLocale?: boolean;
+  locale?: string;
+  handleLocalize?: MargaritaFormHandleLocalize<EXTENDS extends null ? MFF : EXTENDS>;
 }
 
 export interface MargaritaFormRootFieldParams<VALUE> {
+  locales?: string[];
   options?: MargaritaFormOptions;
   handleSubmit?: {
     valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;

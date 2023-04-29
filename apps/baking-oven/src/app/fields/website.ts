@@ -6,6 +6,7 @@ export const websiteFields: CustomField[] = [
     name: 'title',
     title: 'Page title',
     initialValue: 'Hello world!',
+    localize: true,
     validation: {
       required: true,
     },
@@ -14,6 +15,7 @@ export const websiteFields: CustomField[] = [
     type: 'textarea',
     name: 'description',
     title: 'Page description',
+    localize: true,
     validation: {
       required: true,
     },
