@@ -8,7 +8,7 @@ interface WithForm {
 }
 
 interface WithSchema {
-  schema: MargaritaFormRootField;
+  schema: MargaritaFormRootField<any>;
 }
 
 type WithFormOrSchema = WithForm | WithSchema;
