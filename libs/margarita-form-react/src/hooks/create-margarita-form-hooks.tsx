@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useId, useMemo, useSyncExternalStore } from 'react';
 import { combineLatest, debounceTime } from 'rxjs';
-import { createMargaritaForm, MargaritaForm, MargaritaFormRootField, MargaritaFormRootFieldParams, MFF } from '@margarita-form/core';
+import { createMargaritaForm, MargaritaForm, MargaritaFormRootField, MFF } from '@margarita-form/core';
 
 const forms: Record<string, unknown> = {};
 
@@ -56,7 +56,7 @@ interface MargaritaFormHookOptions {
 }
 
 export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
-  field: Partial<FIELD & MargaritaFormRootField<VALUE>>,
+  field: Partial<FIELD> & MargaritaFormRootField<VALUE>,
   options: MargaritaFormHookOptions = {},
   deps: any[] = []
 ) => {

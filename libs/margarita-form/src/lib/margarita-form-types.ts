@@ -75,7 +75,8 @@ export interface MargaritaFormField<EXTENDS = null> {
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS extends null ? MFF : EXTENDS>;
 }
 
-export interface MargaritaFormRootFieldParams<VALUE> {
+export interface MargaritaFormRootField<VALUE> {
+  name: string;
   locales?: string[];
   options?: MargaritaFormOptions;
   handleSubmit?: {
@@ -83,8 +84,6 @@ export interface MargaritaFormRootFieldParams<VALUE> {
     invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
   };
 }
-
-export type MargaritaFormRootField<VALUE = unknown, EXTENDS = null> = MargaritaFormField<EXTENDS> & MargaritaFormRootFieldParams<VALUE>;
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
@@ -121,7 +120,7 @@ export interface MargaritaFormOptions {
   allowConcurrentSubmits?: boolean;
   addDefaultValidators?: boolean;
   addMetadataToArrays?: boolean;
-  useStorage?: 'localStorage' | 'sessionStorage';
+  useStorage?: false | 'localStorage' | 'sessionStorage';
   clearStorageOnSuccessfullSubmit?: boolean;
   useSyncronization?: boolean;
 }
@@ -145,7 +144,7 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTM
 /** Shorthand for {@link MargaritaFormField}  */
 export type MFF<EXTENDS = any> = MargaritaFormField<EXTENDS>;
 /** Shorthand for {@link MargaritaFormRootField}  */
-export type MFRF<VALUE = unknown, EXTENDS = null> = MargaritaFormRootField<VALUE, EXTENDS>;
+export type MFRF<VALUE = unknown> = MargaritaFormRootField<VALUE>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<VALUE = any, FIELD extends MFF = any> = MargaritaForm<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */

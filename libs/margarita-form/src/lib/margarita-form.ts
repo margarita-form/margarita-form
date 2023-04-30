@@ -96,9 +96,8 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
 }
 
 export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
-  field: Partial<FIELD & MFRF<VALUE, FIELD>>
+  field: Partial<FIELD> & MFRF<VALUE>
 ): MargaritaForm<VALUE, FIELD> => {
-  if (!field.name) field.name = 'root';
   type ROOTFIELD = FIELD & MFRF<VALUE>;
   return new MargaritaForm<VALUE, FIELD>(field as ROOTFIELD);
 };
