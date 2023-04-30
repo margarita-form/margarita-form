@@ -169,6 +169,16 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return !this.expectArray;
   }
 
+  /**
+   * Check if control's output should be an group / object
+   */
+  public get expectChildControls(): boolean {
+    if (this.field.grouping) return true;
+    if (this.field.fields) return true;
+    if (this.field.template) return true;
+    return false;
+  }
+
   public updateField = async (changes: Partial<FIELD>, resetControl = false) => {
     await this.fieldManager.updateField(changes, resetControl);
   };

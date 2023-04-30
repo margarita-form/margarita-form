@@ -2,6 +2,7 @@ import { BehaviorSubject, debounceTime, fromEvent } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
+import { valueExists } from '../helpers/check-value';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
   #value: CONTROL['value'] = undefined;
@@ -12,7 +13,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     const initialValue = this.#getInitialValue();
     if (initialValue) {
-      this.updateValue(initialValue, false, false, true, true);
+      this.updateValue(initialValue, false, false, false, true);
     }
 
     this.createSubscription(this.control.controlsManager.changes, () => {
@@ -23,7 +24,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       if (this.control.fieldManager.shouldResetControl) {
         const initialValue = this.#getInitialValue();
         if (initialValue) {
-          this.updateValue(initialValue, false, false, true, true);
+          this.updateValue(initialValue, false, false, false, true);
         }
       }
     });
@@ -102,7 +103,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     if (storage) {
       try {
         const stringified = JSON.stringify(this.#value);
-        storage.setItem(this.control.name, stringified);
+        if (stringified === '{}') {
+          this.clearStorageValue();
+        } else {
+          storage.setItem(this.control.name, stringified);
+        }
       } catch (error) {
         console.error(`Could not save value to ${this.control.options.useStorage}!`, { control: this.control, error });
       }
@@ -194,24 +199,28 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * @Internal
    */
   #resolveValue(): CONTROL['value'] {
-    if (!this.control.hasControls) return undefined;
-    if (this.control.expectArray) {
-      return this.control.activeControls.map((control) => {
-        if (control.options.addMetadataToArrays) {
-          return {
-            value: control.value,
-            key: control.key,
-            name: control.name,
-          };
-        }
-        return control.value;
-      });
-    }
-    if (this.control.expectGroup) {
-      const entries = this.control.activeControls.map((control) => {
-        return [control.name, control.value];
-      });
-      return Object.fromEntries(entries);
+    if (this.control.expectChildControls) {
+      if (!this.control.hasControls) return undefined;
+      if (this.control.expectArray) {
+        return this.control.activeControls.map((control) => {
+          if (control.options.addMetadataToArrays) {
+            return {
+              value: control.value,
+              key: control.key,
+              name: control.name,
+            };
+          }
+          return control.value;
+        });
+      }
+      if (this.control.expectGroup) {
+        const entries = this.control.activeControls.map((control) => {
+          const exists = valueExists(control.value);
+          if (!exists) return [];
+          return [control.name, control.value];
+        });
+        return Object.fromEntries(entries);
+      }
     }
     return this.#value;
   }
