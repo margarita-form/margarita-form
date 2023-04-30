@@ -1,4 +1,4 @@
-import { MargaritaForm, MargaritaFormRootField } from '@margarita-form/core';
+import { MFF, MargaritaForm, MargaritaFormRootField } from '@margarita-form/core';
 import { FormHTMLAttributes } from 'react';
 import { useMargaritaForm } from '../hooks/create-margarita-form-hooks';
 import { ProvideForm } from '../hooks/form-provider-hooks';
@@ -35,11 +35,11 @@ export const Form = (props: FormComponentProps) => {
 };
 
 interface CreateFormProps extends FormHTMLAttributes<HTMLFormElement> {
-  schema: MargaritaFormRootField;
+  schema: MFF;
 }
 
 const CreateForm = ({ schema, children, ...attr }: CreateFormProps) => {
-  const form = useMargaritaForm(schema);
+  const form = useMargaritaForm<any, any>(schema);
 
   return (
     <ProvideForm form={form}>

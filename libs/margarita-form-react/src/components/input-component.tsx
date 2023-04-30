@@ -1,9 +1,8 @@
-import { MargaritaFormControl, MargaritaFormField } from '@margarita-form/core';
+import { MFF, MargaritaFormControl } from '@margarita-form/core';
 import { InputHTMLAttributes } from 'react';
 
-interface InputComponentProps<VALUE = unknown, VIELD extends MargaritaFormField = MargaritaFormField>
-  extends InputHTMLAttributes<HTMLInputElement> {
-  control: MargaritaFormControl<VALUE, VIELD>;
+interface InputComponentProps<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> extends InputHTMLAttributes<HTMLInputElement> {
+  control: MargaritaFormControl<VALUE, FIELD>;
 }
 
 export const Input = ({ control, ...rest }: InputComponentProps) => {
