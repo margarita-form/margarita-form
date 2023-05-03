@@ -22,6 +22,7 @@ import { Params, ParamsManager } from './managers/margarita-form-params-manager'
 import { FieldManager } from './managers/margarita-form-field-manager';
 import { getDefaultOptions } from './managers/margarita-form-options-manager';
 import { defaultValidators } from './validators/default-validators';
+import { isEqual, isIncluded } from './helpers/check-value';
 
 interface MargaritaFormControlContext {
   form?: MF;
@@ -216,6 +217,45 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    */
   public patchValue = (values: unknown, setAsDirty = true) => {
     this.valueManager.updateValue(values, setAsDirty, true, true);
+  };
+
+  /**
+   * Add a new value to array
+   * @param value Value to add to the array
+   * @param mustBeUnique Should the value be unique (default = false)
+   * @param setAsDirty Should the dirty state be set to true
+   */
+  public addValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = false, setAsDirty = true) => {
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], false, false);
+    if (!Array.isArray(this.value)) throw 'Control value must be an array to add a value!';
+    if (mustBeUnique && isIncluded(value, this.value)) return console.warn('Value already exists!');
+    this.valueManager.updateValue([...this.value, value], setAsDirty);
+  };
+
+  /**
+   * Remove a value from array
+   * @param value Value to remove from the array
+   * @param setAsDirty Should the dirty state be set to true
+   */
+  public removeValue = (value: unknown, setAsDirty = true) => {
+    if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
+    this.valueManager.updateValue(
+      this.value.filter((item) => !isEqual(value, item)),
+      setAsDirty
+    );
+  };
+
+  /**
+   * Toggle a value in array
+   * @param value Value to add or remove from the array
+   * @param mustBeUnique Should the value be unique when adding (default = true)
+   * @param setAsDirty Should the dirty state be set to true
+   */
+  public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true) => {
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], false, false);
+    if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
+    if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
+    this.valueManager.updateValue([...this.value, value], setAsDirty);
   };
 
   // States
