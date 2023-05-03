@@ -76,7 +76,7 @@ export function App() {
       },
     },
     options: {
-      handleSuccesfullSubmit: 'reset', // Change what happens when for is successfully submitted
+      handleSuccesfullSubmit: 'reset', // Change what happens when form is successfully submitted
       useStorage: false, // Change to "localStorage" or "sessionStorage" to enable persistence between page reloads
       useSyncronization: false, // Change to true to syncronize form value between tabs
     },
