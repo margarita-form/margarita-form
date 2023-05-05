@@ -55,7 +55,7 @@ export interface MargaritaFormHandleLocalize<FIELD> {
   child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
 }
 
-export interface MargaritaFormField<EXTENDS = null> {
+export interface MargaritaFormField<EXTENDS = null> extends Partial<UserDefinedStates> {
   name: string;
   fields?: EXTENDS extends null ? MFF[] : EXTENDS[];
   grouping?: MargaritaFormGroupings;
@@ -64,7 +64,6 @@ export interface MargaritaFormField<EXTENDS = null> {
   initialValue?: any;
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
-  state?: Partial<MargaritaFormState>;
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
@@ -87,18 +86,23 @@ export interface MargaritaFormRootField<VALUE> {
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
-export interface MargaritaFormState {
+export type MargaritaFormFieldState = MargaritaFormResolverOutput<boolean> | MargaritaFormResolver<boolean>;
+
+export interface UserDefinedStates<TYPE = MargaritaFormFieldState> {
+  enabled: TYPE;
+  disabled: TYPE;
+  editable: TYPE;
+  readOnly: TYPE;
+  active: TYPE;
+  inactive: TYPE;
+}
+
+export interface MargaritaFormState extends UserDefinedStates<boolean> {
   pristine: boolean;
   dirty: boolean;
   untouched: boolean;
   focus: boolean;
   touched: boolean;
-  enabled: boolean;
-  disabled: boolean;
-  editable: boolean;
-  readOnly: boolean;
-  inactive: boolean;
-  active: boolean;
   valid: boolean;
   invalid: boolean;
   shouldShowError: undefined | boolean;
