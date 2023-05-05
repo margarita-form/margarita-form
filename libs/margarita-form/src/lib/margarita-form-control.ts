@@ -43,7 +43,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public paramsManager: ParamsManager<typeof this>;
 
   #listeningToChanges = true;
-  constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
+  constructor(public field: FIELD, public context: MargaritaFormControlContext = {}, public customOptions: MargaritaFormOptions = {}) {
     this.keyStore = context.keyStore || new Set<string>();
     this.fieldManager = new FieldManager(this);
     this.controlsManager = new ControlsManager(this);

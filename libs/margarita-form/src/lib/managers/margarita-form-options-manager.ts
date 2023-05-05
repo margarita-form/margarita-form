@@ -16,11 +16,12 @@ export const getDefaultOptions = (): MargaritaFormOptions => ({
 class OptionsManager<CONTROL extends MF> extends BaseManager {
   #options: MargaritaFormOptions = getDefaultOptions();
 
-  constructor(public control: CONTROL) {
+  constructor(public control: CONTROL, public customOptions: MargaritaFormOptions) {
     super();
+    this.updateOptions(customOptions);
 
     this.createSubscription(control.fieldManager.changes, (field) => {
-      if (field) this.updateOptions(field.options);
+      if (field) this.updateOptions(customOptions);
     });
   }
 

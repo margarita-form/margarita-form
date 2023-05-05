@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useId, useMemo, useSyncExternalStore } from 'react';
 import { combineLatest, debounceTime } from 'rxjs';
-import { createMargaritaForm, MargaritaForm, MargaritaFormRootField, MFF } from '@margarita-form/core';
+import { createMargaritaForm, MargaritaForm, MargaritaFormOptions, MargaritaFormRootField, MFF } from '@margarita-form/core';
 
 const forms: Record<string, unknown> = {};
 
-const getForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(formId: string, options: FIELD) => {
+const getForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(formId: string, field: FIELD, options: MargaritaFormHookOptions = {}) => {
   if (formId in forms) {
     return forms[formId] as MargaritaForm<VALUE, FIELD>;
   }
-  const isForm = options instanceof MargaritaForm;
+  const isForm = field instanceof MargaritaForm;
   if (isForm) {
-    forms[formId] = options;
-    return options as unknown as MargaritaForm<VALUE, FIELD>;
+    forms[formId] = field;
+    return field as unknown as MargaritaForm<VALUE, FIELD>;
   }
-  const newForm = createMargaritaForm<VALUE, FIELD>(options);
+  const newForm = createMargaritaForm<VALUE, FIELD>(field, options);
   forms[formId] = newForm;
   return newForm as MargaritaForm<VALUE, FIELD>;
 };
@@ -27,8 +27,12 @@ interface FormStore<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
 
 const stores: Record<string, FormStore<unknown, any>> = {};
 
-const createFormStore = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(id: string, options: FIELD) => {
-  const form = getForm<VALUE, FIELD>(id, options);
+const createFormStore = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
+  id: string,
+  field: FIELD,
+  options: MargaritaFormHookOptions = {}
+) => {
+  const form = getForm<VALUE, FIELD>(id, field, options);
 
   const subscribe = (listener: () => void) => {
     const subscription = combineLatest([form.valueChanges, form.stateChanges])
@@ -51,7 +55,7 @@ const createFormStore = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(id: st
   };
 };
 
-interface MargaritaFormHookOptions {
+interface MargaritaFormHookOptions extends MargaritaFormOptions {
   resetFormOnFieldChanges?: boolean;
 }
 
@@ -61,7 +65,7 @@ export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF
   deps: any[] = []
 ) => {
   const formId = useId();
-  if (!stores[formId]) stores[formId] = createFormStore(formId, field as any);
+  if (!stores[formId]) stores[formId] = createFormStore(formId, field as any, options);
   const store = stores[formId] as FormStore<VALUE, FIELD>;
   useSyncExternalStore(
     store.subscribe,

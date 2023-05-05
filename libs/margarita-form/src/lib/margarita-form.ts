@@ -7,9 +7,9 @@ import { Observable, map } from 'rxjs';
 export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> extends MargaritaFormControl<VALUE, FIELD> {
   public optionsManager: OptionsManager<typeof this>;
 
-  constructor(public override field: FIELD & MFRF<VALUE>) {
-    super(field);
-    this.optionsManager = new OptionsManager(this);
+  constructor(public override field: FIELD & MFRF<VALUE>, public override customOptions: MargaritaFormOptions = {}) {
+    super(field, {}, customOptions);
+    this.optionsManager = new OptionsManager(this, customOptions);
   }
 
   public override get form(): this {
@@ -27,8 +27,8 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
   public override get options(): MargaritaFormOptions {
     if (!this.optionsManager) {
       const defaultOptions = getDefaultOptions();
-      if (this.field.options) {
-        return { ...defaultOptions, ...this.field.options };
+      if (this.customOptions) {
+        return { ...defaultOptions, ...this.customOptions };
       }
       return defaultOptions;
     }
@@ -96,8 +96,9 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
 }
 
 export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
-  field: Partial<FIELD> & MFRF<VALUE>
+  field: Partial<FIELD> & MFRF<VALUE>,
+  formOptions?: MargaritaFormOptions
 ): MargaritaForm<VALUE, FIELD> => {
   type ROOTFIELD = FIELD & MFRF<VALUE>;
-  return new MargaritaForm<VALUE, FIELD>(field as ROOTFIELD);
+  return new MargaritaForm<VALUE, FIELD>(field as ROOTFIELD, formOptions);
 };
