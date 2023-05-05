@@ -42,7 +42,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public refManager: RefManager<typeof this>;
   public paramsManager: ParamsManager<typeof this>;
 
-  #listeningToChanges = true;
+  _listeningToChanges = true;
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}, public customOptions: MargaritaFormOptions = {}) {
     this.keyStore = context.keyStore || new Set<string>();
     this.fieldManager = new FieldManager(this);
@@ -63,7 +63,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     this.stateManager.cleanup();
     this.refManager.cleanup();
     this.paramsManager.cleanup();
-    this.#listeningToChanges = false;
+    this._listeningToChanges = false;
     this.keyStore.delete(this.key);
   };
 
@@ -71,7 +71,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Resubscribe to all subscriptions for current control
    */
   public resubscribe = () => {
-    if (this.#listeningToChanges === false) {
+    if (this._listeningToChanges === false) {
       this.fieldManager.resubscribe();
       this.controlsManager.resubscribe();
       this.valueManager.resubscribe();
@@ -80,7 +80,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
       this.paramsManager.resubscribe();
       this.keyStore.add(this.key);
     }
-    this.#listeningToChanges = true;
+    this._listeningToChanges = true;
   };
 
   public updateSyncId = (syncId = nanoid(4)) => {
@@ -520,7 +520,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * ```
    * @example Vanilla JS
    * ```js
-   * const el = document.querySelector('#myInput');
+   * const el = document.querySelector('_myInput');
    * control.setRef(el);
    * ```
    */

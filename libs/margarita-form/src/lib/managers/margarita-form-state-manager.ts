@@ -56,7 +56,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
     this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
       this.updateStates(state);
-      this.#emitChanges();
+      this._emitChanges();
     });
 
     const validationStateSubscriptionObservable = control.valueChanges.pipe(
@@ -113,7 +113,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
     });
   }
 
-  #emitChanges() {
+  _emitChanges() {
     this.changes.next(this);
   }
 
@@ -121,12 +121,12 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
   public updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
     Object.assign(this, { [key]: value });
-    if (key === 'enabled') this.#enableChildren(!!value);
-    if (key === 'disabled') this.#enableChildren(!value);
-    if (key === 'dirty' && value === true) this.#setParentDirty();
-    if (key === 'pristine' && value === false) this.#setParentDirty();
+    if (key === 'enabled') this._enableChildren(!!value);
+    if (key === 'disabled') this._enableChildren(!value);
+    if (key === 'dirty' && value === true) this._setParentDirty();
+    if (key === 'pristine' && value === false) this._setParentDirty();
 
-    if (emit) this.#emitChanges();
+    if (emit) this._emitChanges();
   }
 
   public updateStates(changes: Partial<MargaritaFormState>, emit = true) {
@@ -134,7 +134,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
       this.updateState(key, value, false);
     });
 
-    if (emit) this.#emitChanges();
+    if (emit) this._emitChanges();
   }
 
   /**
@@ -223,68 +223,68 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
   // Computed states
 
-  #shouldShowError: boolean | undefined = undefined;
+  _shouldShowError: boolean | undefined = undefined;
   get shouldShowError() {
-    if (this.#shouldShowError === undefined) {
+    if (this._shouldShowError === undefined) {
       const interacted = this.touched || this.dirty;
       return this.invalid && interacted;
     }
-    return this.#shouldShowError;
+    return this._shouldShowError;
   }
   set shouldShowError(value) {
-    if (this.#shouldShowError === undefined && value !== undefined) {
+    if (this._shouldShowError === undefined && value !== undefined) {
       console.warn(
         'Automatic value for "shouldShowError" disabled due to manual override! Enable automatic value by setting "shouldShowError" to "undefined"',
         this
       );
     }
-    this.#shouldShowError = value;
+    this._shouldShowError = value;
   }
 
   // Root states
 
-  #checkRoot(name: string) {
+  _checkRoot(name: string) {
     if (!this.control.isRoot) throw `State "${name}" is only available in root!`;
   }
 
-  #submitted = false;
+  _submitted = false;
   get submitted() {
-    this.#checkRoot('submitted');
-    return this.#submitted;
+    this._checkRoot('submitted');
+    return this._submitted;
   }
   set submitted(value: boolean) {
-    this.#checkRoot('submitted');
-    this.#submitted = value;
+    this._checkRoot('submitted');
+    this._submitted = value;
   }
 
-  #submitting = false;
+  _submitting = false;
   get submitting() {
-    this.#checkRoot('submitting');
-    return this.#submitting;
+    this._checkRoot('submitting');
+    return this._submitting;
   }
   set submitting(value: boolean) {
-    this.#checkRoot('submitting');
-    this.#submitting = value;
+    this._checkRoot('submitting');
+    this._submitting = value;
   }
 
-  #submitResult: MargaritaFormState['submitResult'] = 'not-submitted';
+  _submitResult: MargaritaFormState['submitResult'] = 'not-submitted';
   get submitResult() {
-    this.#checkRoot('submitResult');
-    return this.#submitResult;
+    this._checkRoot('submitResult');
+    return this._submitResult;
   }
   set submitResult(value: MargaritaFormState['submitResult']) {
-    this.#checkRoot('submitResult');
-    this.#submitResult = value;
+    this._checkRoot('submitResult');
+    this._submitResult = value;
   }
 
-  #submits = 0;
+  _submits = 0;
   get submits() {
-    this.#checkRoot('submits');
-    return this.#submits;
+    this._checkRoot('submits');
+    return this._submits;
   }
   set submits(value: number) {
-    this.#checkRoot('submits');
-    this.#submits = value;
+    this._checkRoot('submits');
+    this._submits = value;
   }
 
   // Internal
@@ -292,7 +292,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
   /**
    * @internal
    */
-  #enableChildren(value: boolean) {
+  _enableChildren(value: boolean) {
     this.control.controls.forEach((control) => {
       control.updateStateValue('enabled', value);
     });
@@ -301,7 +301,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
   /**
    * @internal
    */
-  #setParentDirty() {
+  _setParentDirty() {
     if (!this.control.isRoot) {
       this.control.parent.updateStateValue('dirty', true);
     }

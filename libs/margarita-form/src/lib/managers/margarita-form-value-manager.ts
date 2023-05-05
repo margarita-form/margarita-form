@@ -5,13 +5,13 @@ import { MFC } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
-  #value: CONTROL['value'] = undefined;
+  _value: CONTROL['value'] = undefined;
   public changes = new BehaviorSubject<CONTROL['value']>(undefined);
 
   constructor(public control: CONTROL) {
     super();
 
-    const initialValue = this.#getInitialValue();
+    const initialValue = this._getInitialValue();
     if (initialValue) {
       this.updateValue(initialValue, false, false, false, true);
     }
@@ -22,7 +22,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     this.createSubscription(this.control.fieldManager.changes, () => {
       if (this.control.fieldManager.shouldResetControl) {
-        const initialValue = this.#getInitialValue();
+        const initialValue = this._getInitialValue();
         if (initialValue) {
           this.updateValue(initialValue, false, false, false, true);
         }
@@ -32,7 +32,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     if (this.control.isRoot) {
       if (this.control.options.useStorage) {
         this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
-          this.#saveStorageValue();
+          this._saveStorageValue();
         });
       }
       if (this.control.options.useSyncronization) {
@@ -50,9 +50,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
           this.createSubscription(fromEvent<MessageEvent>(broadcaster, 'message'), (event) => {
             if (event.data.requestSend) {
-              broadcaster.postMessage({ key: this.control.key, value: this.#value });
+              broadcaster.postMessage({ key: this.control.key, value: this._value });
             } else if (event.data.key !== this.control.key) {
-              const valueChanged = JSON.stringify(event.data.value) !== JSON.stringify(this.#value);
+              const valueChanged = JSON.stringify(event.data.value) !== JSON.stringify(this._value);
               if (valueChanged) {
                 this.updateValue(event.data.value, false, false, false, false);
                 cache.value = event.data.value;
@@ -66,11 +66,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  #emitChanges() {
-    this.changes.next(this.#value);
+  _emitChanges() {
+    this.changes.next(this._value);
   }
 
-  #getStorage(): Storage | null {
+  _getStorage(): Storage | null {
     if (typeof window === 'undefined') return null;
     if (this.control.isRoot && this.control.options.useStorage) {
       const { useStorage } = this.control.options;
@@ -84,8 +84,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     return null;
   }
 
-  #getInitialValue() {
-    const storage = this.#getStorage();
+  _getInitialValue() {
+    const storage = this._getStorage();
     if (storage) {
       try {
         const sessionStorageValue = storage.getItem(this.control.name);
@@ -98,11 +98,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     return this.control.field.initialValue;
   }
 
-  #saveStorageValue() {
-    const storage = this.#getStorage();
+  _saveStorageValue() {
+    const storage = this._getStorage();
     if (storage) {
       try {
-        const stringified = JSON.stringify(this.#value);
+        const stringified = JSON.stringify(this._value);
         if (stringified === '{}') {
           this.clearStorageValue();
         } else {
@@ -115,7 +115,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public clearStorageValue() {
-    const storage = this.#getStorage();
+    const storage = this._getStorage();
     if (storage) {
       try {
         const sessionStorageValue = storage.getItem(this.control.name);
@@ -130,7 +130,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * Get current value of the control
    */
   public get current(): CONTROL['value'] {
-    return this.#value;
+    return this._value;
   }
 
   /**
@@ -184,13 +184,13 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
 
     if (initialValue) {
-      this.#value = value;
-      if (emitEvent) this.#emitChanges();
+      this._value = value;
+      if (emitEvent) this._emitChanges();
     } else {
-      this.#value = value;
+      this._value = value;
       const isActive = this.control.state.active;
       if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
-      if (emitEvent) this.#emitChanges();
+      if (emitEvent) this._emitChanges();
       if (isActive) this._syncParentValue(setAsDirty, emitEvent);
     }
   }
@@ -198,7 +198,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   /**
    * @Internal
    */
-  #resolveValue(): CONTROL['value'] {
+  _resolveValue(): CONTROL['value'] {
     if (this.control.expectChildControls) {
       if (!this.control.hasControls) return undefined;
       if (this.control.expectArray) {
@@ -222,7 +222,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         return Object.fromEntries(entries);
       }
     }
-    return this.#value;
+    return this._value;
   }
 
   /**
@@ -240,10 +240,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * @Internal
    */
   public _syncCurrentValue(setAsDirty = true, emitEvent = true) {
-    const value = this.#resolveValue();
-    this.#value = value;
+    const value = this._resolveValue();
+    this._value = value;
     if (setAsDirty) this.control.updateStateValue('dirty', true);
-    if (emitEvent) this.#emitChanges();
+    if (emitEvent) this._emitChanges();
     this._syncParentValue(setAsDirty, emitEvent);
   }
 }

@@ -14,7 +14,7 @@ export const getDefaultOptions = (): MargaritaFormOptions => ({
 });
 
 class OptionsManager<CONTROL extends MF> extends BaseManager {
-  #options: MargaritaFormOptions = getDefaultOptions();
+  _options: MargaritaFormOptions = getDefaultOptions();
 
   constructor(public control: CONTROL, public customOptions: MargaritaFormOptions) {
     super();
@@ -26,12 +26,12 @@ class OptionsManager<CONTROL extends MF> extends BaseManager {
   }
 
   public get current(): MargaritaFormOptions {
-    return this.#options;
+    return this._options;
   }
 
   public updateOptions(options: Partial<MargaritaFormOptions>) {
-    const _options = { ...this.#options, ...options };
-    this.#options = _options;
+    const _options = { ...this._options, ...options };
+    this._options = _options;
   }
 }
 

@@ -6,7 +6,7 @@ import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 export type Params = CommonRecord | null;
 
 class ParamsManager<CONTROL extends MFC> extends BaseManager {
-  #params: Params = null;
+  _params: Params = null;
   public changes = new BehaviorSubject<Params>(null);
 
   constructor(public control: CONTROL) {
@@ -24,17 +24,17 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager {
     );
 
     this.createSubscription(paramsSubscriptionObservable, (params) => {
-      this.#params = params;
-      this.#emitChanges();
+      this._params = params;
+      this._emitChanges();
     });
   }
 
-  #emitChanges() {
-    this.changes.next(this.#params);
+  _emitChanges() {
+    this.changes.next(this._params);
   }
 
   public get current() {
-    return this.#params;
+    return this._params;
   }
 }
 
