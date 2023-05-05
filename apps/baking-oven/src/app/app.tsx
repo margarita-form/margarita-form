@@ -118,15 +118,13 @@ export function App() {
           setSubmitResponse('Form is invalid!');
         },
       },
-      options: {
-        handleSuccesfullSubmit: 'enable',
-        addMetadataToArrays: true,
-        useStorage: 'localStorage',
-        useSyncronization: true,
-      },
     },
     {
       resetFormOnFieldChanges: shouldReset,
+      handleSuccesfullSubmit: 'enable',
+      addMetadataToArrays: true,
+      useStorage: 'localStorage',
+      useSyncronization: true,
     }
   );
 

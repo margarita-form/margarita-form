@@ -78,7 +78,6 @@ export interface MargaritaFormField<EXTENDS = null> {
 export interface MargaritaFormRootField<VALUE> {
   name: string;
   locales?: string[];
-  options?: MargaritaFormOptions;
   handleSubmit?: {
     valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
     invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
