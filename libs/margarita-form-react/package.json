@@ -1,6 +1,6 @@
 {
   "name": "@margarita-form/react",
-  "version": "0.4.3",
+  "version": "0.4.3-safari-fix",
   "type": "module",
   "license": "MIT",
   "private": false,
