@@ -17,13 +17,14 @@ import {
   MFC,
   MargaritaFormStateChildren,
   MargaritaFormValidatorResult,
+  UserDefinedStates,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
 import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
 
 // States which can be modfiied in the field
-const fieldStateKeys: (keyof MargaritaFormState)[] = ['active', 'disabled', 'readOnly'];
+export const fieldStateKeys: (keyof UserDefinedStates)[] = ['enabled', 'disabled', 'editable', 'readOnly', 'active', 'inactive'];
 
 class StateManager<CONTROL extends MFC> extends BaseManager implements MargaritaFormState {
   public changes = new BehaviorSubject<typeof this>(this);
@@ -39,7 +40,13 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
     const userDefinedStateSubscriptionObservable = control.valueChanges.pipe(
       switchMap((value) => {
-        return mapResolverEntries('State', control.field.state, {
+        const state = fieldStateKeys.reduce((acc, key) => {
+          const value = control.field[key];
+          if (value !== undefined) acc[key] = value;
+          return acc;
+        }, {} as CommonRecord);
+
+        return mapResolverEntries('State', state, {
           control,
           value,
           params: null,
