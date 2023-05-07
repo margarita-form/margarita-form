@@ -1,7 +1,7 @@
-import { MFF, MargaritaFormControl } from '@margarita-form/core';
-import { useControlContext } from './control-provider-hooks';
+import type { MFF, MargaritaFormControl } from '@margarita-form/core';
+import { useControlContext } from '../providers/control/control-context';
 
-export const useControl = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
+export const useGetControl = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
   identifier: string | number
 ): MargaritaFormControl<VALUE, FIELD> | null => {
   const control = useControlContext();
