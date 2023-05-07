@@ -56,6 +56,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
     this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
       this.updateStates(state);
+      this.control.updateSyncId();
       this.#emitChanges();
     });
 

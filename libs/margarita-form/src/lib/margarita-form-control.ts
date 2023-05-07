@@ -6,7 +6,7 @@ import {
   MFF,
   MargaritaFormBaseElement,
   MargaritaFormGroupings,
-  MargaritaFormOptions,
+  MargaritaFormConfig,
   MargaritaFormResolver,
   MargaritaFormResolvers,
   MargaritaFormState,
@@ -20,7 +20,7 @@ import { ValueManager } from './managers/margarita-form-value-manager';
 import { RefManager } from './managers/margarita-form-ref-manager';
 import { Params, ParamsManager } from './managers/margarita-form-params-manager';
 import { FieldManager } from './managers/margarita-form-field-manager';
-import { getDefaultOptions } from './managers/margarita-form-options-manager';
+import { getDefaultConfig } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
 
@@ -43,7 +43,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public paramsManager: ParamsManager<typeof this>;
 
   #listeningToChanges = true;
-  constructor(public field: FIELD, public context: MargaritaFormControlContext = {}, public customOptions: MargaritaFormOptions = {}) {
+  constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
     this.keyStore = context.keyStore || new Set<string>();
     this.fieldManager = new FieldManager(this);
     this.controlsManager = new ControlsManager(this);
@@ -119,11 +119,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return this.context.parent || this;
   }
 
-  public get options(): MargaritaFormOptions {
+  public get config(): MargaritaFormConfig {
     try {
-      return this.root.options;
+      return this.root.config;
     } catch (error) {
-      return getDefaultOptions();
+      return getDefaultConfig();
     }
   }
 
@@ -282,7 +282,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public get validators(): MargaritaFormValidators {
     const fieldValidators = this.field.validators || {};
     const parentValidators = this.context.parent?.field?.validators || {};
-    if (this.options.addDefaultValidators) {
+    if (this.config.addDefaultValidators) {
       return { ...defaultValidators, ...parentValidators, ...fieldValidators };
     }
     return { ...parentValidators, ...fieldValidators };
@@ -354,7 +354,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public get resolvers(): MargaritaFormResolvers {
     const fieldResolvers = this.field.resolvers || {};
     const parentResolvers = this.context.parent?.field?.resolvers || {};
-    if (this.options.addDefaultValidators) {
+    if (this.config.addDefaultValidators) {
       return { ...defaultValidators, ...parentResolvers, ...fieldResolvers };
     }
     return { ...parentResolvers, ...fieldResolvers };

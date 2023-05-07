@@ -1,4 +1,4 @@
-import { createMargaritaForm } from './margarita-form';
+import { createMargaritaForm } from './create-margarita-form';
 import { MFF, MargaritaFormField } from './margarita-form-types';
 
 const fieldNameInitialValue = 'Hello world';

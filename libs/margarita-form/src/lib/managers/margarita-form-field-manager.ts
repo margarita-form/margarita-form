@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MFF } from '../margarita-form-types';
+import { isEqual } from '../helpers/check-value';
 
 class FieldManager<CONTROL extends MFC> extends BaseManager {
   #field: CONTROL['field'] = null;
@@ -21,6 +22,8 @@ class FieldManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public async setField<FIELD extends MFF = MFF | CONTROL['field']>(field: FIELD | Promise<FIELD>, resetControl = false) {
+    const fieldIsSame = isEqual(this.#field, field);
+    if (fieldIsSame) return;
     this.#field = await field;
     this.shouldResetControl = resetControl;
     this.#emitChanges();

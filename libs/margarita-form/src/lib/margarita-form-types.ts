@@ -55,12 +55,12 @@ export interface MargaritaFormHandleLocalize<FIELD> {
   child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
 }
 
-export interface MargaritaFormField<EXTENDS = null> extends Partial<UserDefinedStates> {
+export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedStates> {
   name: string;
-  fields?: EXTENDS extends null ? MFF[] : EXTENDS[];
+  fields?: EXTENDS[];
   grouping?: MargaritaFormGroupings;
   startWith?: number;
-  template?: Partial<EXTENDS extends null ? MFF : EXTENDS>;
+  template?: Partial<EXTENDS>;
   initialValue?: any;
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
@@ -71,16 +71,14 @@ export interface MargaritaFormField<EXTENDS = null> extends Partial<UserDefinedS
   wasLocalized?: boolean;
   isLocale?: boolean;
   locale?: string;
-  handleLocalize?: MargaritaFormHandleLocalize<EXTENDS extends null ? MFF : EXTENDS>;
+  handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
 }
 
 export interface MargaritaFormRootField<VALUE> {
   name: string;
   locales?: string[];
-  handleSubmit?: {
-    valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
-    invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
-  };
+  config?: MargaritaFormConfig;
+  handleSubmit?: MargaritaFormSubmitHandlers<VALUE>;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
@@ -115,17 +113,25 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   children?: MargaritaFormStateChildren;
 }
 
-export interface MargaritaFormOptions {
-  detectInputElementValidations?: boolean;
-  asyncFunctionWarningTimeout?: number;
-  disableFormWhileSubmitting?: boolean;
-  handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
-  allowConcurrentSubmits?: boolean;
+export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
   addMetadataToArrays?: boolean;
-  useStorage?: false | 'localStorage' | 'sessionStorage';
+  allowConcurrentSubmits?: boolean;
+  asyncFunctionWarningTimeout?: number;
   clearStorageOnSuccessfullSubmit?: boolean;
+  detectInputElementValidations?: boolean;
+  disableFormWhileSubmitting?: boolean;
+  handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
+  resetFormOnFieldChanges?: boolean;
+  showDebugMessages?: boolean;
+  useCacheForForms?: boolean;
+  useStorage?: false | 'localStorage' | 'sessionStorage';
   useSyncronization?: boolean;
+}
+
+export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
+  valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
+  invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {
