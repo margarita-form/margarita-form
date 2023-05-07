@@ -1,51 +1,50 @@
-import { MFF, MargaritaForm, MargaritaFormRootField } from '@margarita-form/core';
-import { FormHTMLAttributes } from 'react';
-import { useMargaritaForm } from '../hooks/create-margarita-form-hooks';
-import { ProvideForm } from '../hooks/form-provider-hooks';
+import type { FormHTMLAttributes } from 'react';
+import type { CommonRecord, MargaritaForm, MargaritaFormField, MargaritaFormRootField } from '@margarita-form/core';
+import { useMargaritaForm } from '../hooks/use-margarita-form';
+import { FormProvider } from '../providers/form/form-provider';
 
 interface WithForm {
   form: MargaritaForm<any, any>;
 }
 
-interface WithSchema {
-  schema: MargaritaFormRootField<any>;
+type FormField = Partial<MargaritaFormField<FormField>> & MargaritaFormRootField<any> & CommonRecord;
+
+interface WithField {
+  field: FormField;
 }
 
-type WithFormOrSchema = WithForm | WithSchema;
+type WithFormOrSchema = WithForm | WithField;
 
 type FormComponentProps = FormHTMLAttributes<HTMLFormElement> & WithFormOrSchema;
 
 export const Form = (props: FormComponentProps) => {
-  if ('schema' in props) {
+  if ('field' in props) {
     return <CreateForm {...props} />;
   }
 
   if ('form' in props) {
-    const { form, children, ...attr } = props;
-    return (
-      <ProvideForm form={form}>
-        <form ref={form.setRef} {...attr}>
-          {children}
-        </form>
-      </ProvideForm>
-    );
+    return <FormElement {...props} />;
   }
 
-  throw 'No form or options provided as props for the Form';
+  throw 'No form or field provided as prop for the <Form>';
 };
 
-interface CreateFormProps extends FormHTMLAttributes<HTMLFormElement> {
-  schema: MFF;
-}
+type CreateFormProps = FormHTMLAttributes<HTMLFormElement> & WithField;
 
-const CreateForm = ({ schema, children, ...attr }: CreateFormProps) => {
-  const form = useMargaritaForm<any, any>(schema);
+export const CreateForm = ({ field, ...rest }: CreateFormProps) => {
+  const form = useMargaritaForm<unknown, FormField>(field);
+  return <FormElement form={form} {...rest} />;
+};
 
+type FormElementProps = FormHTMLAttributes<HTMLFormElement> & WithForm;
+
+export const FormElement = (props: FormElementProps) => {
+  const { form, children, ...attr } = props;
   return (
-    <ProvideForm form={form}>
+    <FormProvider form={form}>
       <form ref={form.setRef} {...attr}>
         {children}
       </form>
-    </ProvideForm>
+    </FormProvider>
   );
 };

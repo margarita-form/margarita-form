@@ -30,12 +30,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     });
 
     if (this.control.isRoot) {
-      if (this.control.options.useStorage) {
+      if (this.control.config.useStorage) {
         this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
           this.#saveStorageValue();
         });
       }
-      if (this.control.options.useSyncronization) {
+      if (this.control.config.useSyncronization) {
         try {
           const cache = { value: null };
           const broadcaster = new BroadcastChannel(this.control.name);
@@ -67,13 +67,14 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   #emitChanges() {
+    this.control.updateSyncId();
     this.changes.next(this.#value);
   }
 
   #getStorage(): Storage | null {
     if (typeof window === 'undefined') return null;
-    if (this.control.isRoot && this.control.options.useStorage) {
-      const { useStorage } = this.control.options;
+    if (this.control.isRoot && this.control.config.useStorage) {
+      const { useStorage } = this.control.config;
       if (useStorage === 'localStorage') {
         return localStorage;
       }
@@ -91,7 +92,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         const sessionStorageValue = storage.getItem(this.control.name);
         if (sessionStorageValue) return JSON.parse(sessionStorageValue);
       } catch (error) {
-        console.error(`Could not get value from ${this.control.options.useStorage}!`, { control: this.control, error });
+        console.error(`Could not get value from ${this.control.config.useStorage}!`, { control: this.control, error });
       }
     }
 
@@ -109,7 +110,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           storage.setItem(this.control.name, stringified);
         }
       } catch (error) {
-        console.error(`Could not save value to ${this.control.options.useStorage}!`, { control: this.control, error });
+        console.error(`Could not save value to ${this.control.config.useStorage}!`, { control: this.control, error });
       }
     }
   }
@@ -121,7 +122,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         const sessionStorageValue = storage.getItem(this.control.name);
         if (sessionStorageValue) storage.removeItem(this.control.name);
       } catch (error) {
-        console.error(`Could not clear value from ${this.control.options.useStorage}!`, { control: this.control, error });
+        console.error(`Could not clear value from ${this.control.config.useStorage}!`, { control: this.control, error });
       }
     }
   }
@@ -153,7 +154,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
           if (isArray) {
             value.forEach((_value, index) => {
-              const __value = this.control.options.addMetadataToArrays ? _value?.value : _value;
+              const __value = this.control.config.addMetadataToArrays ? _value?.value : _value;
               const control = this.control.getControl(index);
               if (control) {
                 control.updateKey(_value?.key);
@@ -203,7 +204,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       if (!this.control.hasControls) return undefined;
       if (this.control.expectArray) {
         return this.control.activeControls.map((control) => {
-          if (control.options.addMetadataToArrays) {
+          if (control.config.addMetadataToArrays) {
             return {
               value: control.value,
               key: control.key,

@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { MFF, MFRF, MargaritaFormOptions } from './margarita-form-types';
-import { OptionsManager, getDefaultOptions } from './managers/margarita-form-options-manager';
+import type { MFF, MFRF, MargaritaFormConfig } from './margarita-form-types';
+import { ConfigManager, getDefaultConfig } from './managers/margarita-form-config-manager';
 import { MargaritaFormControl } from './margarita-form-control';
 import { Observable, map } from 'rxjs';
 
 export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> extends MargaritaFormControl<VALUE, FIELD> {
-  public optionsManager: OptionsManager<typeof this>;
+  public configManager: ConfigManager<typeof this>;
 
-  constructor(public override field: FIELD & MFRF<VALUE>, public override customOptions: MargaritaFormOptions = {}) {
-    super(field, {}, customOptions);
-    this.optionsManager = new OptionsManager(this, customOptions);
+  constructor(public override field: FIELD & MFRF<VALUE>) {
+    super(field, {});
+    this.configManager = new ConfigManager(this);
   }
 
   public override get form(): this {
@@ -24,15 +23,15 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
     return this.field.locale || undefined;
   }
 
-  public override get options(): MargaritaFormOptions {
-    if (!this.optionsManager) {
-      const defaultOptions = getDefaultOptions();
-      if (this.customOptions) {
-        return { ...defaultOptions, ...this.customOptions };
+  public override get config(): MargaritaFormConfig {
+    if (!this.configManager) {
+      const defaultConfig = getDefaultConfig();
+      if (this.field.config) {
+        return { ...defaultConfig, ...this.field.config };
       }
-      return defaultOptions;
+      return defaultConfig;
     }
-    return this.optionsManager.current;
+    return this.configManager.current;
   }
 
   public get onSubmit(): Observable<this> {
@@ -42,17 +41,17 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
   public async submit() {
     await this.validate();
     if (!this.field.handleSubmit) throw 'Add "handleSubmit" option to submit form!';
-    const canSubmit = this.options.allowConcurrentSubmits || !this.state.submitting;
+    const canSubmit = this.config.allowConcurrentSubmits || !this.state.submitting;
     if (!canSubmit) throw 'Form is already submitting!';
     this.updateStateValue('submitting', true);
-    if (this.options.disableFormWhileSubmitting) this.updateStateValue('disabled', true);
+    if (this.config.disableFormWhileSubmitting) this.updateStateValue('disabled', true);
 
     // Handle valid submit
     if (this.state.valid) {
       return await Promise.resolve(this.field.handleSubmit.valid<any>(this))
         .then((res) => {
           this.updateStateValue('submitResult', 'success');
-          switch (this.options.handleSuccesfullSubmit) {
+          switch (this.config.handleSuccesfullSubmit) {
             case 'disable':
               this.updateStateValue('disabled', true);
               break;
@@ -63,7 +62,7 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
               this.updateStateValue('disabled', false);
               break;
           }
-          if (this.options.clearStorageOnSuccessfullSubmit) this.valueManager.clearStorageValue();
+          if (this.config.clearStorageOnSuccessfullSubmit) this.valueManager.clearStorageValue();
           return res;
         })
         .catch((error) => {
@@ -94,11 +93,3 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
     throw 'Could not handle form submit!';
   }
 }
-
-export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
-  field: Partial<FIELD> & MFRF<VALUE>,
-  formOptions?: MargaritaFormOptions
-): MargaritaForm<VALUE, FIELD> => {
-  type ROOTFIELD = FIELD & MFRF<VALUE>;
-  return new MargaritaForm<VALUE, FIELD>(field as ROOTFIELD, formOptions);
-};

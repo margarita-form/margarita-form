@@ -87,52 +87,43 @@ export function App() {
   const [currentFields, setCurrentFields] = useState(recipeFields);
   const [shouldReset, setShouldReset] = useState(true);
 
-  const form = useMargaritaForm<FormValue, CustomField>(
-    {
-      name: currentFields === recipeFields ? 'recipe' : 'website',
-      fields: currentFields,
-      locales: ['en', 'fi'],
-      handleLocalize: {
-        parent: () => {
-          return {
-            type: 'localized',
-          };
-        },
-        child: ({ locale }) => {
-          return {
-            title: locale.toUpperCase(),
-          };
-        },
+  const form = useMargaritaForm<FormValue, CustomField>({
+    name: currentFields === recipeFields ? 'recipe' : 'website',
+    fields: currentFields,
+    locales: ['en', 'fi'],
+    handleLocalize: {
+      parent: () => {
+        return {
+          type: 'localized',
+        };
       },
-      handleSubmit: {
-        valid: async (form) => {
-          setSubmitResponse('Fake submitting for 1s...');
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          console.log('Valid submit', { form });
-          setSubmitResponse('Form is valid!');
-        },
-        invalid: async (form) => {
-          setSubmitResponse('Fake submitting for 1s...');
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          console.log('Invalid submit', { form });
-          setSubmitResponse('Form is invalid!');
-        },
+      child: ({ locale }) => {
+        return {
+          title: locale.toUpperCase(),
+        };
       },
     },
-    {
-      resetFormOnFieldChanges: shouldReset,
-      handleSuccesfullSubmit: 'enable',
-      addMetadataToArrays: true,
-      useStorage: 'localStorage',
-      useSyncronization: true,
-    }
-  );
+    handleSubmit: {
+      valid: async (form) => {
+        setSubmitResponse('Fake submitting for 1s...');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log('Valid submit', { form });
+        setSubmitResponse('Form is valid!');
+      },
+      invalid: async (form) => {
+        setSubmitResponse('Fake submitting for 1s...');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log('Invalid submit', { form });
+        setSubmitResponse('Form is invalid!');
+      },
+    },
+  });
 
   return (
     <AppWrapper>
       <div className="form-wrapper">
         <Form form={form}>
-          <h2>Options</h2>
+          <h2>Config</h2>
 
           <div>
             <input
