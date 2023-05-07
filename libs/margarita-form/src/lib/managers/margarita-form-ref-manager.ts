@@ -21,14 +21,14 @@ interface RefEntry {
 }
 
 class RefManager<CONTROL extends MFC> extends BaseManager {
-  #refs: RefEntry[] = [];
+  private _refs: RefEntry[] = [];
   public changes = new BehaviorSubject<MargaritaFormBaseElement<CONTROL>[]>([]);
 
   constructor(public control: CONTROL) {
     super();
 
     this.onCleanup = () => {
-      this.#refs.forEach(({ node, cleanup }) => {
+      this._refs.forEach(({ node, cleanup }) => {
         if (!node || !node.controls) return;
         const { controls = [] } = node;
         const index = controls.findIndex((control: MFC) => control.key === this.control.key);
@@ -40,30 +40,30 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     };
 
     this.onResubscribe = () => {
-      const refs = [...this.#refs];
+      const refs = [...this._refs];
       refs.forEach(({ node }) => {
-        this.#deleteNodeRef(node);
+        this._deleteNodeRef(node);
         this.addRef(node);
       });
     };
   }
 
-  #emitChanges() {
-    this.changes.next(this.#refs);
+  private _emitChanges() {
+    this.changes.next(this._refs);
   }
 
   public get refs() {
-    return this.#refs;
+    return this._refs;
   }
 
   public disconnectRef(node: MargaritaFormBaseElement<CONTROL['field']> | null) {
     if (!node) return;
-    this.#deleteNodeRef(node);
+    this._deleteNodeRef(node);
   }
 
   public addRef(node: MargaritaFormBaseElement<CONTROL> | null | undefined) {
     if (!node) return;
-    const alreadyIncluded = this.#connectNodeAndControl(node);
+    const alreadyIncluded = this._connectNodeAndControl(node);
     if (alreadyIncluded) return;
 
     const params = { node, control: this.control };
@@ -101,7 +101,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
         event.removedNodes.forEach((removedNode) => {
           if (removedNode === node) {
             unsubscribe();
-            this.#emitChanges();
+            this._emitChanges();
           }
         });
       });
@@ -116,15 +116,15 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
       mutationObserver.disconnect();
     };
 
-    this.#refs.push({
+    this._refs.push({
       node,
       cleanup,
     });
 
-    this.#emitChanges();
+    this._emitChanges();
   }
 
-  #defineControlsToNode(node: MargaritaFormBaseElement<CONTROL>) {
+  private _defineControlsToNode(node: MargaritaFormBaseElement<CONTROL>) {
     if (!node) return;
     const nodeHasControls = node.controls;
     if (!nodeHasControls) {
@@ -134,9 +134,9 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  #connectNodeAndControl(node: MargaritaFormBaseElement<CONTROL>) {
+  private _connectNodeAndControl(node: MargaritaFormBaseElement<CONTROL>) {
     if (!node) return;
-    this.#defineControlsToNode(node);
+    this._defineControlsToNode(node);
 
     const controlInNode = node.controls?.includes(this.control);
     if (!controlInNode) {
@@ -147,9 +147,9 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     return alreadyIncluded;
   }
 
-  #removeControlFromNode(node: MargaritaFormBaseElement<CONTROL>) {
+  private _removeControlFromNode(node: MargaritaFormBaseElement<CONTROL>) {
     if (!node) return;
-    this.#defineControlsToNode(node);
+    this._defineControlsToNode(node);
 
     const controlInNode = node.controls?.includes(this.control);
     if (controlInNode) {
@@ -159,9 +159,9 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  #deleteNodeRef(node: MargaritaFormBaseElement<CONTROL>) {
+  private _deleteNodeRef(node: MargaritaFormBaseElement<CONTROL>) {
     if (!node) return;
-    this.#removeControlFromNode(node);
+    this._removeControlFromNode(node);
     const index = this.refs.findIndex((ref) => ref.node === node);
     if (index > -1) this.refs.splice(index, 1);
   }

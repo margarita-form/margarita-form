@@ -18,7 +18,7 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
 });
 
 class ConfigManager<CONTROL extends MF> extends BaseManager {
-  #config: MargaritaFormConfig = getDefaultConfig();
+  private _config: MargaritaFormConfig = getDefaultConfig();
 
   constructor(public control: CONTROL) {
     super();
@@ -30,12 +30,12 @@ class ConfigManager<CONTROL extends MF> extends BaseManager {
   }
 
   public get current(): MargaritaFormConfig {
-    return this.#config;
+    return this._config;
   }
 
   public updateConfig(config: Partial<MargaritaFormConfig>) {
-    const _config = { ...this.#config, ...config };
-    this.#config = _config;
+    const _config = { ...this._config, ...config };
+    this._config = _config;
   }
 }
 

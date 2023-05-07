@@ -4,7 +4,7 @@ import { MFC, MFF } from '../margarita-form-types';
 import { isEqual } from '../helpers/check-value';
 
 class FieldManager<CONTROL extends MFC> extends BaseManager {
-  #field: CONTROL['field'] = null;
+  private _field: CONTROL['field'] = null;
   public changes = new BehaviorSubject<CONTROL['field']>(null);
   public shouldResetControl = false;
   constructor(public control: CONTROL) {
@@ -12,21 +12,21 @@ class FieldManager<CONTROL extends MFC> extends BaseManager {
     this.setField(control.field);
   }
 
-  #emitChanges() {
-    this.control.field = this.#field;
-    this.changes.next(this.#field);
+  private _emitChanges() {
+    this.control.field = this._field;
+    this.changes.next(this._field);
   }
 
   public get current(): CONTROL['field'] {
-    return this.#field;
+    return this._field;
   }
 
   public async setField<FIELD extends MFF = MFF | CONTROL['field']>(field: FIELD | Promise<FIELD>, resetControl = false) {
-    const fieldIsSame = isEqual(this.#field, field);
+    const fieldIsSame = isEqual(this._field, field);
     if (fieldIsSame) return;
-    this.#field = await field;
+    this._field = await field;
     this.shouldResetControl = resetControl;
-    this.#emitChanges();
+    this._emitChanges();
   }
 
   public async updateField<FIELD extends MFF = MFF | CONTROL['field']>(
