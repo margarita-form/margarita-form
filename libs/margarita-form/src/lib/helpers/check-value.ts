@@ -17,8 +17,13 @@ export const isIncluded = (value: unknown, array: unknown[]): boolean => {
 };
 
 export const isEqual = (value: unknown, other: unknown): boolean => {
-  if (typeof value === 'object') {
-    return JSON.stringify(value) === JSON.stringify(other);
+  try {
+    if (typeof value === 'object') {
+      return JSON.stringify(value) === JSON.stringify(other);
+    }
+    return value === other;
+  } catch (error) {
+    console.warn('Could not compare values!', { value, other, error });
+    return false;
   }
-  return value === other;
 };
