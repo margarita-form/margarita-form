@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MargaritaFormBaseElement } from '../margarita-form-types';
-import { handleFormElementSubmit } from './ref-manager-helpers/margarita-form-ref-form-submit';
+import { handleFormElementReset, handleFormElementSubmit } from './ref-manager-helpers/margarita-form-ref-form-submit';
 import { setControlValidationFromNode } from './ref-manager-helpers/margarita-form-ref-set-control-validation';
 import {
   handleControlAttributeChanges,
@@ -78,6 +78,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     const handleBlur = handleElementBlur(params);
     const handleFocus = handleElementFocus(params);
     const handleSubmit = handleFormElementSubmit(params);
+    const handleReset = handleFormElementReset(params);
     const handleAttributes = handleControlAttributeChanges(params);
 
     const unsubscribe = () => {
@@ -89,6 +90,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
         handleBlur?.unsubscribe();
         handleFocus?.unsubscribe();
         handleSubmit?.unsubscribe();
+        handleReset?.unsubscribe();
         handleAttributes?.unsubscribe();
         mutationObserver.disconnect();
       } catch (error) {
