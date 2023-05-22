@@ -52,6 +52,17 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     this.refManager = new RefManager(this);
     this.paramsManager = new ParamsManager(this);
     this.keyStore.add(this.key);
+
+    this._init();
+  }
+
+  private _init() {
+    // this.fieldManager._init();
+    this.controlsManager._init();
+    this.valueManager._init();
+    this.stateManager._init();
+    // this.refManager._init();
+    // this.paramsManager._init();
   }
   /**
    * Unsubscribe from all subscriptions for current control

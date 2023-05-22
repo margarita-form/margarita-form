@@ -15,7 +15,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     if (initialValue) {
       this.updateValue(initialValue, false, false, false, true);
     }
+  }
 
+  public _init() {
     this.createSubscription(this.control.controlsManager.changes, () => {
       this._syncCurrentValue(false);
     });

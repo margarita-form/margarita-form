@@ -26,9 +26,11 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         control.resubscribe();
       });
     };
+  }
 
-    this.createSubscription(control.fieldManager.changes.pipe(filter((field) => field !== this._buildWith)), () =>
-      this.rebuild(control.fieldManager.shouldResetControl)
+  public _init() {
+    this.createSubscription(this.control.fieldManager.changes.pipe(filter((field) => field !== this._buildWith)), () =>
+      this.rebuild(this.control.fieldManager.shouldResetControl)
     );
 
     if (this.control.field) {
