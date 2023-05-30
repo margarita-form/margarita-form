@@ -37,17 +37,19 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
       if (typeof value === 'boolean') this.updateStates({ [key]: value });
       if (typeof value === 'function') this.updateStates({ [key]: false });
     });
+  }
 
-    const userDefinedStateSubscriptionObservable = control.valueChanges.pipe(
+  public override _init(): void {
+    const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
       switchMap((value) => {
         const state = fieldStateKeys.reduce((acc, key) => {
-          const value = control.field[key];
+          const value = this.control.field[key];
           if (value !== undefined) acc[key] = value;
           return acc;
         }, {} as CommonRecord);
 
         return mapResolverEntries('State', state, {
-          control,
+          control: this.control,
           value,
           params: null,
         });
@@ -60,16 +62,16 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
       this._emitChanges();
     });
 
-    const validationStateSubscriptionObservable = control.valueChanges.pipe(
+    const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
       switchMap((value) => {
-        return mapResolverEntries<MargaritaFormValidatorResult>('State', control.field.validation, {
-          control,
+        return mapResolverEntries<MargaritaFormValidatorResult>('State', this.control.field.validation, {
+          control: this.control,
           value,
           params: null,
         });
       }),
       combineLatestWith(
-        control.controlsManager.changes.pipe(
+        this.control.managers.controls.changes.pipe(
           switchMap((controls) => {
             if (!controls.length) return Promise.resolve([]);
             const stateChanges: Observable<StateManager<MFC>>[] = controls.map((control) => control.stateChanges);
@@ -109,7 +111,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
     this.createSubscription(activeChangesSubscriptionObservable, () => {
       if (!this.control.isRoot) {
-        this.control.parent.valueManager._syncCurrentValue(false, true);
+        this.control.parent.managers.value._syncCurrentValue(false, true);
       }
     });
   }

@@ -26,9 +26,11 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         control.resubscribe();
       });
     };
+  }
 
-    this.createSubscription(control.fieldManager.changes.pipe(filter((field) => field !== this._buildWith)), () =>
-      this.rebuild(control.fieldManager.shouldResetControl)
+  public override _init() {
+    this.createSubscription(this.control.managers.field.changes.pipe(filter((field) => field !== this._buildWith)), () =>
+      this.rebuild(this.control.managers.field.shouldResetControl)
     );
 
     if (this.control.field) {
@@ -206,7 +208,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       if (resetControl) {
         this.removeControl(control.name);
       } else if (prevControl) {
-        prevControl.fieldManager.setField(control.field);
+        prevControl.managers.field.setField(control.field);
         if (emit) this._emitChanges();
         return prevControl;
       }

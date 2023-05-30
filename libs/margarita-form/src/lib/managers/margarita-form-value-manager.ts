@@ -15,13 +15,15 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     if (initialValue) {
       this.updateValue(initialValue, false, false, false, true);
     }
+  }
 
-    this.createSubscription(this.control.controlsManager.changes, () => {
+  public override _init() {
+    this.createSubscription(this.control.managers.controls.changes, () => {
       this._syncCurrentValue(false);
     });
 
-    this.createSubscription(this.control.fieldManager.changes, () => {
-      if (this.control.fieldManager.shouldResetControl) {
+    this.createSubscription(this.control.managers.field.changes, () => {
+      if (this.control.managers.field.shouldResetControl) {
         const initialValue = this._getInitialValue();
         if (initialValue) {
           this.updateValue(initialValue, false, false, false, true);
@@ -161,7 +163,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
                 return control.setValue(__value, setAsDirty);
               }
 
-              return this.control.controlsManager
+              return this.control.managers.controls
                 .addTemplatedControl({
                   initialValue: __value,
                 })
@@ -169,7 +171,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
             });
           }
         } else {
-          return Object.values(this.control.controlsManager.group).forEach((control) => {
+          return Object.values(this.control.managers.controls.group).forEach((control) => {
             const { name } = control.field;
             const updatedValue = _get(value, [name], patch ? control.value : undefined);
             control.setValue(updatedValue, setAsDirty);
@@ -231,8 +233,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    */
   private _syncParentValue(setAsDirty = true, emitEvent = true) {
     if (!this.control.isRoot) {
-      if (this.control.parent.valueManager) {
-        this.control.parent.valueManager._syncCurrentValue(setAsDirty, emitEvent);
+      if (this.control.parent.managers.value) {
+        this.control.parent.managers.value._syncCurrentValue(setAsDirty, emitEvent);
       }
     }
   }

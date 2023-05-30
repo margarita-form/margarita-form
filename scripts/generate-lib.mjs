@@ -13,6 +13,6 @@ if (!nameIsValid) console.error('Invalid name!');
 const packageName = `@margarita-form/${name}`;
 const nxName = `margarita-form-${name}`;
 
-const args = `g @nrwl/js:lib --publishable --testEnvironment node --unitTestRunner vitest --bundler vite --compiler swc --importPath ${packageName} --name ${nxName}`;
+const args = `g @nx/js:lib --publishable --testEnvironment node --unitTestRunner vitest --bundler vite --compiler swc --importPath ${packageName} --name ${nxName}`;
 
 await spawn('nx', args.split(' '), { stdio: 'inherit' });

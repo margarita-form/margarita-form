@@ -12,57 +12,34 @@ import {
   MargaritaFormState,
   MargaritaFormValidator,
   MargaritaFormValidators,
+  MargaritaFormControlContext,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { StateManager } from './managers/margarita-form-state-manager';
-import { ControlsManager } from './managers/margarita-form-controls-manager';
-import { ValueManager } from './managers/margarita-form-value-manager';
-import { RefManager } from './managers/margarita-form-ref-manager';
-import { Params, ParamsManager } from './managers/margarita-form-params-manager';
-import { FieldManager } from './managers/margarita-form-field-manager';
+import { Params } from './managers/margarita-form-params-manager';
 import { getDefaultConfig } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
-
-interface MargaritaFormControlContext {
-  form?: MF;
-  root?: MF | MFC;
-  parent?: MF | MFC;
-  keyStore?: Set<string>;
-}
+import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 
 export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
   public key: string = nanoid(4);
   public syncId: string = nanoid(4);
   public keyStore: Set<string>;
-  public fieldManager: FieldManager<typeof this>;
-  public controlsManager: ControlsManager<typeof this>;
-  public valueManager: ValueManager<typeof this>;
-  public stateManager: StateManager<typeof this>;
-  public refManager: RefManager<typeof this>;
-  public paramsManager: ParamsManager<typeof this>;
-
   private _listeningToChanges = true;
+  public managers: ManagerInstances;
+
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
     this.keyStore = context.keyStore || new Set<string>();
-    this.fieldManager = new FieldManager(this);
-    this.controlsManager = new ControlsManager(this);
-    this.valueManager = new ValueManager(this);
-    this.stateManager = new StateManager(this);
-    this.refManager = new RefManager(this);
-    this.paramsManager = new ParamsManager(this);
+    this.managers = createManagers<typeof this>(this);
     this.keyStore.add(this.key);
   }
+
   /**
    * Unsubscribe from all subscriptions for current control
    */
   public cleanup = () => {
-    this.fieldManager.cleanup();
-    this.controlsManager.cleanup();
-    this.valueManager.cleanup();
-    this.stateManager.cleanup();
-    this.refManager.cleanup();
-    this.paramsManager.cleanup();
+    Object.values(this.managers).forEach((manager) => manager.cleanup());
     this._listeningToChanges = false;
     this.keyStore.delete(this.key);
   };
@@ -72,12 +49,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    */
   public resubscribe = () => {
     if (this._listeningToChanges === false) {
-      this.fieldManager.resubscribe();
-      this.controlsManager.resubscribe();
-      this.valueManager.resubscribe();
-      this.stateManager.resubscribe();
-      this.refManager.resubscribe();
-      this.paramsManager.resubscribe();
+      Object.values(this.managers).forEach((manager) => manager.resubscribe());
       this.keyStore.add(this.key);
     }
     this._listeningToChanges = true;
@@ -143,7 +115,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   public get index(): number {
     if (this.parent) {
-      return this.parent.controlsManager.getControlIndex(this.key);
+      return this.parent.managers.controls.getControlIndex(this.key);
     }
     return -1;
   }
@@ -181,24 +153,24 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public updateField = async (changes: Partial<FIELD>, resetControl = false) => {
-    await this.fieldManager.updateField(changes, resetControl);
+    await this.managers.field.updateField(changes, resetControl);
   };
 
   // Value
 
   public get value(): VALUE {
-    return this.valueManager.current;
+    return this.managers.value.current;
   }
 
   public set value(value: VALUE) {
-    this.valueManager.updateValue(value);
+    this.managers.value.updateValue(value);
   }
 
   /**
    * Listen to value changes of the control
    */
   public get valueChanges(): Observable<VALUE> {
-    return this.valueManager.changes;
+    return this.managers.value.changes;
   }
 
   /**
@@ -207,7 +179,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsDirty update dirty state to true
    */
   public setValue = (value: unknown, setAsDirty = true, emitEvent = true) => {
-    this.valueManager.updateValue(value, setAsDirty, emitEvent);
+    this.managers.value.updateValue(value, setAsDirty, emitEvent);
   };
 
   /**
@@ -216,7 +188,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsDirty update dirty state to true
    */
   public patchValue = (values: unknown, setAsDirty = true) => {
-    this.valueManager.updateValue(values, setAsDirty, true, true);
+    this.managers.value.updateValue(values, setAsDirty, true, true);
   };
 
   /**
@@ -229,7 +201,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], false, false);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return console.warn('Value already exists!');
-    this.valueManager.updateValue([...this.value, value], setAsDirty);
+    this.managers.value.updateValue([...this.value, value], setAsDirty);
   };
 
   /**
@@ -239,7 +211,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    */
   public removeValue = (value: unknown, setAsDirty = true) => {
     if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
-    this.valueManager.updateValue(
+    this.managers.value.updateValue(
       this.value.filter((item) => !isEqual(value, item)),
       setAsDirty
     );
@@ -255,13 +227,13 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], false, false);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
-    this.valueManager.updateValue([...this.value, value], setAsDirty);
+    this.managers.value.updateValue([...this.value, value], setAsDirty);
   };
 
   // States
 
   public get state(): StateManager<this> {
-    return this.stateManager;
+    return this.managers.state as unknown as StateManager<this>;
   }
 
   public get stateChanges(): Observable<StateManager<this>> {
@@ -315,11 +287,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   };
 
   public updateStateValue = (key: keyof MargaritaFormState, value: MargaritaFormState[typeof key]) => {
-    this.stateManager.updateState(key, value);
+    this.managers.state.updateState(key, value);
   };
 
   public updateState = (changes: Partial<MargaritaFormState>) => {
-    this.stateManager.updateStates(changes);
+    this.managers.state.updateStates(changes);
   };
 
   /**
@@ -327,7 +299,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsTouched Set the touched state to true
    */
   public validate = async (setAsTouched = true) => {
-    await this.stateManager.validate(setAsTouched);
+    await this.managers.state.validate(setAsTouched);
   };
 
   public registerValidator = (name: string, validator: MargaritaFormValidator) => {
@@ -336,7 +308,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
       ...currentValidators,
       [name]: validator,
     };
-    this.fieldManager.updateField({
+    this.managers.field.updateField({
       validators,
     });
   };
@@ -344,11 +316,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   // Params
 
   public get params(): Params {
-    return this.paramsManager.current;
+    return this.managers.params.current;
   }
 
   public get paramsChanges(): Observable<Params> {
-    return this.paramsManager.changes.pipe(debounceTime(1), shareReplay(1));
+    return this.managers.params.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
   public get resolvers(): MargaritaFormResolvers {
@@ -366,7 +338,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
       ...currentResolvers,
       [name]: resolver,
     };
-    this.fieldManager.updateField({
+    this.managers.field.updateField({
       resolvers,
     });
   };
@@ -377,28 +349,28 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Check if control has any child controls
    */
   public get hasControls(): boolean {
-    return this.controlsManager.array.length > 0;
+    return this.managers.controls.array.length > 0;
   }
 
   /**
    * Check if control has any active child controls
    */
   public get hasActiveControls(): boolean {
-    return this.controlsManager.array.length > 0;
+    return this.managers.controls.array.length > 0;
   }
 
   /**
    * Get all controls as an array
    */
   public get controls(): MFCA<unknown, FIELD> {
-    return this.controlsManager.array;
+    return this.managers.controls.array;
   }
 
   /**
    * Get all active controls as an array
    */
   public get activeControls(): MFCA<unknown, FIELD> {
-    return this.controlsManager.array.filter((control) => control.state.active);
+    return this.managers.controls.array.filter((control) => control.state.active);
   }
 
   /**
@@ -412,11 +384,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     type CONTROL = MFC<VALUE, FIELD>;
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
-      const control = this.controlsManager.getControl(first);
+      const control = this.managers.controls.getControl(first);
       if (!control) return null;
       return control.getControl(rest);
     }
-    return this.controlsManager.getControl<CONTROL>(identifier);
+    return this.managers.controls.getControl<CONTROL>(identifier);
   };
 
   /**
@@ -425,7 +397,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @returns boolean
    */
   public hasControl = (identifier: string | number): boolean => {
-    const control = this.controlsManager.getControl(identifier);
+    const control = this.managers.controls.getControl(identifier);
     const exists = Boolean(control);
     return exists;
   };
@@ -438,8 +410,8 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    */
   public getOrAddControl = <VALUE = unknown, FIELD extends MFF = this['field']>(field: FIELD): MFC<VALUE, FIELD> => {
     type CONTROL = MFC<VALUE, FIELD>;
-    const control = this.controlsManager.getControl<CONTROL>(field.name);
-    if (!control) return this.controlsManager.addControl<FIELD, VALUE>(field);
+    const control = this.managers.controls.getControl<CONTROL>(field.name);
+    if (!control) return this.managers.controls.addControl<FIELD, VALUE>(field);
     return control;
   };
 
@@ -454,7 +426,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     if (this.expectGroup && exists && replaceExisting === undefined) {
       console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
     }
-    return this.controlsManager.addControl(field);
+    return this.managers.controls.addControl(field);
   };
 
   /**
@@ -462,7 +434,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param identifier name, index or key of the control to remove
    */
   public removeControl = (identifier: string) => {
-    this.controlsManager.removeControl(identifier);
+    this.managers.controls.removeControl(identifier);
   };
 
   /**
@@ -471,7 +443,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param toIndex index to move the control to
    */
   public moveControl = (identifier: string, toIndex: number) => {
-    this.controlsManager.moveControl(identifier, toIndex);
+    this.managers.controls.moveControl(identifier, toIndex);
   };
 
   /**
@@ -482,12 +454,12 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     if (!field) {
       const { fields, template } = this.field;
       if (fields) this.appendRepeatingControls({ fields });
-      else if (template) this.controlsManager.addTemplatedControl(template);
+      else if (template) this.managers.controls.addTemplatedControl(template);
       else console.warn('No template or fields provided for repeating controls!');
     } else {
       if (Array.isArray(field)) {
         this.appendRepeatingControls({ fields: field });
-      } else this.controlsManager.addTemplatedControl(field);
+      } else this.managers.controls.addTemplatedControl(field);
     }
   };
 
@@ -506,7 +478,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     if (this.isRoot) {
       console.warn('Could not move control, already in root!');
     } else {
-      this.parent.controlsManager.moveControl(this.key, toIndex);
+      this.parent.managers.controls.moveControl(this.key, toIndex);
     }
   };
 
@@ -525,7 +497,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * ```
    */
   public setRef = (ref: MargaritaFormBaseElement<this>): void => {
-    return this.refManager.addRef(ref);
+    return this.managers.ref.addRef(ref);
   };
 
   // Misc
@@ -535,7 +507,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   };
 
   public resetState = (respectField = false) => {
-    this.stateManager.resetState(respectField);
+    this.managers.state.resetState(respectField);
   };
 
   public reset = () => {
