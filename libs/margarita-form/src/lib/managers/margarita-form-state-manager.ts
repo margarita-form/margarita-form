@@ -48,10 +48,14 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
           return acc;
         }, {} as CommonRecord);
 
-        return mapResolverEntries('State', state, {
-          control: this.control,
-          value,
-          params: null,
+        return mapResolverEntries({
+          title: 'State',
+          from: state,
+          context: {
+            control: this.control,
+            value,
+            params: null,
+          },
         });
       })
     );
@@ -64,10 +68,17 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
     const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
       switchMap((value) => {
-        return mapResolverEntries<MargaritaFormValidatorResult>('State', this.control.field.validation, {
-          control: this.control,
-          value,
-          params: null,
+        const validators = this.control.validators;
+        return mapResolverEntries<MargaritaFormValidatorResult>({
+          title: 'State',
+          from: this.control.field.validation || {},
+          resolveStaticValues: false,
+          resolvers: validators,
+          context: {
+            control: this.control,
+            value,
+            params: null,
+          },
         });
       }),
       combineLatestWith(
@@ -83,6 +94,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
     );
 
     this.createSubscription(validationStateSubscriptionObservable, ([validationStates, children]) => {
+      // console.log('validationStates', validationStates);
+
       const childrenAreValid = children.every((child) => child.valid || child.inactive);
       const currentIsValid = Object.values(validationStates).every((state) => state.valid);
 

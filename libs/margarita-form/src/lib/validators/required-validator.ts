@@ -1,8 +1,8 @@
 import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const requiredValidator: (errorMessage?: string) => MargaritaFormValidator<boolean> =
-  (errorMessage = 'This field is required!') =>
-  ({ value, params }) => {
+  (defaultErrorMessage = 'This field is required!') =>
+  ({ value, params = true, errorMessage = defaultErrorMessage }) => {
     if (!params) return { valid: true };
     const invalidValues: unknown[] = [null, undefined, NaN, Infinity, ''];
     let valueIsInvalid = invalidValues.includes(value);

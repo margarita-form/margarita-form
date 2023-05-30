@@ -17,6 +17,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl 
   value: CONTROL['value'];
   params: PARAMS;
   control: CONTROL;
+  errorMessage?: string;
 }
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;

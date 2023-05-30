@@ -15,10 +15,14 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager {
     const paramsSubscriptionObservable = combineLatest([control.valueChanges, control.stateChanges]).pipe(
       debounceTime(1),
       switchMap(([value]) => {
-        return mapResolverEntries('Params', control.field.params, {
-          control,
-          value,
-          params: null,
+        return mapResolverEntries({
+          title: 'Params',
+          from: control.field.params,
+          context: {
+            control,
+            value,
+            params: null,
+          },
         });
       })
     );
