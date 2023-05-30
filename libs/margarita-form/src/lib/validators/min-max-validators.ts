@@ -11,8 +11,8 @@ const compare = (value: unknown, comparisonFn: (value: number) => boolean) => {
 };
 
 export const minValidator: (errorMessage?: string) => MargaritaFormValidator<number> =
-  (errorMessage = 'Value is too low!') =>
-  ({ value, params: minValue }) => {
+  (defaultErrorMessage = 'Value is too low!') =>
+  ({ value, params: minValue, errorMessage = defaultErrorMessage }) => {
     if (invalids.includes(minValue)) return { valid: true };
     if (invalids.includes(value)) return { valid: true };
     const valueIsInvalid = compare(value, (number) => number < minValue);
@@ -21,8 +21,8 @@ export const minValidator: (errorMessage?: string) => MargaritaFormValidator<num
   };
 
 export const maxValidator: (errorMessage?: string) => MargaritaFormValidator<number> =
-  (errorMessage = 'Value is too high!') =>
-  ({ value, params: maxValue }) => {
+  (defaultErrorMessage = 'Value is too high!') =>
+  ({ value, params: maxValue, errorMessage = defaultErrorMessage }) => {
     if (invalids.includes(maxValue)) return { valid: true };
     if (invalids.includes(value)) return { valid: true };
     const valueIsInvalid = compare(value, (number) => number > maxValue);

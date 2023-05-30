@@ -17,6 +17,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl 
   value: CONTROL['value'];
   params: PARAMS;
   control: CONTROL;
+  errorMessage?: string;
 }
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
@@ -119,6 +120,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
   errors: MargaritaFormStateErrors;
   children?: MargaritaFormStateChildren;
+  hasValue?: boolean;
 }
 
 export interface MargaritaFormConfig {

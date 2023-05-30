@@ -1,8 +1,8 @@
 import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const emailValidator: (errorMessage?: string) => MargaritaFormValidator<boolean> =
-  (errorMessage = 'Value must be a valid email address!') =>
-  ({ value, params }) => {
+  (defaultErrorMessage = 'Value must be a valid email address!') =>
+  ({ value, params, errorMessage = defaultErrorMessage }) => {
     if (!params || !value) return { valid: true };
     const regex = new RegExp(/.+@.+\..+/g);
     const stringValue = typeof value === 'string' ? value : String(value);

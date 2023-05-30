@@ -3,28 +3,71 @@ import { MargaritaFormFieldContext, MargaritaFormResolverOutput, MFC } from '../
 
 type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
 
-export const mapResolverEntries = <OUTPUT = unknown>(
-  title: string,
-  from: Record<string, unknown>,
-  context: MargaritaFormFieldContext,
-  resolveStaticValues = true
-) => {
+interface ResolverParams {
+  resolverName: string;
+  params: unknown;
+  errorMessage?: string;
+}
+
+const ResolverParamKeys = ['resolverName', 'params', 'errorMessage'];
+
+export const mapResolverEntries = <OUTPUT = unknown>({
+  title,
+  from,
+  context,
+  resolveStaticValues = true,
+  resolvers = context.control.resolvers,
+}: {
+  title: string;
+  from: Record<string, unknown>;
+  context: MargaritaFormFieldContext;
+  resolveStaticValues?: boolean;
+  resolvers?: import('../margarita-form-types').MargaritaFormResolvers;
+}) => {
   if (!from) return Promise.resolve({});
-  const entries = Object.entries(from).reduce((acc, [key, param]) => {
-    if (typeof param === 'function') {
-      const result = param(context);
+  const entries = Object.entries(from).reduce((acc, [key, value]) => {
+    if (!value) return acc;
+
+    if (typeof value === 'function') {
+      const result = value(context);
       acc.push([key, result]);
       return acc;
     }
 
-    const resolverFn = context.control.resolvers[key];
-    if (typeof resolverFn === 'function') {
-      const result = resolverFn({ ...context, params: param });
-      acc.push([key, result]);
+    const getResolver = ({ resolverName, params, errorMessage }: ResolverParams) => {
+      const resolverFn = resolvers[resolverName];
+      if (typeof resolverFn === 'function') {
+        const result = resolverFn({ ...context, params, errorMessage });
+        acc.push([key, result]);
+        return acc;
+      }
+      if (resolveStaticValues) acc.push([key, params as OUTPUT]);
       return acc;
+    };
+
+    const stringConfig = typeof value === 'string' && /\$\$([^:]+):?([^:]+)?:?([^:]+)/gi.exec(value);
+    if (stringConfig) {
+      const [resolverName, params, errorMessage] = stringConfig.splice(1, 3);
+      return getResolver({ resolverName: resolverName, params, errorMessage });
     }
-    if (resolveStaticValues) acc.push([key, param as OUTPUT]);
-    return acc;
+
+    const isResolverConfigObject = () => {
+      const isObject = typeof value === 'object';
+      if (!isObject) return null;
+      const keys = Object.keys(value);
+      const hasResolverName = keys.includes('resolverName');
+      if (!hasResolverName) return null;
+      const keysAreValid = keys.every((key) => ResolverParamKeys.includes(key));
+      if (!keysAreValid) return null;
+      return value as ResolverParams;
+    };
+
+    const objectConfig = isResolverConfigObject();
+    if (objectConfig) {
+      return getResolver(objectConfig);
+    }
+
+    return getResolver({ resolverName: key, params: value });
   }, [] as [string, MargaritaFormResolverOutput<OUTPUT>][]);
 
   return resolveFunctionOutputs(title, context, entries);

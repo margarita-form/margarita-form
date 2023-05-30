@@ -72,10 +72,14 @@ export const handleControlAttributeChanges = <CONTROL extends MFC = MFC>({
     .pipe(
       debounceTime(1),
       switchMap(([value]) => {
-        return mapResolverEntries('Attributes', control.field.attributes, {
-          control,
-          value,
-          params: null,
+        return mapResolverEntries({
+          title: 'Attributes',
+          from: control.field.attributes,
+          context: {
+            control,
+            value,
+            params: null,
+          },
         });
       })
     )

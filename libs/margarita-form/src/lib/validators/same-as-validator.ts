@@ -2,8 +2,8 @@ import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../margarita-form-types';
 
 export const sameAsValidator: (errorMessage?: string) => MargaritaFormValidator<boolean | string[]> =
-  (errorMessage = 'Please enter same value!') =>
-  ({ value, control, params }) => {
+  (defaultErrorMessage = 'Please enter same value!') =>
+  ({ value, control, params, errorMessage = defaultErrorMessage }) => {
     const parentControls = control.parent.controls;
 
     if (!params || !parentControls || !value) return { valid: true };
