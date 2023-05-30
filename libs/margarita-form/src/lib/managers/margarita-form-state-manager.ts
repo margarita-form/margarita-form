@@ -39,7 +39,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
     });
   }
 
-  public _init() {
+  public override _init(): void {
     const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
       switchMap((value) => {
         const state = fieldStateKeys.reduce((acc, key) => {
@@ -71,7 +71,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
         });
       }),
       combineLatestWith(
-        this.control.controlsManager.changes.pipe(
+        this.control.managers.controls.changes.pipe(
           switchMap((controls) => {
             if (!controls.length) return Promise.resolve([]);
             const stateChanges: Observable<StateManager<MFC>>[] = controls.map((control) => control.stateChanges);
@@ -111,7 +111,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
     this.createSubscription(activeChangesSubscriptionObservable, () => {
       if (!this.control.isRoot) {
-        this.control.parent.valueManager._syncCurrentValue(false, true);
+        this.control.parent.managers.value._syncCurrentValue(false, true);
       }
     });
   }

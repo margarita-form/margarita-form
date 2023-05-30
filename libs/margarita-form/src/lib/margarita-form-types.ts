@@ -2,6 +2,14 @@
 import type { Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
+import type { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
+
+export interface MargaritaFormControlContext {
+  form?: MF;
+  root?: MF | MFC;
+  parent?: MF | MFC;
+  keyStore?: Set<string>;
+}
 
 export type CommonRecord<TYPE = unknown> = Record<string | number | symbol, TYPE>;
 
@@ -164,3 +172,5 @@ export type MFBE<CONTROL extends MFC = MFC> = MargaritaFormBaseElement<CONTROL>;
 export type MFCG<VALUE = any, FIELD extends MFF = any> = Record<string, MFC<VALUE, FIELD>>;
 /** Margarita form controls as array */
 export type MFCA<VALUE = any, FIELD extends MFF = any> = MFC<VALUE, FIELD>[];
+/** Margarita form managers */
+export type MFCM = MargaritaFormControlManagers;

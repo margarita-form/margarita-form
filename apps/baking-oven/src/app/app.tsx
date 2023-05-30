@@ -3,6 +3,10 @@ import { useMargaritaForm, MargaritaFormField, Form, MFC } from '@margarita-form
 import { useState } from 'react';
 import { recipeFields } from './fields/receipe';
 import { websiteFields } from './fields/website';
+import { registerManager } from '@margarita-form/core';
+import { CustomManager } from './managers/custom-manager';
+
+registerManager('custom', CustomManager);
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;

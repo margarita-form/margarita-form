@@ -1,5 +1,5 @@
 import { BaseManager } from './margarita-form-base-manager';
-import { MF, MargaritaFormConfig } from '../margarita-form-types';
+import { MF, MFC, MargaritaFormConfig } from '../margarita-form-types';
 
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
@@ -17,14 +17,16 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   useSyncronization: false,
 });
 
-class ConfigManager<CONTROL extends MF> extends BaseManager {
+class ConfigManager<CONTROL extends MFC = MF> extends BaseManager {
   private _config: MargaritaFormConfig = getDefaultConfig();
 
   constructor(public control: CONTROL) {
     super();
     this.updateConfig(control.field.config || {});
+  }
 
-    this.createSubscription(control.fieldManager.changes, (field) => {
+  public override _init(): void {
+    this.createSubscription(this.control.managers.field.changes, (field) => {
       if (field?.config) this.updateConfig(field.config);
     });
   }

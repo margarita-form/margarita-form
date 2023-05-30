@@ -16,7 +16,7 @@ export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
       if (type === 'checkbox') {
         if (multiple) {
           // Do someting?
-        } else if (control.refManager.refs.length > 1) {
+        } else if (control.managers.ref.refs.length > 1) {
           console.warn('Applying checked to multiple fields!');
           node.checked = Boolean(value);
         }

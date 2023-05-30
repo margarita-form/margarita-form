@@ -1,14 +1,11 @@
 import type { MFF, MFRF, MargaritaFormConfig } from './margarita-form-types';
-import { ConfigManager, getDefaultConfig } from './managers/margarita-form-config-manager';
+import { getDefaultConfig } from './managers/margarita-form-config-manager';
 import { MargaritaFormControl } from './margarita-form-control';
 import { Observable, map } from 'rxjs';
 
 export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> extends MargaritaFormControl<VALUE, FIELD> {
-  public configManager: ConfigManager<typeof this>;
-
   constructor(public override field: FIELD & MFRF<VALUE>) {
     super(field, {});
-    this.configManager = new ConfigManager(this);
   }
 
   public override get form(): this {
@@ -24,14 +21,14 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
   }
 
   public override get config(): MargaritaFormConfig {
-    if (!this.configManager) {
+    if (!this.managers.config) {
       const defaultConfig = getDefaultConfig();
       if (this.field.config) {
         return { ...defaultConfig, ...this.field.config };
       }
       return defaultConfig;
     }
-    return this.configManager.current;
+    return this.managers.config.current;
   }
 
   public get onSubmit(): Observable<this> {
@@ -62,7 +59,7 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
               this.updateStateValue('disabled', false);
               break;
           }
-          if (this.config.clearStorageOnSuccessfullSubmit) this.valueManager.clearStorageValue();
+          if (this.config.clearStorageOnSuccessfullSubmit) this.managers.value.clearStorageValue();
           return res;
         })
         .catch((error) => {
