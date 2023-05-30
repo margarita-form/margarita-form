@@ -120,6 +120,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
   errors: MargaritaFormStateErrors;
   children?: MargaritaFormStateChildren;
+  hasValue?: boolean;
 }
 
 export interface MargaritaFormConfig {
