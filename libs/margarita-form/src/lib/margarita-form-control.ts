@@ -197,8 +197,8 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param mustBeUnique Should the value be unique (default = false)
    * @param setAsDirty Should the dirty state be set to true
    */
-  public addValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = false, setAsDirty = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], false, false);
+  public addValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = false, setAsDirty = true, emitEvent = true) => {
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return console.warn('Value already exists!');
     this.managers.value.updateValue([...this.value, value], setAsDirty);
@@ -223,8 +223,8 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param mustBeUnique Should the value be unique when adding (default = true)
    * @param setAsDirty Should the dirty state be set to true
    */
-  public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], false, false);
+  public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
     this.managers.value.updateValue([...this.value, value], setAsDirty);
