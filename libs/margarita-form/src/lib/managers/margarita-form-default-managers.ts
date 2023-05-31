@@ -9,8 +9,8 @@ import { ConfigManager } from './margarita-form-config-manager';
 export const margaritaFormControlManagers = {
   field: FieldManager,
   config: ConfigManager,
-  controls: ControlsManager,
   value: ValueManager,
+  controls: ControlsManager,
   state: StateManager,
   ref: RefManager,
   params: ParamsManager,

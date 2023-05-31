@@ -2,7 +2,7 @@ import { BehaviorSubject, debounceTime, fromEvent } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
-import { valueExists } from '../helpers/check-value';
+import { isObject, valueExists } from '../helpers/check-value';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _value: CONTROL['value'] = undefined;
@@ -13,23 +13,31 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     const initialValue = this._getInitialValue();
     if (initialValue) {
-      this.updateValue(initialValue, false, false, false, true);
+      this._value = initialValue;
     }
   }
 
   public override _init() {
+    /*
+    REFACTOR ME
+
     this.createSubscription(this.control.managers.controls.changes, () => {
-      this._syncCurrentValue(false);
+      // this._syncCurrentValue(false);
     });
+    */
+
+    /*
+    REFACTOR ME
 
     this.createSubscription(this.control.managers.field.changes, () => {
       if (this.control.managers.field.shouldResetControl) {
         const initialValue = this._getInitialValue();
         if (initialValue) {
-          this.updateValue(initialValue, false, false, false, true);
+          this.updateValue(initialValue, false, false, false);
         }
       }
     });
+    */
 
     if (this.control.isRoot) {
       if (this.control.config.useStorage) {
@@ -56,7 +64,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
             } else if (event.data.key !== this.control.key) {
               const valueChanged = JSON.stringify(event.data.value) !== JSON.stringify(this._value);
               if (valueChanged) {
-                this.updateValue(event.data.value, false, false, false, false);
+                this.updateValue(event.data.value, false, false, false);
                 cache.value = event.data.value;
               }
             }
@@ -68,9 +76,15 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  private _emitChanges() {
-    this.control.updateSyncId();
-    this.changes.next(this._value);
+  private _emitChanges(update: 'parent' | 'children' = 'parent') {
+    if (update === 'parent') {
+      this.control.updateSyncId();
+      this.changes.next(this._value);
+      this._syncParentValue();
+    }
+    if (update === 'children') {
+      this._syncChildValues();
+    }
   }
 
   private _getStorage(): Storage | null {
@@ -95,6 +109,14 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         if (sessionStorageValue) return JSON.parse(sessionStorageValue);
       } catch (error) {
         console.error(`Could not get value from ${this.control.config.useStorage}!`, { control: this.control, error });
+      }
+    }
+
+    if (!this.control.isRoot) {
+      const parentValue = this.control.parent.value || {};
+      const inheritedValue = _get(parentValue, this.control.name, undefined);
+      if (inheritedValue !== undefined) {
+        return inheritedValue;
       }
     }
 
@@ -141,61 +163,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * @param value value to set
    * @param setAsDirty update dirty state to true
    */
-  public updateValue(value: unknown, setAsDirty = true, emitEvent = true, patch = false, initialValue = false) {
-    if (this.control.hasControls) {
-      if (value && typeof value !== 'object') throw new Error('Value must be an object');
-      try {
-        if (this.control.expectArray) {
-          const isArray = Array.isArray(value);
-
-          const controls = [...this.control.controls]; // Copy array to avoid problems caused by mutation of original array
-          controls.forEach((control, index) => {
-            const hasValue = isArray && value[index];
-            if (!hasValue && !patch) control.remove();
-          });
-
-          if (isArray) {
-            value.forEach((_value, index) => {
-              const __value = this.control.config.addMetadataToArrays ? _value?.value : _value;
-              const control = this.control.getControl(index);
-              if (control) {
-                control.updateKey(_value?.key);
-                return control.setValue(__value, setAsDirty);
-              }
-
-              return this.control.managers.controls
-                .addTemplatedControl({
-                  initialValue: __value,
-                })
-                .updateKey(_value?.key);
-            });
-          }
-        } else {
-          return Object.values(this.control.managers.controls.group).forEach((control) => {
-            const { name } = control.field;
-            const updatedValue = _get(value, [name], patch ? control.value : undefined);
-            control.setValue(updatedValue, setAsDirty);
-          });
-        }
-      } catch (error) {
-        console.error('Could not set values!', {
-          control: this,
-          value,
-          error,
-        });
-      }
-    }
-
-    if (initialValue) {
-      this._value = value;
-      if (emitEvent) this._emitChanges();
-    } else {
-      this._value = value;
-      const isActive = this.control.state.active;
-      if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
-      if (emitEvent) this._emitChanges();
-      if (isActive) this._syncParentValue(setAsDirty, emitEvent);
-    }
+  public updateValue(value: unknown, setAsDirty = true, emitEvent = true, patch = false) {
+    // Todo: implement patch
+    this._value = value;
+    const isActive = this.control.state.active;
+    if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
+    if (emitEvent) this._emitChanges('children');
   }
 
   /**
@@ -231,11 +204,60 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   /**
    * @Internal
    */
-  private _syncParentValue(setAsDirty = true, emitEvent = true) {
+  public _syncParentValue(setAsDirty = true, emitEvent = true) {
     if (!this.control.isRoot) {
-      if (this.control.parent.managers.value) {
-        this.control.parent.managers.value._syncCurrentValue(setAsDirty, emitEvent);
+      this.control.parent.managers.value._syncCurrentValue(setAsDirty, emitEvent);
+    }
+  }
+
+  /**
+   * @Internal
+   */
+  public _syncChildValues(setAsDirty = true, patch = false) {
+    const value: unknown = this._value;
+    const validValue = isObject(this._value);
+    if (validValue && this.control.expectChildControls) {
+      if (this.control.expectArray) {
+        const isArray = Array.isArray(value);
+
+        const controls = [...this.control.controls]; // Copy array to avoid problems caused by mutation of original array
+
+        controls.forEach((control, index) => {
+          const hasValue = isArray && value[index];
+          if (!hasValue && !patch) control.remove();
+        });
+
+        if (isArray) {
+          value.forEach((_value, index) => {
+            // TODO: Fix auto resolve value when original value was not created with metadata
+            const __value = this.control.config.addMetadataToArrays ? _value?.value : _value;
+            const control = this.control.getControl(index);
+            if (control) {
+              control.updateKey(_value?.key);
+              return control.setValue(__value, setAsDirty);
+            }
+
+            const addedControl = this.control.managers.controls.addTemplatedControl({
+              initialValue: __value,
+            });
+
+            addedControl.updateKey(_value?.key);
+            addedControl.managers.value._syncChildValues(setAsDirty, false);
+          });
+        }
+      } else {
+        return Object.values(this.control.managers.controls.group).forEach((control) => {
+          const { name } = control.field;
+          const updatedValue = _get(value, [name], patch ? control.value : undefined);
+          control.setValue(updatedValue, setAsDirty);
+        });
       }
+    } else if (!this.control.hasControls) {
+      this.control.managers.value._emitChanges('parent');
+    } else {
+      this.control.controls.forEach((control) => {
+        control.managers.value._emitChanges('children');
+      });
     }
   }
 

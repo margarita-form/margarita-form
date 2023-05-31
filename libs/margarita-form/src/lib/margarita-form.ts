@@ -6,6 +6,7 @@ import { Observable, map } from 'rxjs';
 export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> extends MargaritaFormControl<VALUE, FIELD> {
   constructor(public override field: FIELD & MFRF<VALUE>) {
     super(field, {});
+    this.managers.value._syncChildValues(false, true);
   }
 
   public override get form(): this {

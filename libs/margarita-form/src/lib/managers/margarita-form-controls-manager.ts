@@ -26,16 +26,16 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         control.resubscribe();
       });
     };
+
+    if (this.control.field) {
+      this.rebuild();
+    }
   }
 
   public override _init() {
     this.createSubscription(this.control.managers.field.changes.pipe(filter((field) => field !== this._buildWith)), () =>
       this.rebuild(this.control.managers.field.shouldResetControl)
     );
-
-    if (this.control.field) {
-      this.rebuild();
-    }
   }
 
   public rebuild(resetControls = false) {
@@ -81,6 +81,15 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
 
   private _emitChanges() {
     this.changes.next(this._controls);
+  }
+
+  public get hasControls(): boolean {
+    try {
+      return this._controls.length > 0;
+    } catch (error) {
+      console.trace(error);
+      return false;
+    }
   }
 
   get group(): MFCG {
@@ -186,18 +195,9 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       root: this.control.root,
       form: this.control.form,
       keyStore: this.control.keyStore,
+      initialIndex: this._controls.length,
     });
 
-    /*
-    const prevControl = this.getControl(field.name);
-    if (prevControl) {
-      try {
-        control.setValue(prevControl.value, false, true);
-      } catch (error) {
-        //
-      }
-    }
-    */
     if (this.control.state?.disabled) control.disable();
     return this.appendControl(control, resetControl, emit);
   }
