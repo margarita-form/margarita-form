@@ -9,6 +9,7 @@ export interface MargaritaFormControlContext {
   root?: MF | MFC;
   parent?: MF | MFC;
   keyStore?: Set<string>;
+  initialIndex?: number;
 }
 
 export type CommonRecord<TYPE = unknown> = Record<string | number | symbol, TYPE>;

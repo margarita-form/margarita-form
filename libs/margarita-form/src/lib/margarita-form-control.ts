@@ -21,19 +21,29 @@ import { getDefaultConfig } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
+import { toHash } from './helpers/to-hash';
 
 export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
-  public key: string = nanoid(4);
+  public key: string;
+  public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
   public keyStore: Set<string>;
   private _listeningToChanges = true;
   public managers: ManagerInstances;
 
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
+    this.key = this._generateKey();
     this.keyStore = context.keyStore || new Set<string>();
     this.managers = createManagers<typeof this>(this);
-    this.keyStore.add(this.key);
   }
+
+  private _generateKey = (index = 0): string => {
+    const stringPath = this.getPath('indexes');
+    const key = toHash([...stringPath, index]);
+    const exists = this.keyStore.has(key);
+    if (exists) return this._generateKey(index + 1);
+    return key;
+  };
 
   /**
    * Unsubscribe from all subscriptions for current control
@@ -114,10 +124,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get index(): number {
-    if (this.parent) {
+    if (this.parent?.managers?.controls) {
       return this.parent.managers.controls.getControlIndex(this.key);
     }
-    return -1;
+    return this.context.initialIndex ?? -1;
   }
 
   /**
@@ -154,6 +164,20 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   public updateField = async (changes: Partial<FIELD>, resetControl = false) => {
     await this.managers.field.updateField(changes, resetControl);
+  };
+
+  public getPath = (type?: 'default' | 'indexes' | 'controls'): (string | number | MFC | MF)[] => {
+    if (this.isRoot) return [];
+    const parentPath = this.parent.getPath(type);
+    if (type === 'indexes') {
+      const part = this.parent.expectArray ? this.index : this.name;
+      return [...parentPath, part];
+    }
+    if (type === 'controls') {
+      return [...parentPath, this];
+    }
+    const part = this.parent.expectArray ? this.uid : this.name;
+    return [...parentPath, part];
   };
 
   // Value
@@ -349,7 +373,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Check if control has any child controls
    */
   public get hasControls(): boolean {
-    return this.managers.controls.array.length > 0;
+    return this.managers.controls.hasControls;
   }
 
   /**
