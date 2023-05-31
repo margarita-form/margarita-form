@@ -32,8 +32,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public managers: ManagerInstances;
 
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
+    const { keyStore = new Set<string>() } = context;
+    this.keyStore = keyStore;
     this.key = this._generateKey();
-    this.keyStore = context.keyStore || new Set<string>();
     this.managers = createManagers<typeof this>(this);
   }
 
