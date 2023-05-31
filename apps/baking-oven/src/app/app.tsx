@@ -124,7 +124,7 @@ export function App() {
     config: {
       resetFormOnFieldChanges: shouldReset,
       handleSuccesfullSubmit: 'enable',
-      addMetadataToArrays: true,
+      addMetadataToArrays: false,
       useStorage: 'localStorage',
       useSyncronization: true,
     },
