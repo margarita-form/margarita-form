@@ -76,14 +76,14 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  private _emitChanges(update: 'parent' | 'children' = 'parent') {
+  private _emitChanges(update: 'parent' | 'children' = 'parent', setAsDirty = true, patch = false) {
     if (update === 'parent') {
       this.control.updateSyncId();
       this.changes.next(this._value);
-      this._syncParentValue();
+      this._syncParentValue(setAsDirty, true);
     }
     if (update === 'children') {
-      this._syncChildValues();
+      this._syncChildValues(setAsDirty, patch);
     }
   }
 
@@ -168,7 +168,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     this._value = value;
     const isActive = this.control.state.active;
     if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
-    if (emitEvent) this._emitChanges('children');
+    if (emitEvent) this._emitChanges('children', setAsDirty, patch);
   }
 
   /**
@@ -192,7 +192,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       if (this.control.expectGroup) {
         const entries = this.control.activeControls.map((control) => {
           const exists = valueExists(control.value);
-          if (!exists) return [];
+          if (!exists) return [control.name, undefined];
           return [control.name, control.value];
         });
         return Object.fromEntries(entries);

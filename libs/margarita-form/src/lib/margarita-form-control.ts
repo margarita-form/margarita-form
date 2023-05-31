@@ -409,9 +409,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     type CONTROL = MFC<VALUE, FIELD>;
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
-      const control = this.managers.controls.getControl(first);
+      const control = this.managers.controls.getControl<CONTROL>(first);
       if (!control) return null;
-      return control.getControl(rest);
+      if (rest.length === 0) return control;
+      return control.getControl<VALUE, FIELD>(rest);
     }
     return this.managers.controls.getControl<CONTROL>(identifier);
   };
