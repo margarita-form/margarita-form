@@ -12,6 +12,12 @@ export const valueExists = (value: unknown) => {
   }
 };
 
+export const isObject = (value: unknown): boolean => {
+  const validValue = valueExists(value);
+  if (!validValue) return false;
+  return typeof value === 'object';
+};
+
 export const isIncluded = (value: unknown, array: unknown[]): boolean => {
   return array.some((item) => isEqual(item, value));
 };
