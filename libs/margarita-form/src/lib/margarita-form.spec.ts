@@ -47,6 +47,47 @@ const arrayField: MargaritaFormField = {
 type ArrayField = { arrayName: unknown[] };
 
 describe('margaritaForm', () => {
+  it('#0 Common getters', () => {
+    const locales = ['en', 'fi'];
+    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField, arrayField], locales });
+    const groupControl = form.getControl([groupField.name]);
+    const arrayControl = form.getControl([arrayField.name]);
+    const commonControl = form.getControl([groupField.name, commonField.name]);
+    if (!groupControl || !arrayControl || !commonControl) throw 'No control found!';
+    expect(commonControl.form).toBe(form);
+    expect(commonControl.root).toBe(form);
+    expect(commonControl.parent).toBe(groupControl);
+    expect(commonControl.config).toBe(form.config);
+    expect(commonControl.locales).toBe(form.locales);
+    expect(commonControl.locales).toBe(locales);
+    expect(commonControl.name).toBe(commonField.name);
+    expect(commonControl.field).toBe(commonField);
+    expect(commonControl.index).toBe(0);
+    expect(commonControl.value).toBe(fromParentValue);
+    expect(commonControl.state).toHaveProperty('valid');
+    expect(commonControl.validators).toHaveProperty('required');
+    // Group
+    expect(groupControl.grouping).toBe('group');
+    expect(groupControl.expectArray).toBe(false);
+    expect(groupControl.expectGroup).toBe(true);
+    expect(groupControl.expectChildControls).toBe(true);
+    expect(groupControl.hasControls).toBe(true);
+    expect(groupControl.hasActiveControls).toBe(true);
+    expect(groupControl.controls).toHaveProperty('0', commonControl);
+    expect(groupControl.activeControls).toHaveProperty('0', commonControl);
+    // Array
+    expect(arrayControl.grouping).toBe('repeat-group');
+    expect(arrayControl.expectArray).toBe(true);
+    expect(arrayControl.expectGroup).toBe(false);
+    expect(arrayControl.expectChildControls).toBe(true);
+    expect(arrayControl.hasControls).toBe(true);
+    expect(arrayControl.hasActiveControls).toBe(true);
+    expect(arrayControl.controls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
+    expect(arrayControl.activeControls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
+
+    form.cleanup();
+  });
+
   it('#1 Create single level schema with one field and check initial value', () => {
     const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [commonField] });
     expect(form.value).toHaveProperty([commonField.name], fieldNameInitialValue);
@@ -192,6 +233,11 @@ describe('margaritaForm', () => {
     expect(form.value).toHaveProperty([undefinedField.name], undefined);
     expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
 
+    form.getOrAddControl({ ...commonField, initialValue: 'Should not be this value!' });
+    expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
+    form.getOrAddControl({ ...commonField, name: 'actuallyNewControl', initialValue: 'actually new value' });
+    expect(form.value).toHaveProperty(['actuallyNewControl'], 'actually new value');
+
     form.cleanup();
   });
 
@@ -213,42 +259,138 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#18 Common getters', () => {
-    const locales = ['en', 'fi'];
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField, arrayField], locales });
-    const groupControl = form.getControl([groupField.name]);
+  it('#18 Reorder (move) new controls programatically', () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [{ ...arrayField, startWith: 3 }],
+    });
+
     const arrayControl = form.getControl([arrayField.name]);
+    const firstArrayGroup = form.getControl([arrayField.name, 0]);
+    const firstArrayControl = form.getControl([arrayField.name, 0, commonField.name]);
+    const thirdArrayControl = form.getControl([arrayField.name, 2, commonField.name]);
+
+    if (!arrayControl || !firstArrayGroup || !firstArrayControl || !thirdArrayControl) throw 'No control found!';
+
+    const value = 'first!';
+    firstArrayControl.setValue(value);
+    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], value);
+    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
+
+    firstArrayGroup.moveToIndex(2);
+    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], value);
+
+    form.cleanup();
+  });
+
+  it('#19 Check that paths work as should', () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [commonField, groupField, { ...arrayField, startWith: 3 }],
+    });
+
+    const groupControl = form.getControl([groupField.name]);
     const commonControl = form.getControl([groupField.name, commonField.name]);
-    if (!groupControl || !arrayControl || !commonControl) throw 'No control found!';
-    expect(commonControl.form).toBe(form);
-    expect(commonControl.root).toBe(form);
-    expect(commonControl.parent).toBe(groupControl);
-    expect(commonControl.config).toBe(form.config);
-    expect(commonControl.locales).toBe(form.locales);
-    expect(commonControl.locales).toBe(locales);
-    expect(commonControl.name).toBe(commonField.name);
-    expect(commonControl.field).toBe(commonField);
-    expect(commonControl.index).toBe(0);
-    expect(commonControl.value).toBe(fromParentValue);
-    expect(commonControl.state).toHaveProperty('valid');
-    expect(commonControl.validators).toHaveProperty('required');
-    // Group
-    expect(groupControl.grouping).toBe('group');
-    expect(groupControl.expectArray).toBe(false);
-    expect(groupControl.expectGroup).toBe(true);
-    expect(groupControl.expectChildControls).toBe(true);
-    expect(groupControl.hasControls).toBe(true);
-    expect(groupControl.hasActiveControls).toBe(true);
-    expect(groupControl.controls).toHaveProperty('0', commonControl);
-    expect(groupControl.activeControls).toHaveProperty('0', commonControl);
-    // Array
-    expect(arrayControl.grouping).toBe('repeat-group');
-    expect(arrayControl.expectArray).toBe(true);
-    expect(arrayControl.expectGroup).toBe(false);
-    expect(arrayControl.expectChildControls).toBe(true);
-    expect(arrayControl.hasControls).toBe(true);
-    expect(arrayControl.hasActiveControls).toBe(true);
-    expect(arrayControl.controls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
-    expect(arrayControl.activeControls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
+    const arrayControl = form.getControl([arrayField.name]);
+    const firstArrayControl = form.getControl([arrayField.name, 0, commonField.name]);
+
+    if (!groupControl || !commonControl || !arrayControl || !firstArrayControl) throw 'No control found!';
+
+    const commonStringPath = commonControl.getPath('default');
+    expect(commonStringPath.join('.')).toBe([groupField.name, commonField.name].join('.'));
+
+    const commonControlsPath = commonControl.getPath('controls');
+    expect(commonControlsPath[0]).toBe(groupControl);
+    expect(commonControlsPath[1]).toBe(commonControl);
+
+    const arrayStringPath = firstArrayControl.getPath('default');
+    expect(arrayStringPath[0]).toBe(arrayField.name);
+    expect(arrayStringPath[2]).toBe(commonControl.name);
+
+    const arrayIndexesPath = firstArrayControl.getPath('indexes');
+    expect(arrayIndexesPath[0]).toBe(arrayField.name);
+    expect(arrayIndexesPath[1]).toBe(0);
+    expect(arrayIndexesPath[2]).toBe(commonControl.name);
+
+    form.cleanup();
+  });
+
+  it('#20 Check that addValue, removeValue and toggleValue works', () => {
+    const initialValue = ['first', 'second'];
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [
+        { ...commonField, initialValue },
+        {
+          ...uncommonField,
+          initialValue: undefined,
+        },
+      ],
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    const uncommonControl = form.getControl([uncommonField.name]);
+
+    if (!commonControl || !Array.isArray(commonControl.value) || !uncommonControl) throw 'No control found!';
+    expect(commonControl.value.join('.')).toBe(initialValue.join('.'));
+    commonControl.addValue('third');
+    expect(commonControl.value.join('.')).toBe([...initialValue, 'third'].join('.'));
+    commonControl.removeValue('first');
+    expect(commonControl.value.join('.')).toBe(['second', 'third'].join('.'));
+    commonControl.toggleValue('second');
+    expect(commonControl.value.join('.')).toBe(['third'].join('.'));
+    commonControl.toggleValue('second');
+    commonControl.toggleValue('first');
+    expect(commonControl.value.join('.')).toBe(['third', 'second', 'first'].join('.'));
+
+    expect(uncommonControl.value).toBe(undefined);
+    uncommonControl.addValue('first');
+    if (!Array.isArray(uncommonControl.value)) throw 'Invalid value!';
+    expect(uncommonControl.value.join('.')).toBe(['first'].join('.'));
+    uncommonControl.addValue('second');
+    expect(uncommonControl.value.join('.')).toBe(['first', 'second'].join('.'));
+
+    form.cleanup();
+  });
+
+  it('#21 Test paths', () => {
+    const initialValue = ['first', 'second'];
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [
+        { ...commonField, initialValue },
+        {
+          ...uncommonField,
+          initialValue: undefined,
+        },
+      ],
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    const uncommonControl = form.getControl([uncommonField.name]);
+
+    if (!commonControl || !Array.isArray(commonControl.value) || !uncommonControl) throw 'No control found!';
+    expect(commonControl.value.join('.')).toBe(initialValue.join('.'));
+    commonControl.addValue('third');
+    expect(commonControl.value.join('.')).toBe([...initialValue, 'third'].join('.'));
+    commonControl.removeValue('first');
+    expect(commonControl.value.join('.')).toBe(['second', 'third'].join('.'));
+    commonControl.toggleValue('second');
+    expect(commonControl.value.join('.')).toBe(['third'].join('.'));
+    commonControl.toggleValue('second');
+    commonControl.toggleValue('first');
+    expect(commonControl.value.join('.')).toBe(['third', 'second', 'first'].join('.'));
+
+    expect(uncommonControl.value).toBe(undefined);
+    uncommonControl.addValue('first');
+    if (!Array.isArray(uncommonControl.value)) throw 'Invalid value!';
+    expect(uncommonControl.value.join('.')).toBe(['first'].join('.'));
+    uncommonControl.addValue('second');
+    expect(uncommonControl.value.join('.')).toBe(['first', 'second'].join('.'));
+
+    form.cleanup();
   });
 });
