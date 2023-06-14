@@ -10,6 +10,10 @@ const commonField: MargaritaFormField<MFF> = {
   initialValue: fieldNameInitialValue,
 };
 
+const undefinedField: MargaritaFormField<MFF> = {
+  name: 'undefinedField',
+};
+
 const uncommonField: MargaritaFormField<MFF> = {
   name: 'anotherOne',
   initialValue: anotherInitialValue,
@@ -174,6 +178,38 @@ describe('margaritaForm', () => {
     expect(form.value).toHaveProperty([uncommonField.name], uncommonField.initialValue);
     expect(form.value).toHaveProperty([groupField.name, commonField.name], value);
     expect(form.value).toHaveProperty([groupField.name, uncommonField.name], undefined);
+    form.cleanup();
+  });
+
+  it('#16 Create new controls programatically', () => {
+    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [] });
+
+    form.addControl(commonField);
+    form.addControl(undefinedField);
+    form.addControl({ ...arrayField, startWith: 3 });
+
+    expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([undefinedField.name], undefined);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
+
+    form.cleanup();
+  });
+
+  it('#17 Remove new controls programatically', () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [commonField, uncommonField, { ...arrayField, startWith: 3 }],
+    });
+
+    expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
+    form.removeControl(commonField.name);
+    expect(form.value).not.toHaveProperty([commonField.name]);
+    const arr = form.getControl(arrayField.name);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
+    if (arr) {
+      arr.removeControl(0);
+      expect(form.value).not.toHaveProperty([arrayField.name, '2']);
+    }
     form.cleanup();
   });
 });
