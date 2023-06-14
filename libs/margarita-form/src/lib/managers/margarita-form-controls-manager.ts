@@ -258,7 +258,8 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     const currentIndex = this.getControlIndex(identifier);
     const [item] = this._controls.splice(currentIndex, 1);
     this._controls.splice(toIndex, 0, item);
-    if (emit) this._emitChanges();
+    if (emit) this._emitChanges(false);
+    this.control.managers.value._syncCurrentValue(true, true);
   }
 }
 
