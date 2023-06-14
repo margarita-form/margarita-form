@@ -38,7 +38,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     );
   }
 
-  public rebuild(resetControls = false) {
+  private rebuild(resetControls = false) {
     const { grouping, field } = this.control;
     if (!field) throw 'No field provided for control!';
     this._buildWith = field;
@@ -76,11 +76,12 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       this.addControls(fields, resetControls, false);
     }
 
-    this._emitChanges();
+    this._emitChanges(false);
   }
 
-  private _emitChanges() {
+  private _emitChanges(syncValue = true) {
     this.changes.next(this._controls);
+    if (syncValue) this.control.managers.value._syncChildValues(false);
   }
 
   public get hasControls(): boolean {
@@ -219,14 +220,22 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     return control;
   }
 
+  private _removeCleanup(control: MFC) {
+    if (control) {
+      control.managers.value._syncParentValue();
+      control.cleanup();
+    }
+  }
+
   public removeControl(identifier: string | number, emit = true) {
     if (typeof identifier === 'number') {
-      this._controls.splice(identifier, 1);
+      const [removed] = this._controls.splice(identifier, 1);
+      this._removeCleanup(removed);
     } else {
       const index = this._controls.findIndex((control) => [control.name, control.key].includes(identifier));
       if (index > -1) {
         const [control] = this._controls.splice(index, 1);
-        control.cleanup();
+        this._removeCleanup(control);
       }
     }
     if (emit) this._emitChanges();

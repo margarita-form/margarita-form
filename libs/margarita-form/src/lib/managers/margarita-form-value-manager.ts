@@ -234,7 +234,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
             const control = this.control.getControl(index);
             if (control) {
               control.updateKey(_value?.key);
-              return control.setValue(__value, setAsDirty);
+              return control.setValue(__value, setAsDirty, false);
             }
 
             const addedControl = this.control.managers.controls.addTemplatedControl({
@@ -242,8 +242,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
             });
 
             addedControl.updateKey(_value?.key);
-            addedControl.managers.value._syncChildValues(setAsDirty, false);
           });
+          this._syncCurrentValue(setAsDirty, false);
         }
       } else {
         return Object.values(this.control.managers.controls.group).forEach((control) => {
@@ -252,12 +252,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           control.setValue(updatedValue, setAsDirty);
         });
       }
-    } else if (!this.control.hasControls) {
-      this.control.managers.value._emitChanges('parent');
-    } else {
+    } else if (this.control.hasControls) {
       this.control.controls.forEach((control) => {
         control.managers.value._emitChanges('children');
       });
+    } else {
+      this._emitChanges('parent');
     }
   }
 

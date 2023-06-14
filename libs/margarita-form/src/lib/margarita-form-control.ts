@@ -459,7 +459,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Removes a child control from the form group.
    * @param identifier name, index or key of the control to remove
    */
-  public removeControl = (identifier: string) => {
+  public removeControl = (identifier: string | number) => {
     this.managers.controls.removeControl(identifier);
   };
 
