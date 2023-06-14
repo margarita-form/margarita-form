@@ -212,4 +212,43 @@ describe('margaritaForm', () => {
     }
     form.cleanup();
   });
+
+  it('#18 Common getters', () => {
+    const locales = ['en', 'fi'];
+    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField, arrayField], locales });
+    const groupControl = form.getControl([groupField.name]);
+    const arrayControl = form.getControl([arrayField.name]);
+    const commonControl = form.getControl([groupField.name, commonField.name]);
+    if (!groupControl || !arrayControl || !commonControl) throw 'No control found!';
+    expect(commonControl.form).toBe(form);
+    expect(commonControl.root).toBe(form);
+    expect(commonControl.parent).toBe(groupControl);
+    expect(commonControl.config).toBe(form.config);
+    expect(commonControl.locales).toBe(form.locales);
+    expect(commonControl.locales).toBe(locales);
+    expect(commonControl.name).toBe(commonField.name);
+    expect(commonControl.field).toBe(commonField);
+    expect(commonControl.index).toBe(0);
+    expect(commonControl.value).toBe(fromParentValue);
+    expect(commonControl.state).toHaveProperty('valid');
+    expect(commonControl.validators).toHaveProperty('required');
+    // Group
+    expect(groupControl.grouping).toBe('group');
+    expect(groupControl.expectArray).toBe(false);
+    expect(groupControl.expectGroup).toBe(true);
+    expect(groupControl.expectChildControls).toBe(true);
+    expect(groupControl.hasControls).toBe(true);
+    expect(groupControl.hasActiveControls).toBe(true);
+    expect(groupControl.controls).toHaveProperty('0', commonControl);
+    expect(groupControl.activeControls).toHaveProperty('0', commonControl);
+    // Array
+    expect(arrayControl.grouping).toBe('repeat-group');
+    expect(arrayControl.expectArray).toBe(true);
+    expect(arrayControl.expectGroup).toBe(false);
+    expect(arrayControl.expectChildControls).toBe(true);
+    expect(arrayControl.hasControls).toBe(true);
+    expect(arrayControl.hasActiveControls).toBe(true);
+    expect(arrayControl.controls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
+    expect(arrayControl.activeControls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
+  });
 });
