@@ -238,6 +238,19 @@ describe('margaritaForm', () => {
     form.getOrAddControl({ ...commonField, name: 'actuallyNewControl', initialValue: 'actually new value' });
     expect(form.value).toHaveProperty(['actuallyNewControl'], 'actually new value');
 
+    const arrayControl = form.getControl(arrayField.name);
+    if (!arrayControl || !Array.isArray(arrayControl.value)) throw 'No array control found!';
+    expect(form.value).not.toHaveProperty([arrayField.name, '3']);
+    expect(form.value).not.toHaveProperty([arrayField.name, '4']);
+    arrayControl.appendRepeatingControls();
+    expect(form.value).toHaveProperty([arrayField.name, '3', commonField.name], commonField.initialValue);
+    expect(form.value).not.toHaveProperty([arrayField.name, '4']);
+    arrayControl.appendRepeatingControls();
+    arrayControl.appendRepeatingControls();
+    arrayControl.appendRepeatingControls();
+    arrayControl.appendRepeatingControls();
+    expect(form.value).toHaveProperty([arrayField.name, '4', commonField.name], commonField.initialValue);
+
     form.cleanup();
   });
 
