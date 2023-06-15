@@ -32,9 +32,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public managers: ManagerInstances;
 
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
-    const { keyStore = new Set<string>() } = context;
+    const { initialIndex, keyStore = new Set<string>() } = context;
     this.keyStore = keyStore;
-    this.key = this._generateKey();
+    this.key = this._generateKey(initialIndex);
     this.managers = createManagers<typeof this>(this);
   }
 
@@ -485,7 +485,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     } else {
       if (Array.isArray(field)) {
         this.appendRepeatingControls({ fields: field });
-      } else this.managers.controls.addTemplatedControl(field);
+      } else {
+        this.managers.controls.addTemplatedControl(field);
+      }
     }
   };
 
