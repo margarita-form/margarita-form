@@ -36,6 +36,7 @@ export const recipeFields: CustomField[] = [
           name: 'title',
           title: 'Title',
           type: 'text',
+          initialValue: 'Step title',
           validation: {
             required: true,
           },

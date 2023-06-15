@@ -76,14 +76,18 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  private _emitChanges(update: 'parent' | 'children' = 'parent', setAsDirty = true, patch = false) {
+  private _emitChanges(update: 'parent' | 'children' | 'none' = 'parent', setAsDirty = true, patch = false) {
+    if (update === 'children') {
+      this._syncChildValues(setAsDirty, patch);
+    }
     if (update === 'parent') {
       this.control.updateSyncId();
       this.changes.next(this._value);
       this._syncParentValue(setAsDirty, true);
     }
-    if (update === 'children') {
-      this._syncChildValues(setAsDirty, patch);
+    if (update === 'none') {
+      this.control.updateSyncId();
+      this.changes.next(this._value);
     }
   }
 
@@ -114,9 +118,21 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     if (!this.control.isRoot) {
       const parentValue = this.control.parent.value || {};
-      const inheritedValue = _get(parentValue, this.control.name, undefined);
-      if (inheritedValue !== undefined) {
-        return inheritedValue;
+      if (this.control.parent.expectArray) {
+        const inheritedValue = _get(parentValue, this.control.index, undefined);
+        if (inheritedValue !== undefined) {
+          return inheritedValue;
+        }
+      } else if ('key' in parentValue) {
+        const inheritedValue = _get(parentValue, ['value', this.control.name], undefined);
+        if (inheritedValue !== undefined) {
+          return inheritedValue;
+        }
+      } else {
+        const inheritedValue = _get(parentValue, this.control.name, undefined);
+        if (inheritedValue !== undefined) {
+          return inheritedValue;
+        }
       }
     }
 
@@ -220,38 +236,69 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       if (this.control.expectArray) {
         const isArray = Array.isArray(value);
 
+        const parseValue = (currentValue: any) => {
+          try {
+            if (this.control.config.addMetadataToArrays && 'key' in currentValue) {
+              const { key, value } = currentValue;
+              return { key, value };
+            }
+            if (this.control.config.detectAndRemoveMetadataForArrays && 'key' in currentValue) {
+              const { key, value } = currentValue;
+              return { key, value };
+            }
+          } catch (error) {
+            // Do nothing
+          }
+          return { value: currentValue, key: undefined };
+        };
+
+        const resolveValueAndKey = (currentValue: any, control?: MFC | null) => {
+          const currentValueExists = valueExists(currentValue);
+          if (currentValueExists) return parseValue(currentValue);
+          if (control) return { value: control.value, key: undefined };
+          return { value: undefined, key: undefined };
+        };
+
+        if (isArray) {
+          value.forEach((currentValue, index) => {
+            const control = this.control.getControl(index);
+            const { value: _value, key } = resolveValueAndKey(currentValue, control);
+
+            if (control) {
+              if (key) control.updateKey(key);
+              if (_value || !patch) return control.setValue(_value, setAsDirty, false);
+            } else {
+              const addedControl = this.control.managers.controls.addTemplatedControl({
+                initialValue: _value,
+              });
+
+              if (key) addedControl.updateKey(key);
+            }
+          });
+        }
+
         const controls = [...this.control.controls]; // Copy array to avoid problems caused by mutation of original array
 
         controls.forEach((control, index) => {
+          control.managers.value._syncCurrentValue(false, false, 'children');
           const hasValue = isArray && value[index];
-          if (!hasValue && !patch) control.remove();
+          if (!hasValue && !patch) {
+            control.remove();
+          } else {
+            const currentValue: any = isArray ? value[index] : value;
+            const { value: _value, key } = resolveValueAndKey(currentValue, control);
+            if (key) control.updateKey(key);
+            if (_value || !patch) control.setValue(_value, setAsDirty, false);
+          }
         });
-
-        if (isArray) {
-          value.forEach((_value, index) => {
-            // TODO: Fix auto resolve value when original value was not created with metadata
-            const __value = this.control.config.addMetadataToArrays ? _value?.value : _value;
-            const control = this.control.getControl(index);
-            if (control) {
-              control.updateKey(_value?.key);
-              return control.setValue(__value, setAsDirty, false);
-            }
-
-            const addedControl = this.control.managers.controls.addTemplatedControl({
-              initialValue: __value,
-            });
-
-            addedControl.updateKey(_value?.key);
-          });
-          this._syncCurrentValue(setAsDirty, false);
-        }
       } else {
-        return Object.values(this.control.managers.controls.group).forEach((control) => {
+        Object.values(this.control.managers.controls.group).forEach((control) => {
           const { name } = control.field;
           const updatedValue = _get(value, [name], patch ? control.value : undefined);
           control.setValue(updatedValue, setAsDirty);
         });
       }
+      this._syncCurrentValue(setAsDirty, true);
     } else if (this.control.hasControls) {
       this.control.controls.forEach((control) => {
         control.managers.value._emitChanges('children');
@@ -264,12 +311,13 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   /**
    * @Internal
    */
-  public _syncCurrentValue(setAsDirty = true, emitEvent = true) {
+  public _syncCurrentValue(setAsDirty = true, emitEvent = true, update: 'parent' | 'children' | 'none' = 'parent') {
     const value = this._resolveValue();
     this._value = value;
     if (setAsDirty) this.control.updateStateValue('dirty', true);
-    if (emitEvent) this._emitChanges();
-    this._syncParentValue(setAsDirty, emitEvent);
+    if (emitEvent) this._emitChanges(update);
+    else if (update === 'parent') this._syncParentValue(setAsDirty, emitEvent);
+    else if (update === 'children') this._syncChildValues(setAsDirty, emitEvent);
   }
 }
 
