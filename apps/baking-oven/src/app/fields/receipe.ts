@@ -59,4 +59,30 @@ export const recipeFields: CustomField[] = [
       ],
     },
   },
+  {
+    type: 'group',
+    name: 'author',
+    title: 'Author',
+    initialValue: {
+      name: 'Teemukissa',
+      title: 'Master chef',
+    },
+    fields: [
+      {
+        name: 'name',
+        title: 'Name',
+        type: 'text',
+        initialValue: 'John Doe',
+        validation: {
+          required: true,
+        },
+      },
+      {
+        name: 'title',
+        title: 'Title',
+        type: 'text',
+        initialValue: 'Chef',
+      },
+    ],
+  },
 ];

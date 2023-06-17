@@ -76,7 +76,7 @@ const AppWrapper = styled.div`
 `;
 
 export interface CustomField extends MargaritaFormField<CustomField> {
-  type: 'text' | 'textarea' | 'repeatable' | 'localized';
+  type: 'text' | 'textarea' | 'repeatable' | 'group' | 'localized';
   title: string;
 }
 
@@ -223,6 +223,18 @@ const FormField = ({ control }: FormFieldProps) => {
       );
 
     case 'localized':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          <div className="locales-fields">
+            {control.controls.map((localeControl) => {
+              return <FormField key={localeControl.key} control={localeControl} />;
+            })}
+          </div>
+        </div>
+      );
+
+    case 'group':
       return (
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>
