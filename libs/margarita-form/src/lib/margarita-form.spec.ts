@@ -505,6 +505,8 @@ describe('margaritaForm', () => {
     invalidControl.setValue(20);
     await firstValueFrom(observable);
     expect(state.valid).toBe(true);
+
+    form.cleanup();
   });
 
   it('#23 Check advanced validators', async () => {
@@ -535,5 +537,31 @@ describe('margaritaForm', () => {
     uncommonControl.setValue(commonField.initialValue);
     await firstValueFrom(observable);
     expect(state.valid).toBe(true);
+
+    form.cleanup();
+  });
+
+  it('#24 Check that validate works', async () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [{ ...commonField, validation: { required: true } }],
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+
+    expect(commonControl.state.valid).toBe(true);
+    commonControl.setValue(undefined, false, false);
+    expect(commonControl.state.valid).toBe(true);
+    const response1 = await commonControl.state.validate();
+    expect(response1).toBe(false);
+    expect(commonControl.state.valid).toBe(false);
+    commonControl.setValue(commonField.initialValue, false, false);
+    expect(commonControl.state.valid).toBe(false);
+    const response2 = await commonControl.state.validate();
+    expect(response2).toBe(true);
+    expect(commonControl.state.valid).toBe(true);
+
+    form.cleanup();
   });
 });
