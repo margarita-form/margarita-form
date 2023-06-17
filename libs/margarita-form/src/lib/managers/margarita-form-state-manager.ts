@@ -6,6 +6,7 @@ import {
   combineLatestWith,
   debounceTime,
   distinctUntilChanged,
+  firstValueFrom,
   map,
   skip,
   switchMap,
@@ -94,8 +95,6 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
     );
 
     this.createSubscription(validationStateSubscriptionObservable, ([validationStates, children]) => {
-      // console.log('validationStates', validationStates);
-
       const childrenAreValid = children.every((child) => child.valid || child.inactive);
       const currentIsValid = Object.values(validationStates).every((state) => state.valid);
 
@@ -155,10 +154,18 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
    * Validate the control and update state. Mark the control as touched to show errors.
    * @param setAsTouched Set the touched state to true
    */
-  public async validate(setAsTouched = true) {
+  public async validate(setAsTouched = true): Promise<boolean> {
+    // Validate children
+    const childValidations = this.control.controls.map((control) => control.state.validate());
+    await Promise.all(childValidations);
+
+    // Validate self
+    const changes = this.changes.pipe(debounceTime(5));
     this.control.setValue(this.control.value, false, true);
-    this.control.controls.forEach((control) => control.state.validate());
+    await firstValueFrom(changes);
+
     if (setAsTouched) this.updateState('touched', true);
+    return this.valid;
   }
 
   public resetState(respectField = false) {
