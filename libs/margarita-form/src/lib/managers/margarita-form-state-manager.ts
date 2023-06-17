@@ -175,8 +175,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
   // Single states
 
-  public errors = {};
-  public children = [];
+  public errors: CommonRecord = {};
+  public children: MargaritaFormStateChildren = [];
   public focus = false;
 
   // Pair states
