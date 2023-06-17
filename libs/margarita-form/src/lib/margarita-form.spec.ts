@@ -1,5 +1,6 @@
+import { debounceTime, firstValueFrom, map } from 'rxjs';
 import { createMargaritaForm } from './create-margarita-form';
-import { MFC, MFF, MargaritaFormField } from './margarita-form-types';
+import { MFC, MFF, MargaritaFormField, MargaritaFormFieldContext } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 
 const fieldNameInitialValue = 'Hello world';
@@ -12,6 +13,25 @@ const commonField: MargaritaFormField<MFF> = {
 
 const undefinedField: MargaritaFormField<MFF> = {
   name: 'undefinedField',
+};
+
+const invalidField: MargaritaFormField<MFF> = {
+  name: 'invalidField',
+  validation: {
+    required: true,
+    min: 5,
+    customMax: {
+      resolverName: 'max',
+      errorMessage: 'Value is way way way too high!',
+      params: 20,
+    },
+    divisible: async ({ value }: MargaritaFormFieldContext) => {
+      if (!value) return { valid: true };
+      const remainderIsZero = value % 5 === 0;
+      if (remainderIsZero) return { valid: true };
+      return { valid: false, error: 'Value is not divisible by 5!' };
+    },
+  },
 };
 
 const uncommonField: MargaritaFormField<MFF> = {
@@ -27,6 +47,22 @@ const groupField: MargaritaFormField = {
   fields: [commonField],
   initialValue: {
     fieldName: fromParentValue,
+  },
+};
+
+const asyncGroupField: MargaritaFormField = {
+  name: 'groupName',
+  fields: [{ ...uncommonField, initialValue: null, validation: { asyncGroupValidator: true, required: true } }],
+  validators: {
+    asyncGroupValidator: ({ value, control }: MargaritaFormFieldContext) => {
+      if (!value) return { valid: true };
+      return control.form.valueChanges.pipe(
+        map((rootValue) => {
+          const sameAsCommon = rootValue?.fieldName === value;
+          return { valid: sameAsCommon, error: 'Value is not same as common!' };
+        })
+      );
+    },
   },
 };
 
@@ -426,5 +462,78 @@ describe('margaritaForm', () => {
     expect(undefinedControl.state.pristine).toBe(false);
 
     form.cleanup();
+  });
+
+  it('#22 Check basic validators', async () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [invalidField],
+    });
+
+    const invalidControl = form.getControl([invalidField.name]);
+    if (!invalidControl) throw 'No control found!';
+    expect(invalidControl.state.valid).toBe(true);
+    const { state } = invalidControl;
+    expect(state.valid).toBe(true);
+
+    const observable = state.changes.pipe(debounceTime(10));
+
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(false);
+    expect(state.errors['required']).toBe('This field is required!');
+
+    invalidControl.setValue(10);
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(true);
+
+    invalidControl.setValue(1);
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(false);
+    expect(state.errors['min']).toBe('Value is too low!');
+    expect(state.errors['divisible']).toBe('Value is not divisible by 5!');
+
+    invalidControl.setValue(25);
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(false);
+    expect(state.errors['customMax']).toBe('Value is way way way too high!');
+
+    invalidControl.setValue(19);
+    await firstValueFrom(observable);
+    expect(state.errors['divisible']).toBe('Value is not divisible by 5!');
+    expect(state.valid).toBe(false);
+
+    invalidControl.setValue(20);
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(true);
+  });
+
+  it('#23 Check advanced validators', async () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [commonField, asyncGroupField],
+    });
+
+    const uncommonControl = form.getControl([asyncGroupField.name, uncommonField.name]);
+    if (!uncommonControl) throw 'No control found!';
+    expect(uncommonControl.state.valid).toBe(true);
+    const { state } = uncommonControl;
+    expect(state.valid).toBe(true);
+
+    const observable = state.changes.pipe(debounceTime(10));
+
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(false);
+    console.log(state.errors);
+
+    expect(state.errors['required']).toBe('This field is required!');
+
+    uncommonControl.setValue('just something');
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(false);
+    expect(state.errors['asyncGroupValidator']).toBe('Value is not same as common!');
+
+    uncommonControl.setValue(commonField.initialValue);
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(true);
   });
 });
