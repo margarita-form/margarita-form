@@ -1,5 +1,5 @@
 import { createMargaritaForm } from './create-margarita-form';
-import { MFF, MargaritaFormField } from './margarita-form-types';
+import { MFC, MFF, MargaritaFormField } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 
 const fieldNameInitialValue = 'Hello world';
@@ -369,40 +369,61 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#21 Test paths', () => {
-    const initialValue = ['first', 'second'];
+  it('#21 Check that toggle', () => {
     const form = createMargaritaForm<unknown, MFF>({
       name: nanoid(),
-      fields: [
-        { ...commonField, initialValue },
-        {
-          ...uncommonField,
-          initialValue: undefined,
-        },
-      ],
+      fields: [commonField, groupField, arrayField, undefinedField],
     });
 
     const commonControl = form.getControl([commonField.name]);
-    const uncommonControl = form.getControl([uncommonField.name]);
+    const undefinedControl = form.getControl([undefinedField.name]);
+    const groupControl = form.getControl([groupField.name]);
+    const commonGroupControl = form.getControl([groupField.name, commonField.name]);
+    const arrayControl = form.getControl([arrayField.name]);
+    const commonArrayControl = form.getControl([arrayField.name, 0, commonField.name]);
 
-    if (!commonControl || !Array.isArray(commonControl.value) || !uncommonControl) throw 'No control found!';
-    expect(commonControl.value.join('.')).toBe(initialValue.join('.'));
-    commonControl.addValue('third');
-    expect(commonControl.value.join('.')).toBe([...initialValue, 'third'].join('.'));
-    commonControl.removeValue('first');
-    expect(commonControl.value.join('.')).toBe(['second', 'third'].join('.'));
-    commonControl.toggleValue('second');
-    expect(commonControl.value.join('.')).toBe(['third'].join('.'));
-    commonControl.toggleValue('second');
-    commonControl.toggleValue('first');
-    expect(commonControl.value.join('.')).toBe(['third', 'second', 'first'].join('.'));
+    const controls = [
+      // All these should have same default state
+      form,
+      commonControl,
+      groupControl,
+      commonGroupControl,
+      arrayControl,
+      commonArrayControl,
+    ] as MFC[];
 
-    expect(uncommonControl.value).toBe(undefined);
-    uncommonControl.addValue('first');
-    if (!Array.isArray(uncommonControl.value)) throw 'Invalid value!';
-    expect(uncommonControl.value.join('.')).toBe(['first'].join('.'));
-    uncommonControl.addValue('second');
-    expect(uncommonControl.value.join('.')).toBe(['first', 'second'].join('.'));
+    if (controls.some((c) => c === null)) throw 'No control found!';
+
+    controls.forEach(({ state }) => {
+      expect(state.active).toBe(true);
+      expect(state.inactive).toBe(false);
+      expect(state.valid).toBe(true);
+      expect(state.invalid).toBe(false);
+      expect(state.pristine).toBe(true);
+      expect(state.dirty).toBe(false);
+      expect(state.untouched).toBe(true);
+      expect(state.touched).toBe(false);
+      expect(state.enabled).toBe(true);
+      expect(state.disabled).toBe(false);
+      expect(state.editable).toBe(true);
+      expect(state.readOnly).toBe(false);
+      expect(state.hasValue).toBe(true);
+      expect(state.shouldShowError).toBe(false);
+    });
+
+    // Form root states
+    expect(form.state.submitted).toBe(false);
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submitResult).toBe('not-submitted');
+    expect(form.state.submits).toBe(0);
+
+    // Undefined field state
+    if (!undefinedControl) throw 'No control found!';
+    expect(undefinedControl.state.hasValue).toBe(false);
+    undefinedControl.setValue('Hello world');
+    expect(undefinedControl.state.hasValue).toBe(true);
+    expect(undefinedControl.state.dirty).toBe(true);
+    expect(undefinedControl.state.pristine).toBe(false);
 
     form.cleanup();
   });
