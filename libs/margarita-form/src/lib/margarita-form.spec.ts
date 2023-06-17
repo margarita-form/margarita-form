@@ -564,4 +564,60 @@ describe('margaritaForm', () => {
 
     form.cleanup();
   });
+
+  it('#25 Check that form submit works correctly', async () => {
+    const form = createMargaritaForm<any, MFF>({
+      name: nanoid(),
+      fields: [{ ...commonField, initialValue: undefined, validation: { required: true } }],
+      handleSubmit: {
+        valid: async (form) => {
+          if (form.value[commonField.name] === commonField.initialValue) return 'valid';
+          throw 'error';
+        },
+        invalid: async () => 'invalid',
+      },
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(0);
+    expect(form.state.submitResult).toBe('not-submitted');
+    expect(form.state.submitted).toBe(false);
+    expect(form.state.disabled).toBe(false);
+
+    const submitResult1 = await form.submit();
+    expect(submitResult1).toBe('invalid');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(1);
+    expect(form.state.submitResult).toBe('form-invalid');
+    expect(form.state.submitted).toBe(true);
+    expect(form.state.disabled).toBe(false);
+
+    commonControl.setValue('not-valid-value-for-submit');
+
+    const submitResult2 = await form.submit();
+    expect(submitResult2).toBe('error');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(2);
+    expect(form.state.submitResult).toBe('error');
+    expect(form.state.submitted).toBe(true);
+    expect(form.state.disabled).toBe(false);
+
+    commonControl.setValue(commonField.initialValue);
+
+    const submitResult3 = await form.submit();
+    expect(submitResult3).toBe('valid');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(3);
+    expect(form.state.submitResult).toBe('success');
+    expect(form.state.submitted).toBe(true);
+    expect(form.state.disabled).toBe(true);
+
+    form.cleanup();
+  });
 });
