@@ -64,7 +64,7 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
           return res;
         })
         .catch((error) => {
-          this.updateStateValue('submitResult', 'error');
+          this.updateState({ submitResult: 'error', disabled: false });
           return error;
         })
         .finally(() => {
