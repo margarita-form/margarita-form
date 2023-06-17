@@ -106,12 +106,10 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
         return acc;
       }, {} as MargaritaFormStateErrors);
 
-      const hasValue = valueExists(this.control.value);
       const changes = {
         valid,
         errors,
         children,
-        hasValue,
       };
       this.updateStates(changes);
     });
@@ -239,6 +237,12 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
 
   // Computed states
 
+  // Has value
+  get hasValue() {
+    return valueExists(this.control.value);
+  }
+
+  // Show error
   private _shouldShowError: boolean | undefined = undefined;
   get shouldShowError() {
     if (this._shouldShowError === undefined) {
