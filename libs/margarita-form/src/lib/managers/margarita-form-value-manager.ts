@@ -301,10 +301,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       this._syncCurrentValue(setAsDirty, true);
     } else if (this.control.hasControls) {
       this.control.controls.forEach((control) => {
-        control.managers.value._emitChanges('children');
+        control.managers.value._emitChanges('children', setAsDirty);
       });
     } else {
-      this._emitChanges('parent');
+      this._emitChanges('parent', setAsDirty);
     }
   }
 
@@ -315,7 +315,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const value = this._resolveValue();
     this._value = value;
     if (setAsDirty) this.control.updateStateValue('dirty', true);
-    if (emitEvent) this._emitChanges(update);
+    if (emitEvent) this._emitChanges(update, setAsDirty);
     else if (update === 'parent') this._syncParentValue(setAsDirty, emitEvent);
     else if (update === 'children') this._syncChildValues(setAsDirty, emitEvent);
   }
