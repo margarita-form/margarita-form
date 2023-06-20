@@ -4,6 +4,7 @@ export * from './email-validator';
 export * from './min-max-validators';
 export * from './required-validator';
 export * from './number-validator';
+export * from './password-validator';
 export * from './pattern-validator';
 export * from './phone-validator';
 export * from './same-as-validator';

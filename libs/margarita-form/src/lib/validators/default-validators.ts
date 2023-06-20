@@ -12,6 +12,7 @@ import {
   slugValidator,
   uniqueValidator,
   urlValidator,
+  passwordValidator,
 } from '.';
 
 export const defaultValidators = {
@@ -22,6 +23,7 @@ export const defaultValidators = {
   max: maxValidator(),
   required: requiredValidator(),
   number: numberValidator(),
+  password: passwordValidator(),
   pattern: patternValidator(),
   tel: phoneValidator(),
   phone: phoneValidator(),

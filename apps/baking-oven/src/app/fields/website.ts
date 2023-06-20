@@ -24,4 +24,17 @@ export const websiteFields: CustomField[] = [
       rows: 2,
     },
   },
+  {
+    type: 'text',
+    name: 'password',
+    title: 'Password',
+    validation: {
+      required: true,
+      password: 'regular',
+    },
+    attributes: {
+      type: 'password',
+      placeholder: 'Enter a password',
+    },
+  },
 ];
