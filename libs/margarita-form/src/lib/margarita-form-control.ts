@@ -22,6 +22,7 @@ import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 import { toHash } from './helpers/to-hash';
+import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 
 export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
   public key: string;
@@ -108,6 +109,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     } catch (error) {
       return getDefaultConfig();
     }
+  }
+
+  public get extensions(): MargaritaFormExtensions {
+    if (this.isRoot) return initializeExtensions(this);
+    return this.parent.extensions;
   }
 
   public get locales(): undefined | string[] {

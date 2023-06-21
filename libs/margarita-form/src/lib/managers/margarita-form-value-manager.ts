@@ -1,4 +1,4 @@
-import { BehaviorSubject, debounceTime, fromEvent } from 'rxjs';
+import { BehaviorSubject, debounceTime } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
@@ -18,39 +18,27 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public override _init() {
-    if (this.control.isRoot) {
-      if (this.control.config.useStorage) {
-        this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
-          this._saveStorageValue();
-        });
-      }
-      if (this.control.config.useSyncronization) {
-        try {
-          const cache = { value: null };
-          const broadcaster = new BroadcastChannel(this.control.name);
-          broadcaster.postMessage({ key: this.control.key, requestSend: true });
+    const { storage, syncronization } = this.control.form.extensions;
+    const changes = this.changes.pipe(debounceTime(10));
 
-          this.createSubscription(this.changes.pipe(debounceTime(10)), (value) => {
-            const valueChanged = JSON.stringify(value) !== JSON.stringify(cache.value);
-            if (valueChanged) {
-              broadcaster.postMessage({ key: this.control.key, value });
-            }
-          });
+    this.createSubscription(changes, () => {
+      if (this.control.field.storage) storage.saveStorageValue(this.control.key, this._value);
+      if (this.control.field.syncronize) syncronization.broadcastChange(this.control.key, this._value);
+    });
 
-          this.createSubscription(fromEvent<MessageEvent>(broadcaster, 'message'), (event) => {
-            if (event.data.requestSend) {
-              broadcaster.postMessage({ key: this.control.key, value: this._value });
-            } else if (event.data.key !== this.control.key) {
-              const valueChanged = JSON.stringify(event.data.value) !== JSON.stringify(this._value);
-              if (valueChanged) {
-                this.updateValue(event.data.value, false, false, false);
-                cache.value = event.data.value;
-              }
-            }
-          });
-        } catch (error) {
-          console.error(`Could not syncronize value!`, { control: this.control, error });
+    if (this.control.field.syncronize) {
+      try {
+        const subscription = syncronization.subscribeToMessages<CONTROL['value']>(
+          this.control.key,
+          (value) => this.updateValue(value, false, true, false),
+          () => this._value
+        );
+
+        if (subscription) {
+          this.createSubscription(subscription.observable, subscription.handler);
         }
+      } catch (error) {
+        console.error(`Could not syncronize value!`, { control: this.control, error });
       }
     }
   }
@@ -70,80 +58,43 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  private _getStorage(): Storage | null {
-    if (typeof window === 'undefined') return null;
-    if (this.control.isRoot && this.control.config.useStorage) {
-      const { useStorage } = this.control.config;
-      if (useStorage === 'localStorage') {
-        return localStorage;
-      }
-      if (useStorage === 'sessionStorage') {
-        return sessionStorage;
-      }
-    }
-    return null;
-  }
-
   private _getInitialValue() {
-    const storage = this._getStorage();
-    if (storage) {
-      try {
-        const sessionStorageValue = storage.getItem(this.control.name);
-        if (sessionStorageValue) return JSON.parse(sessionStorageValue);
-      } catch (error) {
-        console.error(`Could not get value from ${this.control.config.useStorage}!`, { control: this.control, error });
-      }
-    }
+    const storageValue = this._getStorageValue();
+    if (storageValue !== undefined) return storageValue;
 
-    if (!this.control.isRoot) {
-      const parentValue = this.control.parent.value || {};
-      if (this.control.parent.expectArray) {
-        const inheritedValue = _get(parentValue, this.control.index, undefined);
-        if (inheritedValue !== undefined) {
-          return inheritedValue;
-        }
-      } else if ('key' in parentValue) {
-        const inheritedValue = _get(parentValue, ['value', this.control.name], undefined);
-        if (inheritedValue !== undefined) {
-          return inheritedValue;
-        }
-      } else {
-        const inheritedValue = _get(parentValue, this.control.name, undefined);
-        if (inheritedValue !== undefined) {
-          return inheritedValue;
-        }
-      }
-    }
+    const inheritedValue = this._getInheritedValue();
+    if (inheritedValue !== undefined) return inheritedValue;
 
     return this.control.field.initialValue;
   }
 
-  private _saveStorageValue() {
-    const storage = this._getStorage();
-    if (storage) {
-      try {
-        const stringified = JSON.stringify(this._value);
-        if (stringified === '{}') {
-          this.clearStorageValue();
-        } else {
-          storage.setItem(this.control.name, stringified);
-        }
-      } catch (error) {
-        console.error(`Could not save value to ${this.control.config.useStorage}!`, { control: this.control, error });
+  private _getInheritedValue() {
+    if (this.control.isRoot) return undefined;
+
+    const parentValue = this.control.parent.value || {};
+    if (this.control.parent.expectArray) {
+      const inheritedValue = _get(parentValue, this.control.index, undefined);
+      if (inheritedValue !== undefined) {
+        return inheritedValue;
+      }
+    } else if ('key' in parentValue) {
+      const inheritedValue = _get(parentValue, ['value', this.control.name], undefined);
+      if (inheritedValue !== undefined) {
+        return inheritedValue;
+      }
+    } else {
+      const inheritedValue = _get(parentValue, this.control.name, undefined);
+      if (inheritedValue !== undefined) {
+        return inheritedValue;
       }
     }
   }
 
-  public clearStorageValue() {
-    const storage = this._getStorage();
-    if (storage) {
-      try {
-        const sessionStorageValue = storage.getItem(this.control.name);
-        if (sessionStorageValue) storage.removeItem(this.control.name);
-      } catch (error) {
-        console.error(`Could not clear value from ${this.control.config.useStorage}!`, { control: this.control, error });
-      }
-    }
+  private _getStorageValue() {
+    const { storage } = this.control.form.extensions;
+    if (!storage.enabled) return undefined;
+    const storageValue = storage.getStorageValue(this.control.key);
+    return storageValue;
   }
 
   /**

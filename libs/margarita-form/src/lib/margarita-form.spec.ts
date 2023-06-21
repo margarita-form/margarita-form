@@ -525,7 +525,6 @@ describe('margaritaForm', () => {
 
     await firstValueFrom(observable);
     expect(state.valid).toBe(false);
-    console.log(state.errors);
 
     expect(state.errors['required']).toBe('This field is required!');
 

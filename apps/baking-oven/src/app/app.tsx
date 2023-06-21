@@ -95,6 +95,8 @@ export function App() {
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
+    storage: true,
+    syncronize: true,
     handleLocalize: {
       parent: () => {
         return {
@@ -127,7 +129,7 @@ export function App() {
       addMetadataToArrays: true,
       detectAndRemoveMetadataForArrays: false,
       useStorage: 'localStorage',
-      useSyncronization: true,
+      useSyncronization: 'broadcastChannel',
     },
   });
 

@@ -82,6 +82,8 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   isLocale?: boolean;
   locale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
+  syncronize?: boolean;
+  storage?: boolean;
 }
 
 export interface MargaritaFormRootField<VALUE> {
@@ -138,7 +140,7 @@ export interface MargaritaFormConfig {
   showDebugMessages?: boolean;
   useCacheForForms?: boolean;
   useStorage?: false | 'localStorage' | 'sessionStorage';
-  useSyncronization?: boolean;
+  useSyncronization?: false | 'broadcastChannel';
 }
 
 export interface MargaritaFormSubmitHandlers<VALUE = unknown> {

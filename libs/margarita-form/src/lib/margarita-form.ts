@@ -60,7 +60,7 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
               this.updateStateValue('disabled', false);
               break;
           }
-          if (this.config.clearStorageOnSuccessfullSubmit) this.managers.value.clearStorageValue();
+          if (this.config.clearStorageOnSuccessfullSubmit) this.extensions.storage.clearStorage();
           return res;
         })
         .catch((error) => {
