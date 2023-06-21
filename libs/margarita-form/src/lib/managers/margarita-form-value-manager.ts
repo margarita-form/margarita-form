@@ -18,27 +18,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public override _init() {
-    /*
-    REFACTOR ME
-
-    this.createSubscription(this.control.managers.controls.changes, () => {
-      // this._syncCurrentValue(false);
-    });
-    */
-
-    /*
-    REFACTOR ME
-
-    this.createSubscription(this.control.managers.field.changes, () => {
-      if (this.control.managers.field.shouldResetControl) {
-        const initialValue = this._getInitialValue();
-        if (initialValue) {
-          this.updateValue(initialValue, false, false, false);
-        }
-      }
-    });
-    */
-
     if (this.control.isRoot) {
       if (this.control.config.useStorage) {
         this.createSubscription(this.changes.pipe(debounceTime(10)), () => {
