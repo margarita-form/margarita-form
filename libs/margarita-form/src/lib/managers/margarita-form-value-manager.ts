@@ -71,8 +71,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _getInheritedValue() {
     if (this.control.isRoot) return undefined;
 
-    const parentValue = this.control.parent.value || {};
-    if (this.control.parent.expectArray) {
+    const { value: parentValue, expectArray } = this.control.parent || {};
+    if (typeof parentValue !== 'object') return undefined;
+
+    if (expectArray) {
       const inheritedValue = _get(parentValue, this.control.index, undefined);
       if (inheritedValue !== undefined) {
         return inheritedValue;
