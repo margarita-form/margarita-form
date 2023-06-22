@@ -5,7 +5,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
   private source: Storage | undefined;
   private sourceName: string | undefined;
   public enabled = false;
-  private keys: string[] = [];
+  private keys = new Set<string>();
 
   constructor(public form: CONTROL) {
     this.source = this._getStorage();
@@ -52,7 +52,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
         if (value === '{}') return this.clearStorageValue(key);
 
         this.source.setItem(key, value);
-        this.keys.push(key);
+        this.addStorageKey(key);
         return 'saved';
       } catch (error) {
         console.error(`Could not save value to ${this.sourceName}!`, { form: this.form, error });
@@ -76,5 +76,9 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
       }
     }
     return 'no-storage';
+  }
+
+  private addStorageKey(key: string) {
+    this.keys.add(key);
   }
 }

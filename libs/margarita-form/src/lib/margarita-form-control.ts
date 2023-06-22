@@ -31,6 +31,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public keyStore: Set<string>;
   private _listeningToChanges = true;
   public managers: ManagerInstances;
+  private cache = new Map<string, unknown>();
 
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
     const { initialIndex, keyStore = new Set<string>() } = context;
@@ -112,7 +113,13 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get extensions(): MargaritaFormExtensions {
-    if (this.isRoot) return initializeExtensions(this);
+    if (this.isRoot) {
+      const cachedExtensions = this.cache.get('extensions');
+      if (cachedExtensions) return cachedExtensions as MargaritaFormExtensions;
+      const extensions = initializeExtensions(this);
+      this.cache.set('extensions', extensions);
+      return extensions;
+    }
     return this.parent.extensions;
   }
 
