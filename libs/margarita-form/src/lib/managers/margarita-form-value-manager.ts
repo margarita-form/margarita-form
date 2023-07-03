@@ -137,14 +137,20 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           return control.value;
         });
       }
-      if (this.control.expectGroup) {
-        const entries = this.control.activeControls.map((control) => {
-          const exists = valueExists(control.value);
-          if (!exists) return [control.name, undefined];
-          return [control.name, control.value];
-        });
-        return Object.fromEntries(entries);
-      }
+
+      const entries = this.control.activeControls.reduce((acc, control) => {
+        const exists = valueExists(control.value);
+        if (!exists) acc.push([control.name, undefined]);
+        else if (control.value && control.expectFlat && typeof control.value === 'object') {
+          const childEntries = Object.entries(control.value);
+          acc.push(...childEntries);
+        } else {
+          acc.push([control.name, control.value]);
+        }
+        return acc;
+      }, [] as [string, unknown][]);
+
+      return Object.fromEntries(entries);
     }
     return this._value;
   }
@@ -224,11 +230,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           }
         });
       } else {
-        Object.values(this.control.managers.controls.group).forEach((control) => {
-          const { name } = control.field;
-          const updatedValue = _get(value, [name], patch ? control.value : undefined);
-          control.setValue(updatedValue, setAsDirty);
-        });
+        this._updateChildGroupValues(value, setAsDirty, patch);
       }
       this._syncCurrentValue(setAsDirty, true);
     } else if (this.control.hasControls) {
@@ -238,6 +240,17 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     } else {
       this._emitChanges('parent', setAsDirty);
     }
+  }
+
+  public _updateChildGroupValues(parentValue: unknown, setAsDirty = true, patch = false) {
+    this.control.controls.forEach((control) => {
+      if (control.expectFlat) {
+        control.managers.value._updateChildGroupValues(parentValue, setAsDirty, patch);
+      } else {
+        const updatedValue = _get(parentValue, [control.name], patch ? control.value : undefined);
+        control.setValue(updatedValue, setAsDirty);
+      }
+    });
   }
 
   /**

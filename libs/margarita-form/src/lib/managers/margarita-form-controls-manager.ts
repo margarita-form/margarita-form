@@ -13,7 +13,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
   constructor(public control: CONTROL) {
     super();
 
-    this._requireUniqueNames = this.control.grouping === 'group';
+    this._requireUniqueNames = !this.control.expectArray;
 
     this.onCleanup = () => {
       this._controls.forEach((control) => {

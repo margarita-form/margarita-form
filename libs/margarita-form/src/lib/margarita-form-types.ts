@@ -23,7 +23,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl 
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
-export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array';
+export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array' | 'flat';
 
 export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC> = (
   context: MargaritaFormFieldContext<CONTROL, PARAMS>

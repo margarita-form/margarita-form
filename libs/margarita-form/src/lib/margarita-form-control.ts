@@ -160,10 +160,17 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   /**
+   * Check if control's output should be merged to parent
+   */
+  public get expectFlat(): boolean {
+    return this.grouping === 'flat';
+  }
+
+  /**
    * Check if control's output should be an group / object
    */
   public get expectGroup(): boolean {
-    return !this.expectArray;
+    return !this.expectArray && !this.expectFlat;
   }
 
   /**
