@@ -123,6 +123,14 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return this.parent.extensions;
   }
 
+  public get getManager() {
+    return <MANAGER>(key: string): MANAGER => {
+      const found = (this.managers as any)[key];
+      if (!found) throw `Manager "${key}" not found!`;
+      return found;
+    };
+  }
+
   public get locales(): undefined | string[] {
     return this.form.locales;
   }
