@@ -263,6 +263,4 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
   }
 }
 
-Object.assign(ControlsManager.prototype, Array.prototype);
-
 export { ControlsManager };
