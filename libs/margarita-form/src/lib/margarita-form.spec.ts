@@ -473,10 +473,10 @@ describe('margaritaForm', () => {
     const invalidControl = form.getControl([invalidField.name]);
     if (!invalidControl) throw 'No control found!';
     expect(invalidControl.state.valid).toBe(true);
-    const { state } = invalidControl;
+    const { state, stateChanges } = invalidControl;
     expect(state.valid).toBe(true);
 
-    const observable = state.changes.pipe(debounceTime(10));
+    const observable = stateChanges.pipe(debounceTime(10));
 
     await firstValueFrom(observable);
     expect(state.valid).toBe(false);
@@ -518,10 +518,10 @@ describe('margaritaForm', () => {
     const uncommonControl = form.getControl([asyncGroupField.name, uncommonField.name]);
     if (!uncommonControl) throw 'No control found!';
     expect(uncommonControl.state.valid).toBe(true);
-    const { state } = uncommonControl;
+    const { state, stateChanges } = uncommonControl;
     expect(state.valid).toBe(true);
 
-    const observable = state.changes.pipe(debounceTime(10));
+    const observable = stateChanges.pipe(debounceTime(10));
 
     await firstValueFrom(observable);
     expect(state.valid).toBe(false);
@@ -552,12 +552,12 @@ describe('margaritaForm', () => {
     expect(commonControl.state.valid).toBe(true);
     commonControl.setValue(undefined, false, false);
     expect(commonControl.state.valid).toBe(true);
-    const response1 = await commonControl.state.validate();
+    const response1 = await commonControl.validate();
     expect(response1).toBe(false);
     expect(commonControl.state.valid).toBe(false);
     commonControl.setValue(commonField.initialValue, false, false);
     expect(commonControl.state.valid).toBe(false);
-    const response2 = await commonControl.state.validate();
+    const response2 = await commonControl.validate();
     expect(response2).toBe(true);
     expect(commonControl.state.valid).toBe(true);
 
