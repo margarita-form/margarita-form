@@ -139,7 +139,8 @@ export interface MargaritaFormConfig {
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
   useCacheForForms?: boolean;
-  useStorage?: false | 'localStorage' | 'sessionStorage';
+  useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
+  storageKey?: 'key' | 'name';
   useSyncronization?: false | 'broadcastChannel';
 }
 
@@ -161,6 +162,12 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTM
   required?: boolean;
   pattern?: string;
 };
+
+export interface StorageLike {
+  getItem(key: string): unknown | undefined;
+  setItem(key: string, value: unknown): void;
+  removeItem(key: string): void;
+}
 
 // Shorthands
 

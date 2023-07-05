@@ -22,7 +22,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const changes = this.changes.pipe(debounceTime(10));
 
     this.createSubscription(changes, () => {
-      if (this.control.field.storage) storage.saveStorageValue(this.control.key, this._value);
+      const storageKey = this.control[this.control.config.storageKey || 'key'];
+      if (this.control.field.storage) storage.saveStorageValue(storageKey, this._value);
       if (this.control.field.syncronize) syncronization.broadcastChange(this.control.key, this._value);
     });
 
@@ -95,7 +96,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _getStorageValue() {
     const { storage } = this.control.form.extensions;
     if (!storage.enabled) return undefined;
-    const storageValue = storage.getStorageValue(this.control.key);
+    const storageKey = this.control[this.control.config.storageKey || 'key'];
+    const storageValue = storage.getStorageValue(storageKey);
     return storageValue;
   }
 

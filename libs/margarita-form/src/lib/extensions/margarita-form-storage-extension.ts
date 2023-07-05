@@ -1,27 +1,33 @@
 import { valueExists } from '../helpers/check-value';
-import { MFC } from '../margarita-form-types';
+import { MFC, StorageLike } from '../margarita-form-types';
+import { LocalStorage } from './storages/local-storage';
+import { SearchParamsStorage } from './storages/search-params-storage';
+import { SessionStorage } from './storages/session-storage';
 
 export class MargaritaFormStorageExtension<CONTROL extends MFC> {
-  private source: Storage | undefined;
-  private sourceName: string | undefined;
+  private source: StorageLike | undefined;
   public enabled = false;
   private keys = new Set<string>();
 
   constructor(public form: CONTROL) {
     this.source = this._getStorage();
+    if (typeof this.source === 'string') throw new Error(`Invalid storage type: ${this.source}`);
     this.enabled = !!this.source;
   }
 
-  private _getStorage(): Storage | undefined {
+  private _getStorage(): StorageLike | undefined {
     if (typeof window === 'undefined') return undefined;
     const { useStorage } = this.form.config;
     if (useStorage) {
-      this.sourceName = useStorage;
-      if (useStorage === 'localStorage') {
-        return localStorage;
-      }
-      if (useStorage === 'sessionStorage') {
-        return sessionStorage;
+      switch (useStorage) {
+        case 'localStorage':
+          return LocalStorage;
+        case 'sessionStorage':
+          return SessionStorage;
+        case 'searchParams':
+          return SearchParamsStorage;
+        default:
+          return useStorage;
       }
     }
     return undefined;
@@ -30,10 +36,11 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
   public getStorageValue<TYPE = any>(key: string): TYPE | undefined {
     if (this.source) {
       try {
-        const sessionStorageValue = this.source.getItem(key);
-        if (sessionStorageValue) return JSON.parse(sessionStorageValue);
+        const storageValue = this.source.getItem(key);
+        if (typeof storageValue === 'string') return JSON.parse(storageValue);
+        return storageValue as TYPE;
       } catch (error) {
-        console.error(`Could not get value from ${this.sourceName}!`, { form: this.form, error });
+        console.error(`Could not get value from ${this.source}!`, { form: this.form, error });
       }
     }
     return undefined;
@@ -55,7 +62,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
         this.addStorageKey(key);
         return 'saved';
       } catch (error) {
-        console.error(`Could not save value to ${this.sourceName}!`, { form: this.form, error });
+        console.error(`Could not save value to ${this.source}!`, { form: this.form, error });
         return 'error';
       }
     }
@@ -72,7 +79,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
         const sessionStorageValue = this.source.getItem(key);
         if (sessionStorageValue) this.source.removeItem(key);
       } catch (error) {
-        console.error(`Could not clear value from ${this.sourceName}!`, { form: this.form, error });
+        console.error(`Could not clear value from ${this.source}!`, { form: this.form, error });
       }
     }
     return 'no-storage';
