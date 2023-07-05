@@ -199,7 +199,8 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       initialIndex: this._controls.length,
     });
 
-    if (this.control.state?.disabled) control.disable();
+    // TODO: Add test that new children gets disabled when parent is disabled
+    // if (this.control.state?.disabled) control.disable();
     return this.appendControl(control, resetControl, emit);
   }
 

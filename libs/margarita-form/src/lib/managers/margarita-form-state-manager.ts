@@ -27,158 +27,8 @@ import { valueExists } from '../helpers/check-value';
 // States which can be modfiied in the field
 export const fieldStateKeys: (keyof UserDefinedStates)[] = ['enabled', 'disabled', 'editable', 'readOnly', 'active', 'inactive'];
 
-class StateManager<CONTROL extends MFC> extends BaseManager implements MargaritaFormState {
-  public changes = new BehaviorSubject<typeof this>(this);
-
-  constructor(public control: CONTROL) {
-    super();
-
-    fieldStateKeys.forEach((key) => {
-      const value = control.field[key];
-      if (typeof value === 'boolean') this.updateStates({ [key]: value });
-      if (typeof value === 'function') this.updateStates({ [key]: false });
-    });
-  }
-
-  public override _init(): void {
-    const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
-      switchMap((value) => {
-        const state = fieldStateKeys.reduce((acc, key) => {
-          const value = this.control.field[key];
-          if (value !== undefined) acc[key] = value;
-          return acc;
-        }, {} as CommonRecord);
-
-        return mapResolverEntries({
-          title: 'State',
-          from: state,
-          context: {
-            control: this.control,
-            value,
-            params: null,
-          },
-        });
-      })
-    );
-
-    this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
-      this.updateStates(state);
-      this.control.updateSyncId();
-      this._emitChanges();
-    });
-
-    const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
-      switchMap((value) => {
-        const validators = this.control.validators;
-        return mapResolverEntries<MargaritaFormValidatorResult>({
-          title: 'State',
-          from: this.control.field.validation || {},
-          resolveStaticValues: false,
-          resolvers: validators,
-          context: {
-            control: this.control,
-            value,
-            params: null,
-          },
-        });
-      }),
-      combineLatestWith(
-        this.control.managers.controls.changes.pipe(
-          switchMap((controls) => {
-            if (!controls.length) return Promise.resolve([]);
-            const stateChanges: Observable<StateManager<MFC>>[] = controls.map((control) => control.stateChanges);
-            return combineLatest(stateChanges) as Observable<MargaritaFormStateChildren>;
-          })
-        )
-      ),
-      debounceTime(1)
-    );
-
-    this.createSubscription(validationStateSubscriptionObservable, ([validationStates, children]) => {
-      const childrenAreValid = children.every((child) => child.valid || child.inactive);
-      const currentIsValid = Object.values(validationStates).every((state) => state.valid);
-
-      const valid = currentIsValid && childrenAreValid;
-
-      const errors = Object.entries(validationStates).reduce((acc, [key, { error }]) => {
-        if (error) acc[key] = error;
-        return acc;
-      }, {} as MargaritaFormStateErrors);
-
-      const changes = {
-        valid,
-        errors,
-        children,
-      };
-      this.updateStates(changes);
-    });
-
-    const activeChangesSubscriptionObservable = this.changes.pipe(
-      map((state) => state.active),
-      distinctUntilChanged(),
-      skip(1)
-    );
-
-    this.createSubscription(activeChangesSubscriptionObservable, () => {
-      if (!this.control.isRoot) {
-        this.control.parent.managers.value._syncCurrentValue(false, true);
-      }
-    });
-  }
-
-  private _emitChanges() {
-    this.changes.next(this);
-  }
-
-  // Methods
-
-  public updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
-    Object.assign(this, { [key]: value });
-    if (key === 'enabled') this._enableChildren(!!value);
-    if (key === 'disabled') this._enableChildren(!value);
-    if (key === 'dirty' && value === true) this._setParentDirty();
-    if (key === 'pristine' && value === false) this._setParentDirty();
-
-    if (emit) this._emitChanges();
-  }
-
-  public updateStates(changes: Partial<MargaritaFormState>, emit = true) {
-    Object.entries(changes).forEach(([key, value]: [any, any]) => {
-      this.updateState(key, value, false);
-    });
-
-    if (emit) this._emitChanges();
-  }
-
-  /**
-   * Validate the control and update state. Mark the control as touched to show errors.
-   * @param setAsTouched Set the touched state to true
-   */
-  public async validate(setAsTouched = true): Promise<boolean> {
-    // Validate children
-    const childValidations = this.control.controls.map((control) => control.state.validate());
-    await Promise.all(childValidations);
-
-    // Validate self
-    const changes = this.changes.pipe(debounceTime(5));
-    this.control.setValue(this.control.value, false, true);
-    await firstValueFrom(changes);
-
-    if (setAsTouched) this.updateState('touched', true);
-    return this.valid;
-  }
-
-  public resetState(respectField = false) {
-    const changes: CommonRecord = {
-      pristine: true,
-      untouched: true,
-    };
-    if (!respectField) {
-      changes['enabled'] = true;
-      changes['editable'] = true;
-    }
-    this.updateStates(changes);
-  }
+export class MargaritaFormStateValue implements MargaritaFormState {
+  constructor(private control: MFC) {}
 
   // Single states
 
@@ -312,6 +162,165 @@ class StateManager<CONTROL extends MFC> extends BaseManager implements Margarita
   set submits(value: number) {
     this._checkRoot('submits');
     this._submits = value;
+  }
+}
+
+class StateManager<CONTROL extends MFC> extends BaseManager {
+  public value: MargaritaFormStateValue;
+  public changes: BehaviorSubject<MargaritaFormStateValue>;
+
+  constructor(public control: CONTROL) {
+    super();
+
+    this.value = new MargaritaFormStateValue(control);
+    this.changes = new BehaviorSubject(this.value);
+
+    fieldStateKeys.forEach((key) => {
+      const value = control.field[key];
+      if (typeof value === 'boolean') this.updateStates({ [key]: value });
+      if (typeof value === 'function') this.updateStates({ [key]: false });
+    });
+  }
+
+  public override _init(): void {
+    const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
+      switchMap((value) => {
+        const state = fieldStateKeys.reduce((acc, key) => {
+          const value = this.control.field[key];
+          if (value !== undefined) acc[key] = value;
+          return acc;
+        }, {} as CommonRecord);
+
+        return mapResolverEntries({
+          title: 'State',
+          from: state,
+          context: {
+            control: this.control,
+            value,
+            params: null,
+          },
+        });
+      })
+    );
+
+    this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
+      this.updateStates(state);
+      this.control.updateSyncId();
+      this._emitChanges();
+    });
+
+    const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
+      switchMap((value) => {
+        const validators = this.control.validators;
+        return mapResolverEntries<MargaritaFormValidatorResult>({
+          title: 'State',
+          from: this.control.field.validation || {},
+          resolveStaticValues: false,
+          resolvers: validators,
+          context: {
+            control: this.control,
+            value,
+            params: null,
+          },
+        });
+      }),
+      combineLatestWith(
+        this.control.managers.controls.changes.pipe(
+          switchMap((controls) => {
+            if (!controls.length) return Promise.resolve([]);
+            const stateChanges: Observable<MargaritaFormStateValue>[] = controls.map((control) => control.stateChanges);
+            return combineLatest(stateChanges) as Observable<MargaritaFormStateChildren>;
+          })
+        )
+      ),
+      debounceTime(1)
+    );
+
+    this.createSubscription(validationStateSubscriptionObservable, ([validationStates, children]) => {
+      const childrenAreValid = children.every((child) => child.valid || child.inactive);
+      const currentIsValid = Object.values(validationStates).every((state) => state.valid);
+
+      const valid = currentIsValid && childrenAreValid;
+
+      const errors = Object.entries(validationStates).reduce((acc, [key, { error }]) => {
+        if (error) acc[key] = error;
+        return acc;
+      }, {} as MargaritaFormStateErrors);
+
+      const changes = {
+        valid,
+        errors,
+        children,
+      };
+      this.updateStates(changes);
+    });
+
+    const activeChangesSubscriptionObservable = this.changes.pipe(
+      map((state) => state.active),
+      distinctUntilChanged(),
+      skip(1)
+    );
+
+    this.createSubscription(activeChangesSubscriptionObservable, () => {
+      if (!this.control.isRoot) {
+        this.control.parent.managers.value._syncCurrentValue(false, true);
+      }
+    });
+  }
+
+  private _emitChanges() {
+    this.changes.next(this.value);
+  }
+
+  // Methods
+
+  public updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
+    Object.assign(this.value, { [key]: value });
+    if (key === 'enabled') this._enableChildren(!!value);
+    if (key === 'disabled') this._enableChildren(!value);
+    if (key === 'dirty' && value === true) this._setParentDirty();
+    if (key === 'pristine' && value === false) this._setParentDirty();
+
+    if (emit) this._emitChanges();
+  }
+
+  public updateStates(changes: Partial<MargaritaFormState>, emit = true) {
+    Object.entries(changes).forEach(([key, value]: [any, any]) => {
+      this.updateState(key, value, false);
+    });
+
+    if (emit) this._emitChanges();
+  }
+
+  /**
+   * Validate the control and update state. Mark the control as touched to show errors.
+   * @param setAsTouched Set the touched state to true
+   */
+  public async validate(setAsTouched = true): Promise<boolean> {
+    // Validate children
+    const childValidations = this.control.controls.map((control) => control.validate());
+    await Promise.all(childValidations);
+
+    // Validate self
+    const changes = this.changes.pipe(debounceTime(5));
+    this.control.setValue(this.control.value, false, true);
+    await firstValueFrom(changes);
+
+    if (setAsTouched) this.updateState('touched', true);
+
+    return this.value.valid;
+  }
+
+  public resetState(respectField = false) {
+    const changes: CommonRecord = {
+      pristine: true,
+      untouched: true,
+    };
+    if (!respectField) {
+      changes['enabled'] = true;
+      changes['editable'] = true;
+    }
+    this.updateStates(changes);
   }
 
   // Internal

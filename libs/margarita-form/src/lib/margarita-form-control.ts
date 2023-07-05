@@ -15,7 +15,7 @@ import {
   MargaritaFormControlContext,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
-import { StateManager } from './managers/margarita-form-state-manager';
+import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 import { Params } from './managers/margarita-form-params-manager';
 import { getDefaultConfig } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
@@ -285,19 +285,19 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   // States
 
-  public get state(): StateManager<this> {
-    return this.managers.state as unknown as StateManager<this>;
+  public get state(): MargaritaFormStateValue {
+    return this.managers.state.value;
   }
 
-  public get stateChanges(): Observable<StateManager<this>> {
-    return this.state.changes.pipe(debounceTime(1), shareReplay(1));
+  public get stateChanges(): Observable<MargaritaFormStateValue> {
+    return this.managers.state.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
-  public getState = (key: keyof StateManager<this>) => {
+  public getState = (key: keyof MargaritaFormStateValue) => {
     return this.state[key];
   };
 
-  public getStateChanges = (key: keyof StateManager<this>) => {
+  public getStateChanges = (key: keyof MargaritaFormStateValue) => {
     return this.stateChanges.pipe(
       map((state) => state[key]),
       distinctUntilChanged()
@@ -352,7 +352,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsTouched Set the touched state to true
    */
   public validate = async (setAsTouched = true) => {
-    await this.managers.state.validate(setAsTouched);
+    return await this.managers.state.validate(setAsTouched);
   };
 
   public registerValidator = (name: string, validator: MargaritaFormValidator) => {
