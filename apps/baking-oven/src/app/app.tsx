@@ -76,8 +76,9 @@ const AppWrapper = styled.div`
 `;
 
 export interface CustomField extends MargaritaFormField<CustomField> {
-  type: 'text' | 'textarea' | 'repeatable' | 'group' | 'localized';
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
   title: string;
+  options?: { label: string; value: string }[];
 }
 
 interface FormValue {
@@ -221,6 +222,44 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
           <textarea id={uid} name={uid} ref={control.setRef} />
+        </div>
+      );
+
+    case 'radio':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          {control.field.options?.map((option) => {
+            return (
+              <div key={option.value}>
+                <input id={uid + '-' + option.value} name={uid} type="radio" value={option.value} ref={control.setRef} />
+                <label htmlFor={uid + '-' + option.value}>{option.label}</label>
+              </div>
+            );
+          })}
+        </div>
+      );
+
+    case 'checkbox':
+      return (
+        <div className="field-wrapper">
+          <label htmlFor={uid}>{control.field.title}</label>
+          <input id={uid} name={uid} type="checkbox" ref={control.setRef} />
+        </div>
+      );
+
+    case 'checkbox-group':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          {control.field.options?.map((option) => {
+            return (
+              <div key={option.value}>
+                <input id={uid + '-' + option.value} name={uid} type="checkbox" multiple value={option.value} ref={control.setRef} />
+                <label htmlFor={uid + '-' + option.value}>{option.label}</label>
+              </div>
+            );
+          })}
         </div>
       );
 

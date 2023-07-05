@@ -85,4 +85,36 @@ export const recipeFields: CustomField[] = [
       },
     ],
   },
+  {
+    name: 'state',
+    title: 'State',
+    type: 'radio',
+    initialValue: 'draft',
+    options: [
+      {
+        label: 'Draft',
+        value: 'draft',
+      },
+      {
+        label: 'Published',
+        value: 'published',
+      },
+    ],
+  },
+  {
+    name: 'tags',
+    title: 'Tags',
+    type: 'checkbox-group',
+    initialValue: ['tag1', 'tag2'],
+    options: Array.from({ length: 5 }, (_, i) => ({
+      label: `Tag ${i + 1}`,
+      value: `tag${i + 1}`,
+    })),
+  },
+  {
+    name: 'allowComments',
+    title: 'Allow comments',
+    type: 'checkbox',
+    initialValue: true,
+  },
 ];
