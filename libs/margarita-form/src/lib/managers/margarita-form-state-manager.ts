@@ -39,6 +39,8 @@ export class MargaritaFormStateValue implements MargaritaFormState {
   // Pair states
 
   // Valid & invalid
+  public validating = true;
+  public validated = false;
   public valid = true;
   get invalid() {
     return !this.valid;
@@ -104,7 +106,7 @@ export class MargaritaFormStateValue implements MargaritaFormState {
   get shouldShowError() {
     if (this._shouldShowError === undefined) {
       const interacted = this.touched || this.dirty;
-      return this.invalid && interacted;
+      return this.validated && this.invalid && interacted;
     }
     return this._shouldShowError;
   }
@@ -211,6 +213,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
     const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
       switchMap((value) => {
+        if (!this.value.validating) this.updateState('validating', true);
         const validators = this.control.validators;
         return mapResolverEntries<MargaritaFormValidatorResult>({
           title: 'State',
@@ -251,6 +254,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
         valid,
         errors,
         children,
+        validating: false,
+        validated: true,
       };
       this.updateStates(changes);
     });
