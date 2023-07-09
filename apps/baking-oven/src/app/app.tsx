@@ -98,6 +98,7 @@ export function App() {
     locales: ['en', 'fi'],
     storage: true,
     syncronize: true,
+    currentLocale: 'en',
     handleLocalize: {
       parent: () => {
         return {
@@ -213,6 +214,7 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
+          {control.i18n?.description && <p>{control.i18n.description}</p>}
           <input id={uid} name={uid} type="text" ref={control.setRef} />
         </div>
       );
@@ -221,6 +223,7 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
+          {control.i18n?.description && <p>{control.i18n.description}</p>}
           <textarea id={uid} name={uid} ref={control.setRef} />
         </div>
       );
