@@ -204,7 +204,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   };
 
   public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF)[] => {
-    const parentPath = this.parent.getPath(type);
+    const parentPath = this.isRoot ? [] : this.parent.getPath(type);
     if (type === 'controls') {
       return [...parentPath, this];
     }
@@ -212,7 +212,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
       return [...parentPath, this.uid];
     }
     // Default and indexes are the same!
-    const part = this.parent.expectArray ? this.index : this.name;
+    const part = !this.isRoot && this.parent.expectArray ? this.index : this.name;
     return [...parentPath, part];
   };
 
