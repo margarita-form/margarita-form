@@ -37,6 +37,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
     if (this.source) {
       try {
         const storageValue = this.source.getItem(key);
+        if (!storageValue) return undefined;
         if (typeof storageValue === 'string') return JSON.parse(storageValue);
         return storageValue as TYPE;
       } catch (error) {
@@ -47,6 +48,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
   }
 
   public saveStorageValue(key: string, value: any): string {
+    if (!valueExists(value)) return this.clearStorageValue(key);
     if (this.source) {
       try {
         if (typeof value === 'object') {
