@@ -349,20 +349,20 @@ describe('margaritaForm', () => {
     if (!groupControl || !commonControl || !arrayControl || !firstArrayControl) throw 'No control found!';
 
     const commonStringPath = commonControl.getPath('default');
-    expect(commonStringPath.join('.')).toBe([groupField.name, commonField.name].join('.'));
+    expect(commonStringPath.join('.')).toBe([form.name, groupField.name, commonField.name].join('.'));
 
     const commonControlsPath = commonControl.getPath('controls');
-    expect(commonControlsPath[0]).toBe(groupControl);
-    expect(commonControlsPath[1]).toBe(commonControl);
+    expect(commonControlsPath[1]).toBe(groupControl);
+    expect(commonControlsPath[2]).toBe(commonControl);
 
     const arrayStringPath = firstArrayControl.getPath('default');
-    expect(arrayStringPath[0]).toBe(arrayField.name);
-    expect(arrayStringPath[2]).toBe(commonControl.name);
+    expect(arrayStringPath[1]).toBe(arrayField.name);
+    expect(arrayStringPath[3]).toBe(commonControl.name);
 
     const arrayIndexesPath = firstArrayControl.getPath('indexes');
-    expect(arrayIndexesPath[0]).toBe(arrayField.name);
-    expect(arrayIndexesPath[1]).toBe(0);
-    expect(arrayIndexesPath[2]).toBe(commonControl.name);
+    expect(arrayIndexesPath[1]).toBe(arrayField.name);
+    expect(arrayIndexesPath[2]).toBe(0);
+    expect(arrayIndexesPath[3]).toBe(commonControl.name);
 
     form.cleanup();
   });
@@ -660,5 +660,65 @@ describe('margaritaForm', () => {
     if (!commonControlValue) throw 'No control found!';
     expect(commonControlValue.value).toBe(storageValue);
     valueForm.cleanup();
+  });
+
+  it('#27 Create fields that are localized', () => {
+    const form = createMargaritaForm<any>({
+      name: nanoid(),
+      currentLocale: 'fi',
+      locales: ['en', 'fi', 'sv'],
+      initialValue: {
+        [uncommonField.name]: {
+          en: 'Hello world',
+          fi: 'Hei maailma',
+          sv: 'Hej världen',
+        },
+      },
+      fields: [
+        {
+          ...commonField,
+          i18n: {
+            content: {
+              en: 'Hello world',
+              fi: 'Hei maailma',
+              sv: 'Hej världen',
+            },
+          },
+        },
+        {
+          ...uncommonField,
+          localize: true,
+          i18n: {
+            content: {
+              en: 'Hello world',
+              fi: 'Hei maailma',
+              sv: 'Hej världen',
+            },
+          },
+        },
+      ],
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+    expect(commonControl.i18n.content).toBe('Hei maailma');
+
+    const uncommonControl = form.getControl([uncommonField.name]);
+    if (!uncommonControl) throw 'No control found!';
+    expect(uncommonControl.i18n.content).toBe('Hei maailma');
+    const enControl = uncommonControl.getControl('en');
+    if (!enControl) throw 'No control found!';
+    expect(enControl.value).toBe('Hello world');
+    expect(enControl.i18n.content).toBe('Hello world');
+    const fiControl = uncommonControl.getControl('fi');
+    if (!fiControl) throw 'No control found!';
+    expect(fiControl.value).toBe('Hei maailma');
+    expect(fiControl.i18n.content).toBe('Hei maailma');
+    const svControl = uncommonControl.getControl('sv');
+    if (!svControl) throw 'No control found!';
+    expect(svControl.value).toBe('Hej världen');
+    expect(svControl.i18n.content).toBe('Hej världen');
+
+    form.cleanup();
   });
 });
