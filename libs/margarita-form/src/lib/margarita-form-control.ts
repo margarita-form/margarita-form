@@ -203,17 +203,16 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     await this.managers.field.updateField(changes, resetControl);
   };
 
-  public getPath = (type?: 'default' | 'indexes' | 'controls'): (string | number | MFC | MF)[] => {
-    if (this.isRoot) return [];
+  public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF)[] => {
     const parentPath = this.parent.getPath(type);
-    if (type === 'indexes') {
-      const part = this.parent.expectArray ? this.index : this.name;
-      return [...parentPath, part];
-    }
     if (type === 'controls') {
       return [...parentPath, this];
     }
-    const part = this.parent.expectArray ? this.uid : this.name;
+    if (type === 'uids') {
+      return [...parentPath, this.uid];
+    }
+    // Default and indexes are the same!
+    const part = this.parent.expectArray ? this.index : this.name;
     return [...parentPath, part];
   };
 
