@@ -1,6 +1,6 @@
 import { debounceTime, firstValueFrom, map } from 'rxjs';
 import { createMargaritaForm } from './create-margarita-form';
-import { MFC, MFF, MargaritaFormField, MargaritaFormFieldContext } from './margarita-form-types';
+import { MFC, MFF, MargaritaFormField, MargaritaFormFieldContext, StorageLike } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 
 const fieldNameInitialValue = 'Hello world';
@@ -618,5 +618,47 @@ describe('margaritaForm', () => {
     expect(form.state.disabled).toBe(true);
 
     form.cleanup();
+  });
+
+  const storageValue = 'storage-value';
+
+  const ValueStorage: StorageLike & any = {
+    value: null,
+    getItem: () => (ValueStorage.value ? { [commonField.name]: ValueStorage.value } : null),
+    setItem: (key: string, value: unknown) => {
+      ValueStorage.value = value;
+    },
+    removeItem: () => {
+      ValueStorage.value = null;
+    },
+  };
+
+  it('#26 Check that storages work corretly', async () => {
+    const nullForm = createMargaritaForm<any, MFF>({
+      name: nanoid(),
+      fields: [commonField],
+      config: {
+        useStorage: ValueStorage,
+      },
+    });
+    const commonControlNull = nullForm.getControl([commonField.name]);
+    if (!commonControlNull) throw 'No control found!';
+    expect(commonControlNull.value).toBe(commonField.initialValue);
+    nullForm.cleanup();
+
+    ValueStorage.value = storageValue;
+
+    const valueForm = createMargaritaForm<any, MFF>({
+      name: nanoid(),
+      fields: [commonField],
+      config: {
+        useStorage: ValueStorage,
+      },
+    });
+
+    const commonControlValue = valueForm.getControl([commonField.name]);
+    if (!commonControlValue) throw 'No control found!';
+    expect(commonControlValue.value).toBe(storageValue);
+    valueForm.cleanup();
   });
 });
