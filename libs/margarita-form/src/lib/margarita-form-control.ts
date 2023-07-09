@@ -136,7 +136,15 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get currentLocale(): undefined | string {
-    return this.field.locale || this.context.parent?.currentLocale;
+    return this.field.currentLocale || this.context.parent?.currentLocale;
+  }
+
+  public get i18n() {
+    const { field, extensions } = this;
+    const { i18n } = field;
+    if (!i18n) return null;
+    const { localization } = extensions;
+    return localization.getLocalizedValue(i18n, this.currentLocale);
   }
 
   // Field and metadata getters

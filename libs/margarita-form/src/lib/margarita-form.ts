@@ -18,7 +18,7 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
   }
 
   public override get currentLocale(): undefined | string {
-    return this.field.locale || undefined;
+    return this.field.currentLocale || undefined;
   }
 
   public override get config(): MargaritaFormConfig {

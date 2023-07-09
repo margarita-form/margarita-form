@@ -162,10 +162,10 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         fields: locales.map((locale) => {
           return {
             ...field,
-            locale,
             localize: false,
-            isLocale: true,
             name: locale,
+            isLocaleField: true,
+            currentLocale: locale,
             initialValue: initialValue ? undefined : field.initialValue,
             ...child({ field, parent: this.control, locale }),
           };

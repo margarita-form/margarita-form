@@ -79,11 +79,12 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   validators?: MargaritaFormValidators;
   localize?: boolean;
   wasLocalized?: boolean;
-  isLocale?: boolean;
-  locale?: string;
+  isLocaleField?: boolean;
+  currentLocale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
   syncronize?: boolean;
   storage?: boolean;
+  i18n?: Record<string, unknown>;
 }
 
 export interface MargaritaFormRootField<VALUE> {
