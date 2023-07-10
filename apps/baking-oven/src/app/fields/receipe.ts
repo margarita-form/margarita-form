@@ -36,6 +36,7 @@ export const recipeFields: CustomField[] = [
           name: 'title',
           title: 'Title',
           type: 'text',
+          initialValue: 'Step title',
           validation: {
             required: true,
           },
@@ -57,5 +58,63 @@ export const recipeFields: CustomField[] = [
         },
       ],
     },
+  },
+  {
+    type: 'group',
+    name: 'author',
+    title: 'Author',
+    initialValue: {
+      name: 'Teemukissa',
+      title: 'Master chef',
+    },
+    fields: [
+      {
+        name: 'name',
+        title: 'Name',
+        type: 'text',
+        initialValue: 'John Doe',
+        validation: {
+          required: true,
+        },
+      },
+      {
+        name: 'title',
+        title: 'Title',
+        type: 'text',
+        initialValue: 'Chef',
+      },
+    ],
+  },
+  {
+    name: 'state',
+    title: 'State',
+    type: 'radio',
+    initialValue: 'draft',
+    options: [
+      {
+        label: 'Draft',
+        value: 'draft',
+      },
+      {
+        label: 'Published',
+        value: 'published',
+      },
+    ],
+  },
+  {
+    name: 'tags',
+    title: 'Tags',
+    type: 'checkbox-group',
+    initialValue: ['tag1', 'tag2'],
+    options: Array.from({ length: 5 }, (_, i) => ({
+      label: `Tag ${i + 1}`,
+      value: `tag${i + 1}`,
+    })),
+  },
+  {
+    name: 'allowComments',
+    title: 'Allow comments',
+    type: 'checkbox',
+    initialValue: true,
   },
 ];

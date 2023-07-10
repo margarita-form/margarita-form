@@ -15,25 +15,38 @@ import {
   MargaritaFormControlContext,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
-import { StateManager } from './managers/margarita-form-state-manager';
+import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 import { Params } from './managers/margarita-form-params-manager';
 import { getDefaultConfig } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
+import { toHash } from './helpers/to-hash';
+import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 
 export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
-  public key: string = nanoid(4);
+  public key: string;
+  public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
   public keyStore: Set<string>;
   private _listeningToChanges = true;
   public managers: ManagerInstances;
+  private cache = new Map<string, unknown>();
 
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
-    this.keyStore = context.keyStore || new Set<string>();
+    const { initialIndex, keyStore = new Set<string>() } = context;
+    this.keyStore = keyStore;
+    this.key = this._generateKey(initialIndex);
     this.managers = createManagers<typeof this>(this);
-    this.keyStore.add(this.key);
   }
+
+  private _generateKey = (index = 0): string => {
+    const stringPath = this.getPath('indexes');
+    const key = toHash([...stringPath, index]);
+    const exists = this.keyStore.has(key);
+    if (exists) return this._generateKey(index + 1);
+    return key;
+  };
 
   /**
    * Unsubscribe from all subscriptions for current control
@@ -99,12 +112,39 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     }
   }
 
+  public get extensions(): MargaritaFormExtensions {
+    if (this.isRoot) {
+      const cachedExtensions = this.cache.get('extensions');
+      if (cachedExtensions) return cachedExtensions as MargaritaFormExtensions;
+      const extensions = initializeExtensions(this);
+      this.cache.set('extensions', extensions);
+      return extensions;
+    }
+    return this.parent.extensions;
+  }
+
+  public get getManager() {
+    return <MANAGER>(key: string): MANAGER => {
+      const found = (this.managers as any)[key];
+      if (!found) throw `Manager "${key}" not found!`;
+      return found;
+    };
+  }
+
   public get locales(): undefined | string[] {
     return this.form.locales;
   }
 
   public get currentLocale(): undefined | string {
-    return this.field.locale || this.context.parent?.currentLocale;
+    return this.field.currentLocale || this.context.parent?.currentLocale;
+  }
+
+  public get i18n() {
+    const { field, extensions } = this;
+    const { i18n } = field;
+    if (!i18n) return null;
+    const { localization } = extensions;
+    return localization.getLocalizedValue(i18n, this.currentLocale);
   }
 
   // Field and metadata getters
@@ -114,10 +154,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get index(): number {
-    if (this.parent) {
+    if (this.parent?.managers?.controls) {
       return this.parent.managers.controls.getControlIndex(this.key);
     }
-    return -1;
+    return this.context.initialIndex ?? -1;
   }
 
   /**
@@ -136,10 +176,17 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   /**
+   * Check if control's output should be merged to parent
+   */
+  public get expectFlat(): boolean {
+    return this.grouping === 'flat';
+  }
+
+  /**
    * Check if control's output should be an group / object
    */
   public get expectGroup(): boolean {
-    return !this.expectArray;
+    return !this.expectArray && !this.expectFlat;
   }
 
   /**
@@ -154,6 +201,19 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   public updateField = async (changes: Partial<FIELD>, resetControl = false) => {
     await this.managers.field.updateField(changes, resetControl);
+  };
+
+  public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF)[] => {
+    const parentPath = this.isRoot ? [] : this.parent.getPath(type);
+    if (type === 'controls') {
+      return [...parentPath, this];
+    }
+    if (type === 'uids') {
+      return [...parentPath, this.uid];
+    }
+    // Default and indexes are the same!
+    const part = !this.isRoot && this.parent.expectArray ? this.index : this.name;
+    return [...parentPath, part];
   };
 
   // Value
@@ -232,19 +292,19 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   // States
 
-  public get state(): StateManager<this> {
-    return this.managers.state as unknown as StateManager<this>;
+  public get state(): MargaritaFormStateValue {
+    return this.managers.state.value;
   }
 
-  public get stateChanges(): Observable<StateManager<this>> {
-    return this.state.changes.pipe(debounceTime(1), shareReplay(1));
+  public get stateChanges(): Observable<MargaritaFormStateValue> {
+    return this.managers.state.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
-  public getState = (key: keyof StateManager<this>) => {
+  public getState = (key: keyof MargaritaFormStateValue) => {
     return this.state[key];
   };
 
-  public getStateChanges = (key: keyof StateManager<this>) => {
+  public getStateChanges = (key: keyof MargaritaFormStateValue) => {
     return this.stateChanges.pipe(
       map((state) => state[key]),
       distinctUntilChanged()
@@ -299,7 +359,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsTouched Set the touched state to true
    */
   public validate = async (setAsTouched = true) => {
-    await this.managers.state.validate(setAsTouched);
+    return await this.managers.state.validate(setAsTouched);
   };
 
   public registerValidator = (name: string, validator: MargaritaFormValidator) => {
@@ -349,7 +409,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Check if control has any child controls
    */
   public get hasControls(): boolean {
-    return this.managers.controls.array.length > 0;
+    return this.managers.controls.hasControls;
   }
 
   /**
@@ -384,9 +444,10 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     type CONTROL = MFC<VALUE, FIELD>;
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
-      const control = this.managers.controls.getControl(first);
+      const control = this.managers.controls.getControl<CONTROL>(first);
       if (!control) return null;
-      return control.getControl(rest);
+      if (rest.length === 0) return control;
+      return control.getControl<VALUE, FIELD>(rest);
     }
     return this.managers.controls.getControl<CONTROL>(identifier);
   };
@@ -433,7 +494,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Removes a child control from the form group.
    * @param identifier name, index or key of the control to remove
    */
-  public removeControl = (identifier: string) => {
+  public removeControl = (identifier: string | number) => {
     this.managers.controls.removeControl(identifier);
   };
 
@@ -459,7 +520,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     } else {
       if (Array.isArray(field)) {
         this.appendRepeatingControls({ fields: field });
-      } else this.managers.controls.addTemplatedControl(field);
+      } else {
+        this.managers.controls.addTemplatedControl(field);
+      }
     }
   };
 
@@ -496,7 +559,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * control.setRef(el);
    * ```
    */
-  public setRef = (ref: MargaritaFormBaseElement<this>): void => {
+  public setRef = (ref: null | MargaritaFormBaseElement<this>): void => {
     return this.managers.ref.addRef(ref);
   };
 

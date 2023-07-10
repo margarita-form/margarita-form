@@ -76,8 +76,9 @@ const AppWrapper = styled.div`
 `;
 
 export interface CustomField extends MargaritaFormField<CustomField> {
-  type: 'text' | 'textarea' | 'repeatable' | 'localized';
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
   title: string;
+  options?: { label: string; value: string }[];
 }
 
 interface FormValue {
@@ -95,6 +96,9 @@ export function App() {
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
+    storage: true,
+    syncronize: true,
+    currentLocale: 'en',
     handleLocalize: {
       parent: () => {
         return {
@@ -125,8 +129,9 @@ export function App() {
       resetFormOnFieldChanges: shouldReset,
       handleSuccesfullSubmit: 'enable',
       addMetadataToArrays: true,
+      detectAndRemoveMetadataForArrays: false,
       useStorage: 'localStorage',
-      useSyncronization: true,
+      useSyncronization: 'broadcastChannel',
     },
   });
 
@@ -209,6 +214,7 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
+          {control.i18n?.description && <p>{control.i18n.description}</p>}
           <input id={uid} name={uid} type="text" ref={control.setRef} />
         </div>
       );
@@ -217,11 +223,62 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
+          {control.i18n?.description && <p>{control.i18n.description}</p>}
           <textarea id={uid} name={uid} ref={control.setRef} />
         </div>
       );
 
+    case 'radio':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          {control.field.options?.map((option) => {
+            return (
+              <div key={option.value}>
+                <input id={uid + '-' + option.value} name={uid} type="radio" value={option.value} ref={control.setRef} />
+                <label htmlFor={uid + '-' + option.value}>{option.label}</label>
+              </div>
+            );
+          })}
+        </div>
+      );
+
+    case 'checkbox':
+      return (
+        <div className="field-wrapper">
+          <label htmlFor={uid}>{control.field.title}</label>
+          <input id={uid} name={uid} type="checkbox" ref={control.setRef} />
+        </div>
+      );
+
+    case 'checkbox-group':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          {control.field.options?.map((option) => {
+            return (
+              <div key={option.value}>
+                <input id={uid + '-' + option.value} name={uid} type="checkbox" multiple value={option.value} ref={control.setRef} />
+                <label htmlFor={uid + '-' + option.value}>{option.label}</label>
+              </div>
+            );
+          })}
+        </div>
+      );
+
     case 'localized':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          <div className="locales-fields">
+            {control.controls.map((localeControl) => {
+              return <FormField key={localeControl.key} control={localeControl} />;
+            })}
+          </div>
+        </div>
+      );
+
+    case 'group':
       return (
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>

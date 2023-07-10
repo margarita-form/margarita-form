@@ -25,7 +25,7 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   }
 
   /* By node type */
-  const inputTypes = ['email', 'tel', 'color', 'date', 'number', 'url'];
+  const inputTypes = ['email', 'tel', 'color', 'date', 'number', 'url', 'password'];
   if (node.type && inputTypes.includes(node.type)) {
     if (!validation[node.type]) setValidation(node.type, true);
   }

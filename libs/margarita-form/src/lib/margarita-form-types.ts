@@ -9,6 +9,7 @@ export interface MargaritaFormControlContext {
   root?: MF | MFC;
   parent?: MF | MFC;
   keyStore?: Set<string>;
+  initialIndex?: number;
 }
 
 export type CommonRecord<TYPE = unknown> = Record<string | number | symbol, TYPE>;
@@ -22,7 +23,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl 
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
-export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array';
+export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array' | 'flat';
 
 export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC> = (
   context: MargaritaFormFieldContext<CONTROL, PARAMS>
@@ -78,9 +79,12 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   validators?: MargaritaFormValidators;
   localize?: boolean;
   wasLocalized?: boolean;
-  isLocale?: boolean;
-  locale?: string;
+  isLocaleField?: boolean;
+  currentLocale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
+  syncronize?: boolean;
+  storage?: boolean;
+  i18n?: Record<string, unknown>;
 }
 
 export interface MargaritaFormRootField<VALUE> {
@@ -110,6 +114,8 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   untouched: boolean;
   focus: boolean;
   touched: boolean;
+  validating: boolean;
+  validated: boolean;
   valid: boolean;
   invalid: boolean;
   shouldShowError: undefined | boolean;
@@ -126,6 +132,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
 export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
   addMetadataToArrays?: boolean;
+  detectAndRemoveMetadataForArrays?: boolean;
   allowConcurrentSubmits?: boolean;
   asyncFunctionWarningTimeout?: number;
   clearStorageOnSuccessfullSubmit?: boolean;
@@ -135,8 +142,9 @@ export interface MargaritaFormConfig {
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
   useCacheForForms?: boolean;
-  useStorage?: false | 'localStorage' | 'sessionStorage';
-  useSyncronization?: boolean;
+  useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
+  storageKey?: 'key' | 'name';
+  useSyncronization?: false | 'broadcastChannel';
 }
 
 export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
@@ -144,7 +152,7 @@ export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
   invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
 }
 
-export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {
+export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
   controls?: CONTROL[];
   value?: unknown;
   checked?: boolean;
@@ -157,6 +165,12 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTM
   required?: boolean;
   pattern?: string;
 };
+
+export interface StorageLike {
+  getItem(key: string): unknown | undefined;
+  setItem(key: string, value: unknown): void;
+  removeItem(key: string): void;
+}
 
 // Shorthands
 

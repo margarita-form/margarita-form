@@ -13,7 +13,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
   constructor(public control: CONTROL) {
     super();
 
-    this._requireUniqueNames = this.control.grouping === 'group';
+    this._requireUniqueNames = !this.control.expectArray;
 
     this.onCleanup = () => {
       this._controls.forEach((control) => {
@@ -26,19 +26,19 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         control.resubscribe();
       });
     };
-  }
-
-  public override _init() {
-    this.createSubscription(this.control.managers.field.changes.pipe(filter((field) => field !== this._buildWith)), () =>
-      this.rebuild(this.control.managers.field.shouldResetControl)
-    );
 
     if (this.control.field) {
       this.rebuild();
     }
   }
 
-  public rebuild(resetControls = false) {
+  public override _init() {
+    this.createSubscription(this.control.managers.field.changes.pipe(filter((field) => field !== this._buildWith)), () =>
+      this.rebuild(this.control.managers.field.shouldResetControl)
+    );
+  }
+
+  private rebuild(resetControls = false) {
     const { grouping, field } = this.control;
     if (!field) throw 'No field provided for control!';
     this._buildWith = field;
@@ -76,11 +76,21 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       this.addControls(fields, resetControls, false);
     }
 
-    this._emitChanges();
+    this._emitChanges(false);
   }
 
-  private _emitChanges() {
+  private _emitChanges(syncValue = true) {
     this.changes.next(this._controls);
+    if (syncValue) this.control.managers.value._syncChildValues(false, true);
+  }
+
+  public get hasControls(): boolean {
+    try {
+      return this._controls.length > 0;
+    } catch (error) {
+      console.trace(error);
+      return false;
+    }
   }
 
   get group(): MFCG {
@@ -152,10 +162,10 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
         fields: locales.map((locale) => {
           return {
             ...field,
-            locale,
             localize: false,
-            isLocale: true,
             name: locale,
+            isLocaleField: true,
+            currentLocale: locale,
             initialValue: initialValue ? undefined : field.initialValue,
             ...child({ field, parent: this.control, locale }),
           };
@@ -186,19 +196,11 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       root: this.control.root,
       form: this.control.form,
       keyStore: this.control.keyStore,
+      initialIndex: this._controls.length,
     });
 
-    /*
-    const prevControl = this.getControl(field.name);
-    if (prevControl) {
-      try {
-        control.setValue(prevControl.value, false, true);
-      } catch (error) {
-        //
-      }
-    }
-    */
-    if (this.control.state?.disabled) control.disable();
+    // TODO: Add test that new children gets disabled when parent is disabled
+    // if (this.control.state?.disabled) control.disable();
     return this.appendControl(control, resetControl, emit);
   }
 
@@ -219,14 +221,22 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     return control;
   }
 
+  private _removeCleanup(control: MFC) {
+    if (control) {
+      control.managers.value._syncParentValue();
+      control.cleanup();
+    }
+  }
+
   public removeControl(identifier: string | number, emit = true) {
     if (typeof identifier === 'number') {
-      this._controls.splice(identifier, 1);
+      const [removed] = this._controls.splice(identifier, 1);
+      this._removeCleanup(removed);
     } else {
       const index = this._controls.findIndex((control) => [control.name, control.key].includes(identifier));
       if (index > -1) {
         const [control] = this._controls.splice(index, 1);
-        control.cleanup();
+        this._removeCleanup(control);
       }
     }
     if (emit) this._emitChanges();
@@ -249,10 +259,9 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     const currentIndex = this.getControlIndex(identifier);
     const [item] = this._controls.splice(currentIndex, 1);
     this._controls.splice(toIndex, 0, item);
-    if (emit) this._emitChanges();
+    if (emit) this._emitChanges(false);
+    this.control.managers.value._syncCurrentValue(true, true);
   }
 }
-
-Object.assign(ControlsManager.prototype, Array.prototype);
 
 export { ControlsManager };

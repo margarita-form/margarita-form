@@ -13,12 +13,14 @@ export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
 
   const setNodeValue = (value: CONTROL['value']) => {
     try {
-      if (type === 'checkbox') {
-        if (multiple) {
-          // Do someting?
-        } else if (control.managers.ref.refs.length > 1) {
-          console.warn('Applying checked to multiple fields!');
+      if (['checkbox', 'radio'].includes(type)) {
+        const valueIsArray = Array.isArray(control.value);
+        if (multiple && valueIsArray && value.includes(node.value)) {
           node.checked = Boolean(value);
+        } else if (node.value === value) {
+          node.checked = true;
+        } else if (typeof value === 'boolean') {
+          node.checked = value;
         }
       } else if ('value' in node) {
         if (typeof value === 'object') {

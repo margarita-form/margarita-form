@@ -1,9 +1,13 @@
 import type { MF } from '@margarita-form/core';
-import { combineLatest, debounceTime } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime } from 'rxjs';
 
 export const createFormStore = (form: MF) => {
   const subscribe = (listener: () => void) => {
-    const subscription = combineLatest([form.valueChanges, form.stateChanges]).pipe(debounceTime(10)).subscribe(listener);
+    const managerChanges = Object.values(form.managers)
+      .filter((manager) => 'changes' in manager)
+      .map((manager) => 'changes' in manager && manager.changes) as BehaviorSubject<unknown>[];
+
+    const subscription = combineLatest(managerChanges).pipe(debounceTime(10)).subscribe(listener);
     return () => {
       subscription.unsubscribe();
     };
