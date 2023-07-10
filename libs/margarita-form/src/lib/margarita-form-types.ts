@@ -152,7 +152,7 @@ export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
   invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
 }
 
-export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement | null = HTMLElement | any> = NODE & {
+export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
   controls?: CONTROL[];
   value?: unknown;
   checked?: boolean;

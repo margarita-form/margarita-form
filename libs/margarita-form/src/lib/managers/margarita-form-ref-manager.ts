@@ -15,14 +15,14 @@ import {
   setControlValueOnNodeValueChanges,
 } from './ref-manager-helpers/margarita-form-ref-value-changes';
 
-interface RefEntry {
-  node: MargaritaFormBaseElement;
+interface RefEntry<CONTROL extends MFC> {
+  node: MargaritaFormBaseElement<CONTROL, HTMLElement>;
   cleanup: () => void;
 }
 
 class RefManager<CONTROL extends MFC> extends BaseManager {
-  private _refs: RefEntry[] = [];
-  public changes = new BehaviorSubject<MargaritaFormBaseElement<CONTROL>[]>([]);
+  private _refs: RefEntry<CONTROL>[] = [];
+  public changes = new BehaviorSubject<RefEntry<CONTROL>[]>([]);
 
   constructor(public control: CONTROL) {
     super();
@@ -54,6 +54,13 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
 
   public get refs() {
     return this._refs;
+  }
+
+  public get formAction() {
+    const ref = this.refs.find((ref) => ref.node.getAttribute('action'));
+    if (!ref) return undefined;
+    const action = ref.node.getAttribute('action');
+    return action;
   }
 
   public disconnectRef(node: MargaritaFormBaseElement<CONTROL['field']> | null) {
@@ -144,7 +151,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     if (!controlInNode) {
       node.controls?.push(this.control);
     }
-    const nodeInControl = this.refs.includes(node);
+    const nodeInControl = this.refs.some((ref) => ref.node === node);
     const alreadyIncluded = controlInNode || nodeInControl;
     return alreadyIncluded;
   }
