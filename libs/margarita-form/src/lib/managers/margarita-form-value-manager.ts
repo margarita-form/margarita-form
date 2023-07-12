@@ -1,7 +1,7 @@
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
-import { MFC } from '../margarita-form-types';
+import { CommonRecord, MFC } from '../margarita-form-types';
 import { isObject, valueExists } from '../helpers/check-value';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
@@ -130,6 +130,20 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       if (this.control.expectArray) {
         return this.control.activeControls.map((control) => {
           if (control.config.addMetadataToArrays) {
+            if (control.config.addMetadataToArrays === 'flat') {
+              const isGroup = control.expectGroup;
+              if (!isGroup)
+                throw 'To add metadata to array where child is not an object, change "addMetadataToArrays" to true instead of "flat"!';
+              const value = control.value as CommonRecord;
+              if (!value) return undefined;
+              if ('name' in value) throw 'Cannot add flat metadata to array where child has "name" property!';
+              if ('key' in value) throw 'Cannot add flat metadata to array where child has "key" property!';
+              return {
+                ...value,
+                key: control.key,
+                name: control.name,
+              };
+            }
             return {
               value: control.value,
               key: control.key,
@@ -178,40 +192,42 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
         const parseValue = (currentValue: any) => {
           try {
-            if (this.control.config.addMetadataToArrays && 'key' in currentValue) {
-              const { key, value } = currentValue;
-              return { key, value };
+            if (this.control.config.addMetadataToArrays === 'flat') {
+              const { key, name, ...rest } = currentValue;
+              return { key, name, value: rest };
             }
-            if (this.control.config.detectAndRemoveMetadataForArrays && 'key' in currentValue) {
-              const { key, value } = currentValue;
-              return { key, value };
+
+            if (this.control.config.addMetadataToArrays || this.control.config.detectAndRemoveMetadataForArrays) {
+              const { key, name, ...rest } = currentValue;
+              if ('value' in rest) return { key, name, value: rest.value };
+              if (Object.keys(rest).length > 0) return { key, name, value: rest };
+              return { key, name, value: undefined };
             }
           } catch (error) {
             // Do nothing
           }
+
           return { value: currentValue, key: undefined };
         };
 
         const resolveValueAndKey = (currentValue: any, control?: MFC | null) => {
           const currentValueExists = valueExists(currentValue);
           if (currentValueExists) return parseValue(currentValue);
-          if (control) return { value: control.value, key: undefined };
-          return { value: undefined, key: undefined };
+          if (control) return { value: control.value, key: undefined, name: undefined };
+          return { value: undefined, key: undefined, name: undefined };
         };
 
         if (isArray) {
           value.forEach((currentValue, index) => {
             const control = this.control.getControl(index);
-            const { value: _value, key } = resolveValueAndKey(currentValue, control);
-
+            const { value: _value, key, name } = resolveValueAndKey(currentValue, control);
             if (control) {
               if (key) control.updateKey(key);
               if (_value || !patch) return control.setValue(_value, setAsDirty, false);
             } else {
-              const addedControl = this.control.managers.controls.addTemplatedControl({
+              const addedControl = this.control.managers.controls.appendRepeatingControl(name, {
                 initialValue: _value,
               });
-
               if (key) addedControl.updateKey(key);
             }
           });

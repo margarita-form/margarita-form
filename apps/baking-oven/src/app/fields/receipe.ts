@@ -26,38 +26,49 @@ export const recipeFields: CustomField[] = [
     type: 'repeatable',
     name: 'steps',
     title: 'Steps how to make the recipe',
-    grouping: 'repeat-group',
-    startWith: 2,
-    template: {
-      title: 'Step',
-      name: 'step',
-      fields: [
-        {
-          name: 'title',
-          title: 'Title',
-          type: 'text',
-          initialValue: 'Step title',
-          validation: {
-            required: true,
+    grouping: 'array',
+    startWith: ['note', 'step', 'step'],
+    fields: [
+      {
+        title: 'Step',
+        name: 'step',
+        type: 'group',
+        fields: [
+          {
+            name: 'title',
+            title: 'Title',
+            type: 'text',
+            initialValue: 'Step title',
+            validation: {
+              required: true,
+            },
+            attributes: {
+              placeholder: 'Step title',
+            },
           },
-          attributes: {
-            placeholder: 'Step title',
+          {
+            name: 'description',
+            title: 'Description',
+            type: 'textarea',
+            validation: {
+              required: true,
+            },
+            attributes: {
+              placeholder: 'Step description (keep it short!)',
+              rows: 2,
+            },
           },
+        ],
+      },
+      {
+        name: 'note',
+        title: 'Note',
+        type: 'textarea',
+        validation: {
+          required: true,
         },
-        {
-          name: 'description',
-          title: 'Description',
-          type: 'textarea',
-          validation: {
-            required: true,
-          },
-          attributes: {
-            placeholder: 'Step description (keep it short!)',
-            rows: 2,
-          },
-        },
-      ],
-    },
+      },
+    ],
   },
   {
     type: 'group',

@@ -312,22 +312,29 @@ const FormField = ({ control }: FormFieldProps) => {
                 </button>
 
                 <div className="step-fields">
-                  {childGroup.controls.map((control) => (
-                    <FormField key={control.key} control={control} />
-                  ))}
+                  {childGroup.expectChildControls ? (
+                    childGroup.controls.map((control) => <FormField key={control.key} control={control} />)
+                  ) : (
+                    <FormField key={childGroup.key} control={childGroup} />
+                  )}
                 </div>
               </div>
             );
           })}
 
-          <button
-            type="button"
-            onClick={() => {
-              control.appendRepeatingControls();
-            }}
-          >
-            Add new step
-          </button>
+          {control.field.fields?.map((field) => {
+            return (
+              <button
+                key={field.name}
+                type="button"
+                onClick={() => {
+                  control.appendControl(field.name);
+                }}
+              >
+                Add new {field.title}
+              </button>
+            );
+          })}
         </div>
       );
 

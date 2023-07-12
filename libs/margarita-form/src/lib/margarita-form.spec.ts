@@ -76,8 +76,8 @@ const uncommonGroupField: MargaritaFormField = {
 
 const arrayField: MargaritaFormField = {
   name: 'arrayName',
-  grouping: 'repeat-group',
-  fields: [commonField],
+  grouping: 'array',
+  fields: [groupField],
 };
 
 type ArrayField = { arrayName: unknown[] };
@@ -112,7 +112,7 @@ describe('margaritaForm', () => {
     expect(groupControl.controls).toHaveProperty('0', commonControl);
     expect(groupControl.activeControls).toHaveProperty('0', commonControl);
     // Array
-    expect(arrayControl.grouping).toBe('repeat-group');
+    expect(arrayControl.grouping).toBe('array');
     expect(arrayControl.expectArray).toBe(true);
     expect(arrayControl.expectGroup).toBe(false);
     expect(arrayControl.expectChildControls).toBe(true);
@@ -150,29 +150,30 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#4 Create two level schema with first level being an "repeat-group". Starting with 1 child.', () => {
+  it('#4 Create two level schema with first level being an "array". Starting with 1 child.', () => {
     const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [arrayField] });
-    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fieldNameInitialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
+
     form.cleanup();
   });
 
-  it('#5 Create two level schema with first level being an "repeat-group". Starting with 0 children.', () => {
+  it('#5 Create two level schema with first level being an "array". Starting with 0 children.', () => {
     const repeat0 = { ...arrayField, startWith: 0 };
     const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [repeat0] });
     expect(form.value).toHaveProperty([arrayField.name], undefined);
     form.cleanup();
   });
 
-  it('#6 Create two level schema with first level being an "repeat-group". Starting with 2 children created with "startWith" property', () => {
+  it('#6 Create two level schema with first level being an "array". Starting with 2 children created with "startWith" property', () => {
     const repeat2 = { ...arrayField, startWith: 2 };
     const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [repeat2] });
-    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fieldNameInitialValue);
-    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fieldNameInitialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
+    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fromParentValue);
     expect(form.value.arrayName).toHaveLength(2);
     form.cleanup();
   });
 
-  it('#7 Create two level schema with first level being an "repeat-group". Starting with 3 children created with parent\'s initial value', () => {
+  it('#7 Create two level schema with first level being an "array". Starting with 3 children created with parent\'s initial value', () => {
     const initialValue = { fieldName: fieldNameInitialValue };
     const initialValueOf3 = { ...arrayField, initialValue: [initialValue, initialValue, initialValue] };
     const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [initialValueOf3] });
@@ -232,6 +233,7 @@ describe('margaritaForm', () => {
     const value = '#13';
     const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [arrayField] });
     form.setValue({ [arrayField.name]: [{ [commonField.name]: value }, { [commonField.name]: value }] });
+
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], value);
     expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], value);
     const control = form.getControl([arrayField.name, 1, commonField.name]);
@@ -267,7 +269,7 @@ describe('margaritaForm', () => {
 
     expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
     expect(form.value).toHaveProperty([undefinedField.name], undefined);
-    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], fromParentValue);
 
     form.getOrAddControl({ ...commonField, initialValue: 'Should not be this value!' });
     expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
@@ -278,14 +280,14 @@ describe('margaritaForm', () => {
     if (!arrayControl || !Array.isArray(arrayControl.value)) throw 'No array control found!';
     expect(form.value).not.toHaveProperty([arrayField.name, '3']);
     expect(form.value).not.toHaveProperty([arrayField.name, '4']);
-    arrayControl.appendRepeatingControls();
-    expect(form.value).toHaveProperty([arrayField.name, '3', commonField.name], commonField.initialValue);
+    arrayControl.appendControl();
+    expect(form.value).toHaveProperty([arrayField.name, '3', commonField.name], fromParentValue);
     expect(form.value).not.toHaveProperty([arrayField.name, '4']);
-    arrayControl.appendRepeatingControls();
-    arrayControl.appendRepeatingControls();
-    arrayControl.appendRepeatingControls();
-    arrayControl.appendRepeatingControls();
-    expect(form.value).toHaveProperty([arrayField.name, '4', commonField.name], commonField.initialValue);
+    arrayControl.appendControl();
+    arrayControl.appendControl();
+    arrayControl.appendControl();
+    arrayControl.appendControl();
+    expect(form.value).toHaveProperty([arrayField.name, '4', commonField.name], fromParentValue);
 
     form.cleanup();
   });
@@ -300,7 +302,7 @@ describe('margaritaForm', () => {
     form.removeControl(commonField.name);
     expect(form.value).not.toHaveProperty([commonField.name]);
     const arr = form.getControl(arrayField.name);
-    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], fromParentValue);
     if (arr) {
       arr.removeControl(0);
       expect(form.value).not.toHaveProperty([arrayField.name, '2']);
@@ -324,12 +326,12 @@ describe('margaritaForm', () => {
     const value = 'first!';
     firstArrayControl.setValue(value);
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], value);
-    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], commonField.initialValue);
-    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fromParentValue);
+    expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], fromParentValue);
 
     firstArrayGroup.moveToIndex(2);
-    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], commonField.initialValue);
-    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], commonField.initialValue);
+    expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
+    expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fromParentValue);
     expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], value);
 
     form.cleanup();
@@ -405,7 +407,7 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#21 Check that toggle', () => {
+  it('#21 Check that default states are what they should be', () => {
     const form = createMargaritaForm<unknown, MFF>({
       name: nanoid(),
       fields: [commonField, groupField, arrayField, undefinedField],
@@ -460,6 +462,42 @@ describe('margaritaForm', () => {
     expect(undefinedControl.state.hasValue).toBe(true);
     expect(undefinedControl.state.dirty).toBe(true);
     expect(undefinedControl.state.pristine).toBe(false);
+
+    form.cleanup();
+  });
+
+  it('#21-B Check that state methods work', async () => {
+    const form = createMargaritaForm<unknown, MFF>({
+      name: nanoid(),
+      fields: [commonField, groupField],
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    const groupControl = form.getControl([groupField.name]);
+    const commonGroupControl = form.getControl([groupField.name, commonField.name]);
+
+    const controls = [
+      // All these should have same default state
+      form,
+      commonControl,
+      groupControl,
+      commonGroupControl,
+    ] as MFC[];
+
+    if (controls.some((c) => c === null)) throw 'No control found!';
+
+    controls.forEach(({ state }) => {
+      expect(state.enabled).toBe(true);
+      expect(state.disabled).toBe(false);
+    });
+
+    form.disable();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    controls.forEach(({ state }) => {
+      expect(state.enabled).toBe(false);
+      expect(state.disabled).toBe(true);
+    });
 
     form.cleanup();
   });
@@ -721,4 +759,12 @@ describe('margaritaForm', () => {
 
     form.cleanup();
   });
+
+  /**
+   * TODO: Add tests for:
+   * - Arrays of controls where controls are created with "start with" parameter
+   * - Array of non-groups where initial value is set from root and does not match arrays "start with"
+   * - Array of groups where initial value is set from root and does not match arrays "start with"
+   *
+   */
 });

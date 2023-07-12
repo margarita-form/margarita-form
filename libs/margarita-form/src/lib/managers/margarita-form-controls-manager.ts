@@ -2,11 +2,10 @@ import { BehaviorSubject, filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
-import { nanoid } from 'nanoid';
 
-class ControlsManager<CONTROL extends MFC> extends BaseManager {
+class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   public changes = new BehaviorSubject<MFC[]>([]);
-  private _buildWith: CONTROL['field'] = null;
+  private _buildWith: CONTROL['field'] | null = null;
   private _controls: MFC[] = [];
   private _requireUniqueNames: boolean;
 
@@ -39,10 +38,10 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
   }
 
   private rebuild(resetControls = false) {
-    const { grouping, field } = this.control;
+    const { field } = this.control;
     if (!field) throw 'No field provided for control!';
     this._buildWith = field;
-    const { startWith = 1, fields, template } = field;
+    const { startWith = 1, fields } = field;
 
     if (this._buildWith && field.fields && this.control.expectGroup) {
       const controlsToRemove = this._controls.filter((control) => {
@@ -55,22 +54,18 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     }
 
     if (this.control.expectArray) {
+      if (!fields) throw 'No fields provided for array grouping!';
       const startFrom = this._controls.length;
-      if (resetControls || startFrom <= 0) {
-        for (let i = startFrom; i < startWith; i++) {
-          if (grouping === 'repeat-group') {
-            const _template = fields ? { fields } : template;
-            this.addTemplatedControl(_template, resetControls, false);
-          }
-
-          if (grouping === 'array') {
-            if (fields) {
-              this.addControls(fields, resetControls, false);
-            } else {
-              this.addTemplatedControl(template, resetControls, false);
-            }
-          }
-        }
+      const shouldBuildArray = resetControls || startFrom <= 0;
+      if (shouldBuildArray && !this.control.value) {
+        // Skip if value is already set as it determines the length of the array
+        const startWithArray = Array.isArray(startWith)
+          ? startWith.map((name) => fields.find((field: MFF) => field.name === name))
+          : Array.from({ length: startWith }, () => fields[0]);
+        startWithArray.forEach((field) => {
+          if (!field) throw 'Invalid field provided for array grouping!';
+          this.addControl(field, resetControls, false);
+        });
       }
     } else if (fields) {
       this.addControls(fields, resetControls, false);
@@ -103,6 +98,26 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     return this._controls;
   }
 
+  public appendRepeatingControls<FIELD extends MFF = MFF>(fieldTemplates?: string[] | FIELD[]) {
+    if (!fieldTemplates) throw 'No fields provided for "appendRepeatingControls" controls!';
+    return fieldTemplates.map((field) => this.appendRepeatingControl(field));
+  }
+
+  public appendRepeatingControl<FIELD extends MFF = MFF>(fieldTemplate?: string | number | FIELD, overrides: Partial<FIELD> = {}) {
+    const { fields } = this.control.field;
+
+    const getField = () => {
+      if (!fieldTemplate) return fields[0];
+      if (typeof fieldTemplate === 'string') return fields.find((field: MFF) => field.name === fieldTemplate);
+      if (typeof fieldTemplate === 'number') return fields[fieldTemplate];
+      return fieldTemplate;
+    };
+
+    const field = getField();
+    if (!field) throw 'Invalid field provided for "appendRepeatingControl" controls!';
+    return this.addControl({ ...field, ...overrides });
+  }
+
   public addControls<FIELD extends MFF = CONTROL['field'], VALUE = unknown>(
     fields: FIELD[],
     resetControl = false,
@@ -112,25 +127,6 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
     return fields.map((field) => {
       return this.addControl(field, resetControl, emit);
     });
-  }
-
-  public addTemplatedControl<CHILD_FIELD extends MFF = CONTROL['field']>(
-    fieldTemplate?: Partial<CHILD_FIELD>,
-    resetControl = false,
-    emit = true
-  ): MargaritaFormControl<unknown, CHILD_FIELD> {
-    if (!fieldTemplate) throw 'No template for repeating field provided!';
-
-    const { fields, template = {} } = this.control.field;
-    const _template = fields ? { fields, ...template } : template;
-
-    const field = {
-      name: nanoid(4),
-      ..._template,
-      ...fieldTemplate,
-    } as CHILD_FIELD;
-
-    return this.addControl<CHILD_FIELD>(field, resetControl, emit);
   }
 
   public addControl<FIELD extends MFF = CONTROL['field'], VALUE = unknown>(
@@ -199,9 +195,7 @@ class ControlsManager<CONTROL extends MFC> extends BaseManager {
       initialIndex: this._controls.length,
     });
 
-    // TODO: Add test that new children gets disabled when parent is disabled
-    // if (this.control.state?.disabled) control.disable();
-    return this.appendControl(control, resetControl, emit);
+    return this.appendControl(control as any, resetControl, emit);
   }
 
   public appendControl<CHILD_CONTROL extends MFC>(control: CHILD_CONTROL, resetControl = false, emit = true): CHILD_CONTROL {

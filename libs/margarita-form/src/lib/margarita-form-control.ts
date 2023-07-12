@@ -171,8 +171,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * Check if control's output should be an array
    */
   public get expectArray(): boolean {
-    const arrayGroupings: MargaritaFormGroupings[] = ['array', 'repeat-group'];
-    return arrayGroupings.includes(this.grouping);
+    return this.grouping === 'array';
   }
 
   /**
@@ -195,7 +194,6 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public get expectChildControls(): boolean {
     if (this.field.grouping) return true;
     if (this.field.fields) return true;
-    if (this.field.template) return true;
     return false;
   }
 
@@ -465,7 +463,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   /**
    * Get control or add it if it doesn't exist.
-   * NOTE: If grouping is array or repeat-group this method might not work as expected as arrays and repeat-groups allow multiple controls with the same name!
+   * NOTE: If grouping is array this method might not work as expected as arrays allow multiple controls with the same name!
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
@@ -508,22 +506,19 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   };
 
   /**
-   * Add new controls to the form group array. If no field is provided, the template field or fields will be used.
+   * Add new controls to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendRepeatingControls = <FIELD extends MFF = MFF>(field?: Partial<FIELD> | FIELD[]) => {
-    if (!field) {
-      const { fields, template } = this.field;
-      if (fields) this.appendRepeatingControls({ fields });
-      else if (template) this.managers.controls.addTemplatedControl(template);
-      else console.warn('No template or fields provided for repeating controls!');
-    } else {
-      if (Array.isArray(field)) {
-        this.appendRepeatingControls({ fields: field });
-      } else {
-        this.managers.controls.addTemplatedControl(field);
-      }
-    }
+  public appendControls = <FIELD extends MFF = MFF>(fieldTemplates: string[] | FIELD[]) => {
+    return this.managers.controls.appendRepeatingControls(fieldTemplates);
+  };
+
+  /**
+   * Add new control to the form array.
+   * @param field The field to use as a template for the new controls
+   */
+  public appendControl = <FIELD extends MFF = MFF>(fieldTemplate?: string | FIELD, overrides?: Partial<FIELD>) => {
+    return this.managers.controls.appendRepeatingControl(fieldTemplate, overrides);
   };
 
   /**
@@ -559,7 +554,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * control.setRef(el);
    * ```
    */
-  public setRef = (ref: null | MargaritaFormBaseElement<this>): void => {
+  public setRef = (ref: any | MargaritaFormBaseElement<this>): void => {
     return this.managers.ref.addRef(ref);
   };
 

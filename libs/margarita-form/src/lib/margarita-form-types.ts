@@ -23,7 +23,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl 
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
-export type MargaritaFormGroupings = 'group' | 'repeat-group' | 'array' | 'flat';
+export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
 export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC> = (
   context: MargaritaFormFieldContext<CONTROL, PARAMS>
@@ -69,8 +69,7 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   name: string;
   fields?: EXTENDS[];
   grouping?: MargaritaFormGroupings;
-  startWith?: number;
-  template?: Partial<EXTENDS>;
+  startWith?: number | (number | string)[];
   initialValue?: any;
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
@@ -131,7 +130,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
 
 export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
-  addMetadataToArrays?: boolean;
+  addMetadataToArrays?: boolean | 'flat';
   detectAndRemoveMetadataForArrays?: boolean;
   allowConcurrentSubmits?: boolean;
   asyncFunctionWarningTimeout?: number;
@@ -181,7 +180,7 @@ export type MFRF<VALUE = unknown> = MargaritaFormRootField<VALUE>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<VALUE = any, FIELD extends MFF = any> = MargaritaForm<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC<VALUE = any, FIELD extends MFF = any> = MargaritaFormControl<VALUE, FIELD>;
+export type MFC<VALUE = any, FIELD extends MFF = MFF & any> = MargaritaFormControl<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE<CONTROL extends MFC = MFC> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */
