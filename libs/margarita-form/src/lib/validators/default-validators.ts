@@ -13,6 +13,8 @@ import {
   uniqueValidator,
   urlValidator,
   passwordValidator,
+  andValidator,
+  orValidator,
 } from '.';
 
 export const defaultValidators = {
@@ -31,4 +33,6 @@ export const defaultValidators = {
   slug: slugValidator(),
   unique: uniqueValidator(),
   url: urlValidator(),
+  and: andValidator(),
+  or: orValidator(),
 };

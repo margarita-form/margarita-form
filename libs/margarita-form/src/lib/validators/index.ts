@@ -11,3 +11,4 @@ export * from './same-as-validator';
 export * from './slug-validator';
 export * from './unique-validator';
 export * from './url-validator';
+export * from './and-or-validators';
