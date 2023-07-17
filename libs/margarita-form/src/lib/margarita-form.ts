@@ -21,17 +21,6 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
     return this.field.currentLocale || undefined;
   }
 
-  public override get config(): MargaritaFormConfig {
-    if (!this.managers.config) {
-      const defaultConfig = getDefaultConfig();
-      if (this.field.config) {
-        return { ...defaultConfig, ...this.field.config };
-      }
-      return defaultConfig;
-    }
-    return this.managers.config.current;
-  }
-
   public get onSubmit(): Observable<this> {
     return this.getStateChanges('submits').pipe(map(() => this));
   }

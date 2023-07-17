@@ -1,5 +1,5 @@
 import { BaseManager } from './margarita-form-base-manager';
-import { MF, MFC, MargaritaFormConfig } from '../margarita-form-types';
+import { MF, MFC, MFF, MargaritaFormConfig } from '../margarita-form-types';
 
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
@@ -40,6 +40,14 @@ class ConfigManager<CONTROL extends MFC = MF> extends BaseManager {
   public updateConfig(config: Partial<MargaritaFormConfig>) {
     const _config = { ...this._config, ...config };
     this._config = _config;
+  }
+
+  public static generateConfig(field: MFF): MargaritaFormConfig {
+    const defaultConfig = getDefaultConfig();
+    if (field.config) {
+      return { ...defaultConfig, ...field.config };
+    }
+    return defaultConfig;
   }
 }
 

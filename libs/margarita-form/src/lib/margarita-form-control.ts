@@ -17,7 +17,7 @@ import {
 import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 import { Params } from './managers/margarita-form-params-manager';
-import { getDefaultConfig } from './managers/margarita-form-config-manager';
+import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
@@ -105,11 +105,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get config(): MargaritaFormConfig {
-    try {
-      return this.root.config;
-    } catch (error) {
-      return getDefaultConfig();
-    }
+    if (!this.managers.config) return ConfigManager.generateConfig(this.field);
+    if (!this.field.config) return this.isRoot ? this.managers.config.current : this.parent.config;
+    return this.managers.config.current;
   }
 
   public get extensions(): MargaritaFormExtensions {

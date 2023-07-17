@@ -84,12 +84,12 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   syncronize?: boolean;
   storage?: boolean;
   i18n?: Record<string, unknown>;
+  config?: MargaritaFormConfig;
 }
 
 export interface MargaritaFormRootField<VALUE> {
   name: string;
   locales?: string[];
-  config?: MargaritaFormConfig;
   handleSubmit?: MargaritaFormSubmitHandlers<VALUE>;
 }
 
