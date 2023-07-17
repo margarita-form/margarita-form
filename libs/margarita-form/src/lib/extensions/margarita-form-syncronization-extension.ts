@@ -1,34 +1,47 @@
-import { Observable, debounceTime, fromEvent } from 'rxjs';
-import { MFC } from '../margarita-form-types';
-
-type Broacaster = BroadcastChannel;
+import { Observable } from 'rxjs';
+import { BroadcastLike, BroadcasterMessage, MFC } from '../margarita-form-types';
+import { BrowserBroadcastChannel } from './broadcasters/browser-broadcast-channel';
 
 export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
-  private source: Broacaster | undefined;
-  private sourceName: string | undefined;
+  private source: BroadcastLike | undefined;
   public enabled = false;
   private cache = new Map<string, any>();
 
-  constructor(public form: CONTROL) {
-    this.source = this._getStorage();
+  constructor(public control: CONTROL) {
+    this.source = this._getSyncApi();
     this.enabled = !!this.source;
   }
 
-  private _getStorage(): Broacaster | undefined {
-    if (typeof window === 'undefined') return undefined;
-    const { useSyncronization } = this.form.config;
+  private get syncronizationKey(): string {
+    if (typeof this.control.config.syncronizationKey === 'function') return this.control.config.syncronizationKey(this.control);
+    const syncronizationKey = this.control[this.control.config.syncronizationKey || 'key'];
+    if (!syncronizationKey) throw new Error(`Could not get syncronization key from control!`);
+    return syncronizationKey;
+  }
+
+  private _getSyncApi(): BroadcastLike | undefined {
+    const { useSyncronization } = this.control.field;
     if (useSyncronization) {
-      this.sourceName = useSyncronization;
-      if (useSyncronization === 'broadcastChannel') {
-        if (typeof BroadcastChannel === 'undefined') return undefined;
-        return new BroadcastChannel(`margarita-form-${this.form.name}`);
-      }
+      const getApi = () => {
+        switch (useSyncronization) {
+          case 'broadcastChannel':
+            return BrowserBroadcastChannel;
+          default:
+            return useSyncronization;
+        }
+      };
+
+      const api = getApi();
+      if (!api) return undefined;
+      const key = this.syncronizationKey;
+      return new api(key, this.control);
     }
     return undefined;
   }
 
-  public broadcastChange<DATA = any>(key: string, value: DATA): void {
+  public broadcastChange<DATA = any>(value: DATA): void {
     if (!this.source) return console.warn('Trying to start syncronization without a source!');
+    const key = this.syncronizationKey;
     const cachedValue = this.cache.get(key);
     const valueChanged = JSON.stringify(value) !== JSON.stringify(cachedValue);
     if (!valueChanged) return;
@@ -37,25 +50,25 @@ export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
   }
 
   public subscribeToMessages<DATA = any>(
-    key: string,
     callback: (message: DATA) => void | Promise<void>,
     getCurrent: () => DATA
-  ): void | { observable: Observable<MessageEvent>; handler: (event: MessageEvent<any>) => void } {
+  ): void | { observable: void | Observable<BroadcasterMessage<DATA>>; handler: (event: BroadcasterMessage<DATA>) => void } {
+    const key = this.syncronizationKey;
     if (!this.source) return console.warn('Trying to start syncronization without a source!');
     this.source.postMessage({ key, requestSend: true });
 
-    const observable = fromEvent<MessageEvent>(this.source, 'message').pipe(debounceTime(10));
+    const observable = this.source.listenToMessages<DATA>();
 
-    const handler = (event: MessageEvent<any>) => {
+    const handler = (message: BroadcasterMessage<DATA>) => {
       if (!this.source) return console.warn('Trying to start syncronization without a source!');
       const value = getCurrent();
-      if (event.data.requestSend) {
+      if (message.requestSend) {
         this.source.postMessage({ key, value });
-      } else if (event.data.key === key) {
-        const valueChanged = JSON.stringify(event.data.value) !== JSON.stringify(value);
+      } else if (message.key === key) {
+        const valueChanged = JSON.stringify(message.value) !== JSON.stringify(value);
         if (valueChanged) {
-          callback(event.data.value);
-          this.cache.set(key, event.data.value);
+          callback(message.value as DATA);
+          this.cache.set(key, message.value);
         }
       }
     };

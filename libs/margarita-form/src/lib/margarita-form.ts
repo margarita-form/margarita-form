@@ -1,5 +1,4 @@
-import type { MFF, MFRF, MargaritaFormConfig } from './margarita-form-types';
-import { getDefaultConfig } from './managers/margarita-form-config-manager';
+import type { MFF, MFRF } from './margarita-form-types';
 import { MargaritaFormControl } from './margarita-form-control';
 import { Observable, map } from 'rxjs';
 
@@ -36,9 +35,10 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
 
       // Handle valid submit
       if (this.state.valid) {
-        const validSubmitHandler = this._resolveValidSubmitHandler();
-        return await Promise.resolve(validSubmitHandler)
-          .then((res) => {
+        const handleValidSubmit = async () => {
+          try {
+            await this._handleBeforeSubmit();
+            const submitResponse = await this._resolveValidSubmitHandler();
             this.updateStateValue('submitResult', 'success');
             switch (this.config.handleSuccesfullSubmit) {
               case 'disable':
@@ -51,24 +51,26 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
                 this.updateStateValue('disabled', false);
                 break;
             }
-            if (this.config.clearStorageOnSuccessfullSubmit) this.extensions.storage.clearStorage();
-            return res;
-          })
-          .catch((error) => {
+            await this._handleAfterSubmit();
+            return submitResponse;
+          } catch (error) {
+            console.error('Could not handle valid submit!', { formName: this.form.name, error });
             this.updateState({ submitResult: 'error', disabled: false });
             return error;
-          })
-          .finally(() => {
-            this.updateStateValue('submitted', true);
-            this.updateStateValue('submitting', false);
-            const submits = this.state.submits || 0;
-            this.updateStateValue('submits', submits + 1);
-          });
+          }
+        };
+
+        const submitResponse = await handleValidSubmit();
+        this.updateStateValue('submitted', true);
+        this.updateStateValue('submitting', false);
+        const submits = this.state.submits || 0;
+        this.updateStateValue('submits', submits + 1);
+        return submitResponse;
       }
 
       // Handle invalid submit
       const invalidSubmitHandler = this._resolveInvalidSubmitHandler();
-      return await Promise.resolve(invalidSubmitHandler).finally(() => {
+      return await invalidSubmitHandler.finally(() => {
         const submits = this.state.submits || 0;
         this.updateState({
           submitting: false,
@@ -83,12 +85,12 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
     }
   }
 
-  private _resolveValidSubmitHandler() {
-    if (this.field.handleSubmit?.valid) return Promise.resolve(this.field.handleSubmit.valid<any>(this));
+  private async _resolveValidSubmitHandler() {
+    if (this.field.handleSubmit?.valid) return await Promise.resolve(this.field.handleSubmit.valid<any>(this));
 
     const action = this.managers.ref.formAction;
     if (!action) throw 'No submit handler for valid submit!';
-    return fetch(action, {
+    return await fetch(action, {
       method: 'POST',
       body: JSON.stringify(this.value),
       headers: {
@@ -97,8 +99,8 @@ export class MargaritaForm<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> exte
     });
   }
 
-  private _resolveInvalidSubmitHandler() {
-    if (this.field.handleSubmit?.invalid) return Promise.resolve(this.field.handleSubmit.invalid<any>(this));
+  private async _resolveInvalidSubmitHandler() {
+    if (this.field.handleSubmit?.invalid) return await Promise.resolve(this.field.handleSubmit.invalid<any>(this));
     return console.log('Form is invalid!', {
       form: this,
     });

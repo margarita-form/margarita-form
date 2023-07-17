@@ -7,17 +7,22 @@ import { SessionStorage } from './storages/session-storage';
 export class MargaritaFormStorageExtension<CONTROL extends MFC> {
   private source: StorageLike | undefined;
   public enabled = false;
-  private keys = new Set<string>();
 
-  constructor(public form: CONTROL) {
+  constructor(public control: CONTROL) {
     this.source = this._getStorage();
     if (typeof this.source === 'string') throw new Error(`Invalid storage type: ${this.source}`);
     this.enabled = !!this.source;
   }
 
+  private get storageKey(): string {
+    if (typeof this.control.config.storageKey === 'function') return this.control.config.storageKey(this.control);
+    const storageKey = this.control[this.control.config.storageKey || 'key'];
+    if (!storageKey) throw new Error(`Could not get storage key from control!`);
+    return storageKey;
+  }
+
   private _getStorage(): StorageLike | undefined {
-    if (typeof window === 'undefined') return undefined;
-    const { useStorage } = this.form.config;
+    const { useStorage } = this.control.field;
     if (useStorage) {
       switch (useStorage) {
         case 'localStorage':
@@ -33,27 +38,29 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
     return undefined;
   }
 
-  public getStorageValue<TYPE = any>(key: string): TYPE | undefined {
+  public getStorageValue<TYPE = any>(): TYPE | undefined {
+    const key = this.storageKey;
     if (this.source) {
       try {
         const storageValue = this.source.getItem(key);
         if (!storageValue) return undefined;
-        if (typeof storageValue === 'string') return JSON.parse(storageValue);
+        if (typeof storageValue === 'string' && /^[{[].+[}\]]$/g.test(storageValue)) return JSON.parse(storageValue);
         return storageValue as TYPE;
       } catch (error) {
-        console.error(`Could not get value from ${this.source}!`, { form: this.form, error });
+        console.error(`Could not get value from ${this.source}!`, { control: this.control, error });
       }
     }
     return undefined;
   }
 
-  public saveStorageValue(key: string, value: any): string {
+  public saveStorageValue(value: any): string {
+    const key = this.storageKey;
     if (!valueExists(value)) return this.clearStorageValue(key);
     if (this.source) {
       try {
         if (typeof value === 'object') {
           const stringified = JSON.stringify(value);
-          return this.saveStorageValue(key, stringified);
+          return this.saveStorageValue(stringified);
         }
 
         const validValid = valueExists(value);
@@ -61,10 +68,9 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
         if (value === '{}') return this.clearStorageValue(key);
 
         this.source.setItem(key, value);
-        this.addStorageKey(key);
         return 'saved';
       } catch (error) {
-        console.error(`Could not save value to ${this.source}!`, { form: this.form, error });
+        console.error(`Could not save value to ${this.source}!`, { control: this.control, error });
         return 'error';
       }
     }
@@ -72,7 +78,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
   }
 
   public clearStorage() {
-    this.keys.forEach((key) => this.clearStorageValue(key));
+    this.clearStorageValue(this.storageKey);
   }
 
   public clearStorageValue(key: string): string {
@@ -81,13 +87,9 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
         const sessionStorageValue = this.source.getItem(key);
         if (sessionStorageValue) this.source.removeItem(key);
       } catch (error) {
-        console.error(`Could not clear value from ${this.source}!`, { form: this.form, error });
+        console.error(`Could not clear value from ${this.source}!`, { control: this.control, error });
       }
     }
     return 'no-storage';
-  }
-
-  private addStorageKey(key: string) {
-    this.keys.add(key);
   }
 }

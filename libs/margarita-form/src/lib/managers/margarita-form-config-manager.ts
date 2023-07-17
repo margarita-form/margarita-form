@@ -14,9 +14,8 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   resetFormOnFieldChanges: false,
   showDebugMessages: false,
   useCacheForForms: true,
-  useStorage: false,
-  useSyncronization: false,
   storageKey: 'key',
+  syncronizationKey: 'key',
 });
 
 class ConfigManager<CONTROL extends MFC = MF> extends BaseManager {

@@ -18,24 +18,22 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public override _init() {
-    const { storage, syncronization } = this.control.form.extensions;
+    const { storage, syncronization } = this.control.extensions;
     const changes = this.changes.pipe(debounceTime(10));
 
     this.createSubscription(changes, () => {
-      const storageKey = this.control[this.control.config.storageKey || 'key'];
-      if (this.control.field.storage) storage.saveStorageValue(storageKey, this._value);
-      if (this.control.field.syncronize) syncronization.broadcastChange(this.control.key, this._value);
+      if (this.control.field.useStorage) storage.saveStorageValue(this._value);
+      if (this.control.field.useSyncronization) syncronization.broadcastChange(this._value);
     });
 
-    if (this.control.field.syncronize) {
+    if (this.control.field.useSyncronization) {
       try {
         const subscription = syncronization.subscribeToMessages<CONTROL['value']>(
-          this.control.key,
           (value) => this.updateValue(value, false, true, false),
           () => this._value
         );
 
-        if (subscription) {
+        if (subscription && subscription.observable) {
           this.createSubscription(subscription.observable, subscription.handler);
         }
       } catch (error) {
@@ -94,10 +92,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   private _getStorageValue() {
-    const { storage } = this.control.form.extensions;
+    const { storage } = this.control.extensions;
     if (!storage.enabled) return undefined;
-    const storageKey = this.control[this.control.config.storageKey || 'key'];
-    const storageValue = storage.getStorageValue(storageKey);
+    const storageValue = storage.getStorageValue();
     return storageValue;
   }
 

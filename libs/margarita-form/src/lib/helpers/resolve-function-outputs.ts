@@ -1,5 +1,5 @@
-import { combineLatest, map, Observable, ObservableInput } from 'rxjs';
-import { MargaritaFormFieldContext, MargaritaFormResolverOutput, MFC } from '../margarita-form-types';
+import { combineLatest, firstValueFrom, map, Observable, ObservableInput } from 'rxjs';
+import { MargaritaFormFieldContext, MargaritaFormResolverOutput, MargaritaFormResolvers, MFC } from '../margarita-form-types';
 
 type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
 
@@ -22,7 +22,7 @@ export const mapResolverEntries = <OUTPUT = unknown>({
   from: Record<string, unknown>;
   context: MargaritaFormFieldContext;
   resolveStaticValues?: boolean;
-  resolvers?: import('../margarita-form-types').MargaritaFormResolvers;
+  resolvers?: MargaritaFormResolvers;
 }) => {
   if (!from) return Promise.resolve({});
   const entries = Object.entries(from).reduce((acc, [key, value]) => {
@@ -109,4 +109,24 @@ export const resolveFunctionOutputs = <OUTPUT = unknown>(
       return Object.fromEntries(values);
     })
   );
+};
+
+export const resolveFunctionOutputPromises = async <OUTPUT = unknown>(
+  title: string,
+  context: MargaritaFormFieldContext<MFC>,
+  entries: MargaritaFormResolverOutput<OUTPUT> | Record<string, MargaritaFormResolverOutput<OUTPUT>>
+): Promise<OUTPUT> => {
+  if (typeof entries === 'function') return resolveFunctionOutputPromises(title, context, { [title]: entries });
+  const observables = mapResolverEntries({ title, context, from: entries as Record<string, MargaritaFormResolverOutput<OUTPUT>> });
+  if (observables instanceof Promise) return observables as Promise<OUTPUT>;
+  const promises = await firstValueFrom(observables);
+  return promises as OUTPUT;
+};
+
+export const createResolverContext = <CONTROL extends MFC>(control: CONTROL): MargaritaFormFieldContext<CONTROL> => {
+  return {
+    control,
+    value: control.value,
+    params: undefined,
+  };
 };

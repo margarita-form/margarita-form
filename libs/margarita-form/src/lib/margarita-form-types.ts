@@ -76,15 +76,17 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
+  beforeSubmit?: MargaritaFormResolver;
+  afterSubmit?: MargaritaFormResolver;
   localize?: boolean;
   wasLocalized?: boolean;
   isLocaleField?: boolean;
   currentLocale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
-  syncronize?: boolean;
-  storage?: boolean;
   i18n?: Record<string, unknown>;
   config?: MargaritaFormConfig;
+  useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
+  useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
 }
 
 export interface MargaritaFormRootField<VALUE> {
@@ -118,7 +120,6 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   valid: boolean;
   invalid: boolean;
   shouldShowError: undefined | boolean;
-  // Root only
   submitting: boolean;
   submitted: boolean;
   submits: number;
@@ -127,6 +128,8 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   children?: MargaritaFormStateChildren;
   hasValue?: boolean;
 }
+
+export type GenerateKeyFunction = (control: MFC) => string;
 
 export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
@@ -141,9 +144,8 @@ export interface MargaritaFormConfig {
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
   useCacheForForms?: boolean;
-  useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
-  storageKey?: 'key' | 'name';
-  useSyncronization?: false | 'broadcastChannel';
+  storageKey?: 'key' | 'name' | GenerateKeyFunction;
+  syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
 }
 
 export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
@@ -169,6 +171,21 @@ export interface StorageLike {
   getItem(key: string): unknown | undefined;
   setItem(key: string, value: unknown): void;
   removeItem(key: string): void;
+}
+
+export interface BroadcastLikeConstructor {
+  new (key: string, control: MFC): BroadcastLike;
+}
+
+export interface BroadcasterMessage<DATA = unknown> {
+  key: string;
+  value?: DATA;
+  requestSend?: boolean;
+}
+
+export interface BroadcastLike {
+  postMessage(message: BroadcasterMessage): void;
+  listenToMessages<DATA>(): void | Observable<BroadcasterMessage<DATA>>;
 }
 
 // Shorthands

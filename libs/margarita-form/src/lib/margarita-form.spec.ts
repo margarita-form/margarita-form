@@ -675,9 +675,7 @@ describe('margaritaForm', () => {
     const nullForm = createMargaritaForm<any, MFF>({
       name: nanoid(),
       fields: [commonField],
-      config: {
-        useStorage: ValueStorage,
-      },
+      useStorage: ValueStorage,
     });
     const commonControlNull = nullForm.getControl([commonField.name]);
     if (!commonControlNull) throw 'No control found!';
@@ -689,9 +687,7 @@ describe('margaritaForm', () => {
     const valueForm = createMargaritaForm<any, MFF>({
       name: nanoid(),
       fields: [commonField],
-      config: {
-        useStorage: ValueStorage,
-      },
+      useStorage: ValueStorage,
     });
 
     const commonControlValue = valueForm.getControl([commonField.name]);

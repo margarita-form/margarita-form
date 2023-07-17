@@ -23,6 +23,7 @@ import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
+import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
 
 export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
   public key: string;
@@ -111,14 +112,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get extensions(): MargaritaFormExtensions {
-    if (this.isRoot) {
-      const cachedExtensions = this.cache.get('extensions');
-      if (cachedExtensions) return cachedExtensions as MargaritaFormExtensions;
-      const extensions = initializeExtensions(this);
-      this.cache.set('extensions', extensions);
-      return extensions;
-    }
-    return this.parent.extensions;
+    const cachedExtensions = this.cache.get('extensions');
+    if (cachedExtensions) return cachedExtensions as MargaritaFormExtensions;
+    const extensions = initializeExtensions(this);
+    this.cache.set('extensions', extensions);
+    return extensions;
   }
 
   public get getManager() {
@@ -595,5 +593,24 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     if (checkSelf && this.field[key]) return this.field[key] as OUTPUT;
     if (!this.isRoot && this.root && this.root.field[key]) return this.parent.field[key];
     return fallback as OUTPUT;
+  };
+
+  public _resolveSubmitHandler = async (key: 'beforeSubmit' | 'afterSubmit'): Promise<void> => {
+    if (this.field[key]) await resolveFunctionOutputPromises(key, createResolverContext(this), this.field[key]);
+    const childHandlers = this.controls.map((control) => {
+      if (key === 'beforeSubmit') return control._handleBeforeSubmit();
+      if (key === 'afterSubmit') return control._handleAfterSubmit();
+      return control._resolveSubmitHandler(key);
+    });
+    await Promise.all(childHandlers);
+  };
+
+  public _handleBeforeSubmit = async () => {
+    await this._resolveSubmitHandler('beforeSubmit');
+  };
+
+  public _handleAfterSubmit = async () => {
+    if (this.config.clearStorageOnSuccessfullSubmit) this.extensions.storage.clearStorage();
+    await this._resolveSubmitHandler('afterSubmit');
   };
 }
