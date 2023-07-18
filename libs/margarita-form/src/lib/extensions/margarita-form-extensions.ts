@@ -14,7 +14,7 @@ export type MargaritaFormExtensions = {
   [T in Keys]: InstanceType<(typeof margaritaFormExtensions)[T]>;
 };
 
-export const initializeExtensions = (form: MFC) => {
-  const extensionEntries = Object.entries(margaritaFormExtensions).map(([key, Extension]) => [key, new Extension(form)]);
+export const initializeExtensions = <CONTROL extends MFC>(control: CONTROL) => {
+  const extensionEntries = Object.entries(margaritaFormExtensions).map(([key, Extension]) => [key, new Extension(control)]);
   return Object.fromEntries(extensionEntries) as MargaritaFormExtensions;
 };

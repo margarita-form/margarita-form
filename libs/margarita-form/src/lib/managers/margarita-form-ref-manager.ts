@@ -63,7 +63,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager {
     return action;
   }
 
-  public disconnectRef(node: MargaritaFormBaseElement<CONTROL['field']> | null) {
+  public disconnectRef(node: MargaritaFormBaseElement<CONTROL> | null) {
     if (!node) return;
     this._deleteNodeRef(node);
   }

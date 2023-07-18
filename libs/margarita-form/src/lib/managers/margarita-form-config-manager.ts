@@ -1,5 +1,5 @@
 import { BaseManager } from './margarita-form-base-manager';
-import { MF, MFC, MFF, MargaritaFormConfig } from '../margarita-form-types';
+import { MFC, MFF, MargaritaFormConfig } from '../margarita-form-types';
 
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
@@ -18,7 +18,7 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   syncronizationKey: 'key',
 });
 
-class ConfigManager<CONTROL extends MFC = MF> extends BaseManager {
+class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {
   private _config: MargaritaFormConfig = getDefaultConfig();
 
   constructor(public control: CONTROL) {

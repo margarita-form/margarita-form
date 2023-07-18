@@ -43,9 +43,9 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     this._buildWith = field;
     const { startWith = 1, fields } = field;
 
-    if (this._buildWith && field.fields && this.control.expectGroup) {
+    if (this._buildWith && fields && this.control.expectGroup) {
       const controlsToRemove = this._controls.filter((control) => {
-        return !field.fields.some((field: MFF) => field.name === control.name);
+        return !fields.some((field: MFF) => field.name === control.name);
       });
 
       controlsToRemove.forEach((control) => {
@@ -107,9 +107,11 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const { fields } = this.control.field;
 
     const getField = () => {
-      if (!fieldTemplate) return fields[0];
-      if (typeof fieldTemplate === 'string') return fields.find((field: MFF) => field.name === fieldTemplate);
-      if (typeof fieldTemplate === 'number') return fields[fieldTemplate];
+      if (fields) {
+        if (!fieldTemplate) return fields[0];
+        if (typeof fieldTemplate === 'string') return fields.find((field: MFF) => field.name === fieldTemplate);
+        if (typeof fieldTemplate === 'number') return fields[fieldTemplate];
+      }
       return fieldTemplate;
     };
 
@@ -236,9 +238,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     if (emit) this._emitChanges();
   }
 
-  public getControl<CHILD_CONTROL extends MFC = MargaritaFormControl<unknown, CONTROL['field']>>(
-    identifier: string | number
-  ): CHILD_CONTROL {
+  public getControl<CHILD_CONTROL extends MFC = MFC<unknown, CONTROL['field']>>(identifier: string | number): CHILD_CONTROL {
     if (typeof identifier === 'number') {
       return this._controls[identifier] as CHILD_CONTROL;
     }

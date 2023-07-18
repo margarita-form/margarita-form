@@ -197,7 +197,7 @@ export type MFRF<VALUE = unknown> = MargaritaFormRootField<VALUE>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<VALUE = any, FIELD extends MFF = any> = MargaritaForm<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC<VALUE = any, FIELD extends MFF = MFF & any> = MargaritaFormControl<VALUE, FIELD>;
+export type MFC<VALUE = any, FIELD extends MFF = MFF> = MargaritaFormControl<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE<CONTROL extends MFC = MFC> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */

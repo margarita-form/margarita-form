@@ -17,7 +17,7 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager {
       switchMap(([value]) => {
         return mapResolverEntries({
           title: 'Params',
-          from: control.field.params,
+          from: control.field.params || {},
           context: {
             control,
             value,

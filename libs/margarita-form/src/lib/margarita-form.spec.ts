@@ -756,6 +756,48 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
+  it('#28 Check for TypeScript errors', () => {
+    interface CustomField extends MFF<CustomField> {
+      type: 'custom';
+      lorem: 'ipsum';
+      maybe?: boolean;
+    }
+
+    interface CustomValue {
+      typedField: 'Hello world!';
+    }
+
+    const typedField: CustomField = {
+      name: 'typedField',
+      type: 'custom',
+      lorem: 'ipsum',
+      maybe: false,
+    };
+
+    const form = createMargaritaForm<CustomValue, CustomField>({
+      name: nanoid(),
+      fields: [typedField],
+    });
+
+    const typedControl = form.getControl([typedField.name]);
+    if (!typedControl) throw 'No control found!';
+    expect(typedControl.field.type).toBe('custom');
+    expect(typedControl.field.lorem).toBe('ipsum');
+    expect(typedControl.field.maybe).toBe(false);
+
+    const typedControl2 = form.getControl<string, CustomField>([typedField.name]);
+    if (!typedControl2) throw 'No control found!';
+    expect(typedControl2.field.type).toBe('custom');
+    expect(typedControl2.field.lorem).toBe('ipsum');
+    expect(typedControl2.field.maybe).toBe(false);
+
+    typedControl.updateField({ maybe: true });
+    form.setValue({ typedField: 'Hello world!' });
+    expect(form.value.typedField).toBe('Hello world!');
+
+    form.cleanup();
+  });
+
   /**
    * TODO: Add tests for:
    * - Arrays of controls where controls are created with "start with" parameter

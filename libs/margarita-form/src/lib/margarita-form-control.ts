@@ -90,7 +90,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return this.context.form;
   }
 
-  public get root(): MF | MFC {
+  public get root(): typeof this | MF | MFC {
     return this.context.root || this;
   }
 
@@ -98,7 +98,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return this.root === this;
   }
 
-  public get parent(): MF | MFC {
+  public get parent(): typeof this | MF | MFC {
     if (!this.context.parent) {
       console.warn('Root of controls reached!', this);
     }
@@ -193,11 +193,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return false;
   }
 
-  public updateField = async (changes: Partial<FIELD>, resetControl = false) => {
-    await this.managers.field.updateField(changes, resetControl);
+  public updateField = async (changes: Partial<FIELD | MFF>, resetControl = false) => {
+    await this.managers.field.updateField(changes as any, resetControl);
   };
 
-  public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF)[] => {
+  public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF | typeof this)[] => {
     const parentPath = this.isRoot ? [] : this.parent.getPath(type);
     if (type === 'controls') {
       return [...parentPath, this];
@@ -232,7 +232,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param value value to set
    * @param setAsDirty update dirty state to true
    */
-  public setValue = (value: unknown, setAsDirty = true, emitEvent = true) => {
+  public setValue = <VAL extends VALUE>(value: VAL | undefined | null, setAsDirty = true, emitEvent = true) => {
     this.managers.value.updateValue(value, setAsDirty, emitEvent);
   };
 
@@ -241,7 +241,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param values value to set
    * @param setAsDirty update dirty state to true
    */
-  public patchValue = (values: unknown, setAsDirty = true) => {
+  public patchValue = <VAL extends VALUE>(values: Partial<VAL>, setAsDirty = true) => {
     this.managers.value.updateValue(values, setAsDirty, true, true);
   };
 
@@ -252,7 +252,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsDirty Should the dirty state be set to true
    */
   public addValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = false, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value] as VALUE, setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return console.warn('Value already exists!');
     this.managers.value.updateValue([...this.value, value], setAsDirty);
@@ -278,7 +278,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
    * @param setAsDirty Should the dirty state be set to true
    */
   public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value] as VALUE, setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
     this.managers.value.updateValue([...this.value, value], setAsDirty);
@@ -579,7 +579,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   public getParentFieldValue = <OUTPUT = unknown>(key: keyof FIELD, fallback: OUTPUT, checkSelf = true, deep = true): OUTPUT => {
     if (checkSelf && this.field[key]) return this.field[key] as OUTPUT;
     if (!this.isRoot && this.parent && this.parent.field[key]) return this.parent.field[key];
-    if (deep && !this.isRoot && this.parent) return this.parent.getParentFieldValue<OUTPUT>(key, fallback, false, deep);
+    if (deep && !this.isRoot && this.parent) return this.parent.getParentFieldValue<OUTPUT>(key as any, fallback, false, deep);
     return fallback as OUTPUT;
   };
 
