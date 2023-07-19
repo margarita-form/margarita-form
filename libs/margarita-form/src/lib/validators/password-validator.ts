@@ -19,7 +19,7 @@ export const passwordValidator: (errorMessage?: string) => MargaritaFormValidato
   (defaultErrorMessage = 'Password is not strong enough!') =>
   ({ value, params, errorMessage = defaultErrorMessage }) => {
     if (!params || !value) return { valid: true };
-    const regex = new RegExp(/((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{2,64})/g);
+    const regex = new RegExp(/((?=.*[a-z\d])(?=.*[A-Z\d])(?=.*[\W]).{2,64})/);
     const stringValue = typeof value === 'string' ? value : String(value);
     const minLength = getPasswordLength(params);
     const valueIsInvalid = !regex.test(stringValue) || minLength > stringValue.length;
