@@ -1,5 +1,5 @@
 import type { FormHTMLAttributes } from 'react';
-import type { CommonRecord, MargaritaForm, MargaritaFormField, MargaritaFormRootField } from '@margarita-form/core';
+import type { CommonRecord, MargaritaForm, MargaritaFormField } from '@margarita-form/core';
 import { useMargaritaForm } from '../hooks/use-margarita-form';
 import { FormProvider } from '../providers/form/form-provider';
 
@@ -7,7 +7,7 @@ interface WithForm {
   form: MargaritaForm<any, any>;
 }
 
-type FormField = Partial<MargaritaFormField<FormField>> & MargaritaFormRootField<any> & CommonRecord;
+type FormField = MargaritaFormField<FormField> & CommonRecord;
 
 interface WithField {
   field: FormField;
