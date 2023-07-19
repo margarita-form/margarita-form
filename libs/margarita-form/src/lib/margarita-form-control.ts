@@ -85,12 +85,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
 
   // Context getters
 
-  public get form(): MF {
-    if (!this.context.form) throw "Control isn't attached to a form!";
-    return this.context.form;
-  }
-
-  public get root(): typeof this | MF | MFC {
+  public get root(): typeof this | MFC {
     return this.context.root || this;
   }
 
@@ -128,11 +123,13 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   }
 
   public get locales(): undefined | string[] {
-    return this.form.locales;
+    if (this.isRoot) return this.field.locales;
+    return this.field.locales || this.parent.locales;
   }
 
   public get currentLocale(): undefined | string {
-    return this.field.currentLocale || this.context.parent?.currentLocale;
+    if (this.isRoot) return this.field.currentLocale;
+    return this.field.currentLocale || this.parent.currentLocale;
   }
 
   public get i18n() {
@@ -377,15 +374,20 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return this.managers.params.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
+  /**
+   * Get resolvers for the control
+   */
   public get resolvers(): MargaritaFormResolvers {
     const fieldResolvers = this.field.resolvers || {};
     const parentResolvers = this.context.parent?.field?.resolvers || {};
-    if (this.config.addDefaultValidators) {
-      return { ...defaultValidators, ...parentResolvers, ...fieldResolvers };
-    }
     return { ...parentResolvers, ...fieldResolvers };
   }
 
+  /**
+   * Register a new resolver
+   * @param name string
+   * @param resolver MargaritaFormResolver
+   */
   public registerResolver = (name: string, resolver: MargaritaFormResolver) => {
     const currentResolvers = this.resolvers;
     const resolvers: MargaritaFormResolvers = {
@@ -554,6 +556,94 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     return this.managers.ref.addRef(ref);
   };
 
+  // Submit
+
+  public get onSubmit(): Observable<this> {
+    return this.getStateChanges('submits').pipe(map(() => this));
+  }
+
+  public async submit() {
+    try {
+      await this.validate();
+      if (!this.field.handleSubmit && !this.managers.ref.formAction) throw 'Add "handleSubmit" option to submit form!';
+      const canSubmit = this.config.allowConcurrentSubmits || !this.state.submitting;
+      if (!canSubmit) throw 'Form is already submitting!';
+      this.updateStateValue('submitting', true);
+      if (this.config.disableFormWhileSubmitting) this.updateStateValue('disabled', true);
+
+      // Handle valid submit
+      if (this.state.valid) {
+        const handleValidSubmit = async () => {
+          try {
+            await this._handleBeforeSubmit();
+            const submitResponse = await this._resolveValidSubmitHandler();
+            this.updateStateValue('submitResult', 'success');
+            switch (this.config.handleSuccesfullSubmit) {
+              case 'disable':
+                this.updateStateValue('disabled', true);
+                break;
+              case 'reset':
+                this.reset();
+                break;
+              default:
+                this.updateStateValue('disabled', false);
+                break;
+            }
+            await this._handleAfterSubmit();
+            return submitResponse;
+          } catch (error) {
+            console.error('Could not handle valid submit!', { formName: this.name, error });
+            this.updateState({ submitResult: 'error', disabled: false });
+            return error;
+          }
+        };
+
+        const submitResponse = await handleValidSubmit();
+        this.updateStateValue('submitted', true);
+        this.updateStateValue('submitting', false);
+        const submits = this.state.submits || 0;
+        this.updateStateValue('submits', submits + 1);
+        return submitResponse;
+      }
+
+      // Handle invalid submit
+      const invalidSubmitHandler = this._resolveInvalidSubmitHandler();
+      return await invalidSubmitHandler.finally(() => {
+        const submits = this.state.submits || 0;
+        this.updateState({
+          submitting: false,
+          submitted: true,
+          submitResult: 'form-invalid',
+          disabled: false,
+          submits: submits + 1,
+        });
+      });
+    } catch (error) {
+      return console.error('Could not handle form submit! Error: ', error);
+    }
+  }
+
+  private async _resolveValidSubmitHandler() {
+    if (this.field.handleSubmit?.valid) return await Promise.resolve(this.field.handleSubmit.valid<any>(this));
+
+    const action = this.managers.ref.formAction;
+    if (!action) throw 'No submit handler for valid submit!';
+    return await fetch(action, {
+      method: 'POST',
+      body: JSON.stringify(this.value),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  private async _resolveInvalidSubmitHandler() {
+    if (this.field.handleSubmit?.invalid) return await Promise.resolve(this.field.handleSubmit.invalid<any>(this));
+    return console.log('Form is invalid!', {
+      form: this,
+    });
+  }
+
   // Misc
 
   public resetValue = () => {
@@ -570,31 +660,54 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   };
 
   /**
-   * Get the control's parent's field's parameter
-   * @param key The parameter to get
-   * @param checkSelf If true, will check the control's own field for the parameter
-   * @param deep If true, will search for the parameter in the parent's parent and so on
-   * @returns The parameter value
+   * Get the control's field's value
+   * @param key The field to get
+   * @param fallback The fallback value
+   * @returns Field's value or fallback
    */
-  public getParentFieldValue = <OUTPUT = unknown>(key: keyof FIELD, fallback: OUTPUT, checkSelf = true, deep = true): OUTPUT => {
-    if (checkSelf && this.field[key]) return this.field[key] as OUTPUT;
-    if (!this.isRoot && this.parent && this.parent.field[key]) return this.parent.field[key];
-    if (deep && !this.isRoot && this.parent) return this.parent.getParentFieldValue<OUTPUT>(key as any, fallback, false, deep);
+  public getFieldValue = <OUTPUT>(key: keyof FIELD, fallback?: OUTPUT): OUTPUT => {
+    if (this.field[key]) return this.field[key] as OUTPUT;
     return fallback as OUTPUT;
   };
 
   /**
-   * Get the control's parent's field's parameter
-   * @param key The parameter to get
-   * @param checkSelf If true, will check the control's own field for the parameter
-   * @returns The parameter value
+   * Get the control's parent's field's value
+   * @param key The field to get
+   * @param fallback The fallback value
+   * @returns Field's value or fallback
    */
-  public getRootFieldValue = <OUTPUT = unknown>(key: keyof FIELD, fallback: OUTPUT, checkSelf = true): OUTPUT => {
-    if (checkSelf && this.field[key]) return this.field[key] as OUTPUT;
-    if (!this.isRoot && this.root && this.root.field[key]) return this.parent.field[key];
+  public getParentFieldValue = <OUTPUT>(key: string | number, fallback?: OUTPUT): OUTPUT => {
+    if (!this.isRoot && this.parent && key in this.parent.field) return this.parent.getFieldValue<OUTPUT>(key as any, fallback);
     return fallback as OUTPUT;
   };
 
+  /**
+   * Get the control's root's field's value
+   * @param key The field to get
+   * @param fallback The fallback value
+   * @returns Field's value or fallback
+   */
+  public getRootFieldValue = <OUTPUT>(key: string | number, fallback?: OUTPUT): OUTPUT => {
+    if (!this.isRoot && this.root && key in this.root.field) return this.root.getFieldValue<OUTPUT>(key as any, fallback);
+    return fallback as OUTPUT;
+  };
+
+  /**
+   * Dig through the control's parents to find field value
+   * @param key The field to get
+   * @param fallback The fallback value
+   * @param checkSelf If true, will check the control's own field
+   * @returns Field's value or fallback
+   */
+  public getDigFieldValue = <OUTPUT>(key: string | number, fallback: OUTPUT, checkSelf = true): OUTPUT => {
+    if (checkSelf && key in this.field) return this.getFieldValue(key as any, fallback) as OUTPUT;
+    if (!this.isRoot && this.parent) return this.parent.getDigFieldValue<OUTPUT>(key as any, fallback);
+    return fallback as OUTPUT;
+  };
+
+  /**
+   * @internal
+   */
   public _resolveSubmitHandler = async (key: 'beforeSubmit' | 'afterSubmit'): Promise<void> => {
     if (this.field[key]) await resolveFunctionOutputPromises(key, createResolverContext(this), this.field[key]);
     const childHandlers = this.controls.map((control) => {
@@ -605,10 +718,16 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
     await Promise.all(childHandlers);
   };
 
+  /**
+   * @internal
+   */
   public _handleBeforeSubmit = async () => {
     await this._resolveSubmitHandler('beforeSubmit');
   };
 
+  /**
+   * @internal
+   */
   public _handleAfterSubmit = async () => {
     if (this.config.clearStorageOnSuccessfullSubmit) this.extensions.storage.clearStorage();
     await this._resolveSubmitHandler('afterSubmit');

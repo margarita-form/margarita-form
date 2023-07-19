@@ -65,12 +65,12 @@ export interface MargaritaFormHandleLocalize<FIELD> {
   child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
 }
 
-export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedStates> {
+export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF> extends Partial<UserDefinedStates> {
   name: string;
   fields?: EXTENDS[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
-  initialValue?: any;
+  initialValue?: VALUE;
   validation?: MargaritaFormFieldValidation;
   params?: MargaritaFormFieldParams;
   attributes?: MargaritaFormFieldAttributes;
@@ -78,6 +78,8 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   validators?: MargaritaFormValidators;
   beforeSubmit?: MargaritaFormResolver;
   afterSubmit?: MargaritaFormResolver;
+  handleSubmit?: MargaritaFormSubmitHandlers<VALUE>;
+  locales?: string[];
   localize?: boolean;
   wasLocalized?: boolean;
   isLocaleField?: boolean;
@@ -87,12 +89,6 @@ export interface MargaritaFormField<EXTENDS = MFF> extends Partial<UserDefinedSt
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
-}
-
-export interface MargaritaFormRootField<VALUE> {
-  name: string;
-  locales?: string[];
-  handleSubmit?: MargaritaFormSubmitHandlers<VALUE>;
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
@@ -191,11 +187,9 @@ export interface BroadcastLike {
 // Shorthands
 
 /** Shorthand for {@link MargaritaFormField}  */
-export type MFF<EXTENDS = any> = MargaritaFormField<EXTENDS>;
-/** Shorthand for {@link MargaritaFormRootField}  */
-export type MFRF<VALUE = unknown> = MargaritaFormRootField<VALUE>;
+export type MFF<VALUE = any, EXTENDS = any> = MargaritaFormField<VALUE, EXTENDS>;
 /** Shorthand for {@link MargaritaForm}  */
-export type MF<VALUE = any, FIELD extends MFF = any> = MargaritaForm<VALUE, FIELD>;
+export type MF<VALUE = any, FIELD extends MFF = MFF> = MargaritaForm<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
 export type MFC<VALUE = any, FIELD extends MFF = MFF> = MargaritaFormControl<VALUE, FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */

@@ -12,7 +12,7 @@ export const handleFormElementSubmit = <CONTROL extends MFC = MFC>({
   if (!isForm) return null;
   return fromEvent<SubmitEvent>(node, 'submit').subscribe((e) => {
     e.preventDefault();
-    control.form.submit();
+    control.submit();
   });
 };
 
@@ -27,6 +27,6 @@ export const handleFormElementReset = <CONTROL extends MFC = MFC>({
   if (!isForm) return null;
   return fromEvent<SubmitEvent>(node, 'reset').subscribe((e) => {
     e.preventDefault();
-    control.form.reset();
+    control.reset();
   });
 };

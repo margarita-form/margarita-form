@@ -1,13 +1,9 @@
-import type { MFF, MFRF } from './margarita-form-types';
+import type { MFF } from './margarita-form-types';
 import { MargaritaForm } from './margarita-form';
 
 const formsCache = new Map<string, MargaritaForm<any, any>>();
 
-export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
-  field: Partial<FIELD> & MFRF<VALUE>
-): MargaritaForm<VALUE, FIELD> => {
-  type ROOTFIELD = FIELD & MFRF<VALUE>;
-
+export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF = MFF>(field: FIELD): MargaritaForm<VALUE, FIELD> => {
   if (field.config?.useCacheForForms !== false) {
     const name = field.name;
     if (!name) throw new Error('Form name is required!');
@@ -17,7 +13,7 @@ export const createMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = 
       return cachedForm as MargaritaForm<VALUE, FIELD>;
     }
   }
-  const form = new MargaritaForm<VALUE, FIELD>(field as ROOTFIELD);
+  const form = new MargaritaForm<VALUE, FIELD>(field);
   formsCache.set(field.name, form);
   return form;
 };

@@ -145,7 +145,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const initialValue = field.initialValue && typeof field.initialValue === 'object' ? field.initialValue : undefined;
 
       const fallbackFn = () => ({});
-      const { parent = fallbackFn, child = fallbackFn } = this.control.getRootFieldValue<MargaritaFormHandleLocalize<FIELD>>(
+      const { parent = fallbackFn, child = fallbackFn } = this.control.getDigFieldValue<MargaritaFormHandleLocalize<FIELD>>(
         'handleLocalize',
         {}
       );
@@ -192,7 +192,6 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const control = new MargaritaFormControl<VALUE, FIELD>(field, {
       parent: this.control,
       root: this.control.root,
-      form: this.control.form,
       keyStore: this.control.keyStore,
       initialIndex: this._controls.length,
     });

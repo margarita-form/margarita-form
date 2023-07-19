@@ -6,16 +6,16 @@ import { nanoid } from 'nanoid';
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';
 
-const commonField: MargaritaFormField<MFF> = {
+const commonField: MargaritaFormField<string, MFF> = {
   name: 'fieldName',
   initialValue: fieldNameInitialValue,
 };
 
-const undefinedField: MargaritaFormField<MFF> = {
+const undefinedField: MargaritaFormField<any, MFF> = {
   name: 'undefinedField',
 };
 
-const invalidField: MargaritaFormField<MFF> = {
+const invalidField: MargaritaFormField<any, MFF> = {
   name: 'invalidField',
   validation: {
     required: true,
@@ -34,7 +34,7 @@ const invalidField: MargaritaFormField<MFF> = {
   },
 };
 
-const uncommonField: MargaritaFormField<MFF> = {
+const uncommonField: MargaritaFormField<any, MFF> = {
   name: 'anotherOne',
   initialValue: anotherInitialValue,
 };
@@ -56,7 +56,7 @@ const asyncGroupField: MargaritaFormField = {
   validators: {
     asyncGroupValidator: ({ value, control }: MargaritaFormFieldContext) => {
       if (!value) return { valid: true };
-      return control.form.valueChanges.pipe(
+      return control.root.valueChanges.pipe(
         map((rootValue) => {
           const sameAsCommon = rootValue?.fieldName === value;
           return { valid: sameAsCommon, error: 'Value is not same as common!' };
@@ -90,7 +90,6 @@ describe('margaritaForm', () => {
     const arrayControl = form.getControl([arrayField.name]);
     const commonControl = form.getControl([groupField.name, commonField.name]);
     if (!groupControl || !arrayControl || !commonControl) throw 'No control found!';
-    expect(commonControl.form).toBe(form);
     expect(commonControl.root).toBe(form);
     expect(commonControl.parent).toBe(groupControl);
     expect(commonControl.config).toBe(form.config);
@@ -757,11 +756,25 @@ describe('margaritaForm', () => {
   });
 
   it('#28 Check for TypeScript errors', () => {
-    interface CustomField extends MFF<CustomField> {
+    interface CustomField extends MFF<string> {
       type: 'custom';
-      lorem: 'ipsum';
+      lorem?: 'ipsum';
       maybe?: boolean;
     }
+    interface OtherCustomField extends MFF<number> {
+      type: 'joku-muu';
+      lorem?: 'ipsum';
+      maybe?: boolean;
+    }
+
+    type ChildField = CustomField | OtherCustomField;
+
+    interface RootField extends MFF<CustomValue, ChildField> {
+      type: 'root';
+      fields: ChildField[];
+    }
+
+    type FormField = RootField | ChildField;
 
     interface CustomValue {
       typedField: 'Hello world!';
@@ -774,16 +787,15 @@ describe('margaritaForm', () => {
       maybe: false,
     };
 
-    const form = createMargaritaForm<CustomValue, CustomField>({
+    const form = createMargaritaForm<CustomValue, FormField>({
       name: nanoid(),
+      type: 'root',
       fields: [typedField],
     });
 
     const typedControl = form.getControl([typedField.name]);
     if (!typedControl) throw 'No control found!';
     expect(typedControl.field.type).toBe('custom');
-    expect(typedControl.field.lorem).toBe('ipsum');
-    expect(typedControl.field.maybe).toBe(false);
 
     const typedControl2 = form.getControl<string, CustomField>([typedField.name]);
     if (!typedControl2) throw 'No control found!';
