@@ -3,7 +3,7 @@ import { createFormStore } from '../misc/margarita-form-store';
 import { MFF, createMargaritaForm } from '@margarita-form/core';
 
 export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<VALUE> = MFF<VALUE>>(field: FIELD, deps: any[] = []) => {
-  const form = createMargaritaForm(field);
+  const form = createMargaritaForm<VALUE, FIELD>(field);
   const store = createFormStore(form);
 
   useSyncExternalStore(
