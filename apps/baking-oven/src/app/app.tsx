@@ -75,7 +75,7 @@ const AppWrapper = styled.div`
   }
 `;
 
-export interface CustomField extends MargaritaFormField<CustomField> {
+export interface CustomField extends MargaritaFormField<unknown, CustomField> {
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
   title: string;
   options?: { label: string; value: string }[];
@@ -87,12 +87,14 @@ interface FormValue {
   steps: { title: string; description: string }[];
 }
 
+type Field = MargaritaFormField<FormValue, CustomField>;
+
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
   const [currentFields, setCurrentFields] = useState(recipeFields);
   const [shouldReset, setShouldReset] = useState(true);
 
-  const form = useMargaritaForm<FormValue, CustomField>({
+  const form = useMargaritaForm<FormValue, Field>({
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
