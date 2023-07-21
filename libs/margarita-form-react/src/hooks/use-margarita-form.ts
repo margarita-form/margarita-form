@@ -33,3 +33,5 @@ export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<VALUE> = MFF
 
   return form;
 };
+
+export const useForm = useMargaritaForm;
