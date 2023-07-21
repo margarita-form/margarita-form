@@ -418,15 +418,17 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MF
   /**
    * Get all controls as an array
    */
-  public get controls(): MFCA<unknown, FIELD> {
-    return this.managers.controls.array;
+  public get controls() {
+    type CHILD_FIELD = NonNullable<FIELD['fields']>[number];
+    return this.managers.controls.array as MFCA<unknown, CHILD_FIELD>;
   }
 
   /**
    * Get all active controls as an array
    */
-  public get activeControls(): MFCA<unknown, FIELD> {
-    return this.managers.controls.array.filter((control) => control.state.active);
+  public get activeControls() {
+    type CHILD_FIELD = NonNullable<FIELD['fields']>[number];
+    return this.managers.controls.array.filter((control) => control.state.active) as MFCA<unknown, CHILD_FIELD>;
   }
 
   /**
