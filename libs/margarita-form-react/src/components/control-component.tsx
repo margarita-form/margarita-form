@@ -7,7 +7,7 @@ interface WithControl {
   control: MargaritaFormControl<any, any>;
 }
 
-type ControlField = MargaritaFormField<ControlField> & CommonRecord;
+type ControlField<VALUE = any> = MargaritaFormField<VALUE, ControlField> & CommonRecord;
 
 interface WithField {
   field: ControlField;
