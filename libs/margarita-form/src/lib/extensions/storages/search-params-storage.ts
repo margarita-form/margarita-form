@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs';
+
 export class SearchParamsStorage {
   public static serverHref: string | undefined;
 
@@ -6,23 +8,45 @@ export class SearchParamsStorage {
     return typeof window !== 'undefined' ? new URL(window.location.href) : null;
   }
 
-  public static getItem(key: string): string | undefined {
+  public static getItem<DATA = string>(key: string): DATA | undefined {
     const url = this.url;
     if (!url) return;
-    return url.searchParams.get(key) || undefined;
+    const value = url.searchParams.get(key);
+    if (!value) return undefined;
+    try {
+      return JSON.parse(value) as DATA;
+    } catch (error) {
+      return value as DATA;
+    }
   }
 
-  public static setItem(key: string, value: string): void {
+  public static setItem<DATA = string>(key: string, value: DATA): void {
     const url = this.url;
     if (!url) return;
-    url.searchParams.set(key, value);
-    window.history.replaceState({}, '', url.href);
+    const string = String(value);
+    const current = url.searchParams.get(key);
+    const changed = current !== string;
+    if (!changed) return;
+    url.searchParams.set(key, string);
+    window.history.pushState({}, '', url.href);
   }
 
   public static removeItem(key: string): void {
     const url = this.url;
     if (!url) return;
     url.searchParams.delete(key);
-    window.history.replaceState({}, '', url.href);
+    window.history.pushState({}, '', url.href);
+  }
+
+  public static listenToChanges<DATA>(key: string): Observable<DATA> {
+    return new Observable((subscriber) => {
+      if (typeof window === 'undefined') return;
+      const listener = () => {
+        const value = this.getItem<DATA>(key);
+        return subscriber.next(value);
+      };
+      window.addEventListener('popstate', listener);
+      return () => window.removeEventListener('popstate', listener);
+    });
   }
 }

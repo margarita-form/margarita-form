@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs';
 import { valueExists } from '../helpers/check-value';
 import { MFC, StorageLike } from '../margarita-form-types';
 import { LocalStorage } from './storages/local-storage';
@@ -51,6 +52,17 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
       }
     }
     return undefined;
+  }
+
+  public getStorageValueListener<TYPE = any>(): void | Observable<TYPE | undefined> {
+    const key = this.storageKey;
+    if (this.source) {
+      try {
+        return this.source.listenToChanges<TYPE>(key);
+      } catch (error) {
+        console.error(`Could not get value from ${this.source}!`, { control: this.control, error });
+      }
+    }
   }
 
   public saveStorageValue(value: any): string {

@@ -163,10 +163,15 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTM
   pattern?: string;
 };
 
+export interface StorageLikeConstructor {
+  new (key: string, control: MFC): StorageLike;
+}
+
 export interface StorageLike {
   getItem(key: string): unknown | undefined;
   setItem(key: string, value: unknown): void;
   removeItem(key: string): void;
+  listenToChanges<DATA>(key: string): Observable<DATA>;
 }
 
 export interface BroadcastLikeConstructor {

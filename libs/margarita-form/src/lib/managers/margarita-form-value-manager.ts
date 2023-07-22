@@ -40,6 +40,18 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         console.error(`Could not syncronize value!`, { control: this.control, error });
       }
     }
+
+    if (this.control.field.useStorage) {
+      try {
+        const observable = storage.getStorageValueListener<CONTROL['value']>();
+
+        if (observable) {
+          this.createSubscription(observable, (value) => this.updateValue(value, false, true, false));
+        }
+      } catch (error) {
+        console.error(`Could not subscribe to storage changes!`, { control: this.control, error });
+      }
+    }
   }
 
   private _emitChanges(update: 'parent' | 'children' | 'none' = 'parent', setAsDirty = true, patch = false) {
