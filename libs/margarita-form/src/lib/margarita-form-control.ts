@@ -25,7 +25,7 @@ import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
 
-export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<FIELD> = MFF> {
+export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIELD> = MFF> {
   public key: string;
   public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
