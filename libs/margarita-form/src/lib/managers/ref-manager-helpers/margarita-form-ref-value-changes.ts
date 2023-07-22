@@ -15,8 +15,8 @@ export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
     try {
       if (['checkbox', 'radio'].includes(type)) {
         const valueIsArray = Array.isArray(control.value);
-        if (multiple && valueIsArray && value.includes(node.value)) {
-          node.checked = Boolean(value);
+        if (multiple && valueIsArray) {
+          node.checked = value.includes(node.value);
         } else if (node.value === value) {
           node.checked = true;
         } else if (typeof value === 'boolean') {
