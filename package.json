@@ -14,8 +14,8 @@
   "scripts": {
     "dev": "nx run baking-oven:serve",
     "gen:lib": "./generate-lib.sh",
-    "test:core": "nx run margarita-form:lint && nx run margarita-form:test",
-    "test:react": "nx run margarita-form-react:lint",
+    "test:core": "nx run margarita-form:lint && nx run margarita-form:test && npm run build:core",
+    "test:react": "nx run margarita-form-react:lint && npm run build:react",
     "pretty": "prettier --write \"libs/**/*.{js,jsx,ts,tsx,json,md}\"",
     "build:core": "nx run margarita-form:build",
     "build:react": "nx run margarita-form-react:build",
@@ -86,4 +86,3 @@
     "packages/*"
   ]
 }
-
