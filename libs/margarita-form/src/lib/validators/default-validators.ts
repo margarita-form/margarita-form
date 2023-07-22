@@ -15,6 +15,7 @@ import {
   passwordValidator,
   andValidator,
   orValidator,
+  typeofValidator,
 } from '.';
 
 export const defaultValidators = {
@@ -35,4 +36,5 @@ export const defaultValidators = {
   url: urlValidator(),
   and: andValidator(),
   or: orValidator(),
+  typeof: typeofValidator(),
 };
