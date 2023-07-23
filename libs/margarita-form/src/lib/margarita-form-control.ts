@@ -13,6 +13,7 @@ import {
   MargaritaFormValidator,
   MargaritaFormValidators,
   MargaritaFormControlContext,
+  MFCCF,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
@@ -418,7 +419,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Get all controls as an array
    */
-  public get controls() {
+  public get controls(): MFCCF<FIELD>[] {
     type CHILD_FIELD = NonNullable<FIELD['fields']>[number];
     return this.managers.controls.array as MFCA<unknown, CHILD_FIELD>;
   }
@@ -426,9 +427,8 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Get all active controls as an array
    */
-  public get activeControls() {
-    type CHILD_FIELD = NonNullable<FIELD['fields']>[number];
-    return this.managers.controls.array.filter((control) => control.state.active) as MFCA<unknown, CHILD_FIELD>;
+  public get activeControls(): MFCCF<FIELD>[] {
+    return this.managers.controls.array.filter((control) => control.state.active);
   }
 
   /**
@@ -509,7 +509,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * Add new controls to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControls = <FIELD extends MFF = MFF>(fieldTemplates: string[] | FIELD[]) => {
+  public appendControls = <FIELD extends MFF = MFF>(fieldTemplates: string[] | FIELD[]): MFCA => {
     return this.managers.controls.appendRepeatingControls(fieldTemplates);
   };
 
@@ -564,7 +564,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     return this.getStateChanges('submits').pipe(map(() => this));
   }
 
-  public async submit() {
+  public submit = async () => {
     try {
       await this.validate();
       if (!this.field.handleSubmit && !this.managers.ref.formAction) throw 'Add "handleSubmit" option to submit form!';
@@ -574,7 +574,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
       if (this.config.disableFormWhileSubmitting) this.updateStateValue('disabled', true);
 
       // Handle valid submit
-      if (this.state.valid) {
+      if (this.state.valid || this.config.allowInvalidSubmit) {
         const handleValidSubmit = async () => {
           try {
             await this._handleBeforeSubmit();
@@ -623,14 +623,21 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     } catch (error) {
       return console.error('Could not handle form submit! Error: ', error);
     }
-  }
+  };
 
-  private async _resolveValidSubmitHandler() {
-    if (this.field.handleSubmit?.valid) return await Promise.resolve(this.field.handleSubmit.valid<any>(this));
+  private async _resolveValidSubmitHandler(): Promise<any> {
+    const { handleSubmit } = this.field;
+    if (typeof handleSubmit === 'string') return await this._resolveInvalidSubmitPostHandler(handleSubmit);
+    if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this));
+    if (handleSubmit?.valid) return await Promise.resolve(handleSubmit.valid(this));
 
     const action = this.managers.ref.formAction;
     if (!action) throw 'No submit handler for valid submit!';
-    return await fetch(action, {
+    return await this._resolveInvalidSubmitPostHandler(action);
+  }
+
+  private async _resolveInvalidSubmitPostHandler(url: string) {
+    return await fetch(url, {
       method: 'POST',
       body: JSON.stringify(this.value),
       headers: {
@@ -639,8 +646,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     });
   }
 
-  private async _resolveInvalidSubmitHandler() {
-    if (this.field.handleSubmit?.invalid) return await Promise.resolve(this.field.handleSubmit.invalid<any>(this));
+  private async _resolveInvalidSubmitHandler(): Promise<any> {
+    const { handleSubmit } = this.field;
+    const defaultHandler = () => console.log('Form is invalid!', { form: this });
+    if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
+    if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(this));
     return console.log('Form is invalid!', {
       form: this,
     });

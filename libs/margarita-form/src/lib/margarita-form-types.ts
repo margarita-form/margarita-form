@@ -78,7 +78,7 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF> extends Part
   validators?: MargaritaFormValidators;
   beforeSubmit?: MargaritaFormResolver;
   afterSubmit?: MargaritaFormResolver;
-  handleSubmit?: MargaritaFormSubmitHandlers<VALUE>;
+  handleSubmit?: string | MargaritaFormSubmitHandler<VALUE> | MargaritaFormSubmitHandlers<VALUE>;
   locales?: string[];
   localize?: boolean;
   wasLocalized?: boolean;
@@ -136,6 +136,7 @@ export interface MargaritaFormConfig {
   clearStorageOnSuccessfullSubmit?: boolean;
   detectInputElementValidations?: boolean;
   disableFormWhileSubmitting?: boolean;
+  allowInvalidSubmit?: boolean;
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
@@ -144,9 +145,11 @@ export interface MargaritaFormConfig {
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
 }
 
+export type MargaritaFormSubmitHandler<VALUE = unknown> = (form: MF<VALUE>) => unknown | Promise<unknown>;
+
 export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
-  valid: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
-  invalid?: <FORM extends MargaritaForm<VALUE> = MargaritaForm<VALUE>>(form: FORM) => unknown | Promise<unknown>;
+  valid: MargaritaFormSubmitHandler<VALUE>;
+  invalid?: MargaritaFormSubmitHandler<VALUE>;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
@@ -205,3 +208,5 @@ export type MFCG<VALUE = any, FIELD extends MFF = any> = Record<string, MFC<VALU
 export type MFCA<VALUE = any, FIELD extends MFF = any> = MFC<VALUE, FIELD>[];
 /** Margarita form managers */
 export type MFCM = MargaritaFormControlManagers;
+/** Get child control */
+export type MFCCF<FIELD extends MFF> = MFC<unknown, NonNullable<FIELD['fields']>[number]>;
