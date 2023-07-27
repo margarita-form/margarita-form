@@ -14,8 +14,12 @@ import {
   MargaritaFormValidators,
   MargaritaFormControlContext,
   MFCCF,
+  ControlLike,
+  ControlValue,
+  MargaritaFormResolverOutput,
+  ControlValueItem,
 } from './margarita-form-types';
-import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
+import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay } from 'rxjs';
 import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 import { Params } from './managers/margarita-form-params-manager';
 import { ConfigManager } from './managers/margarita-form-config-manager';
@@ -26,7 +30,7 @@ import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
 
-export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIELD> = MFF> {
+export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> implements ControlLike<FIELD> {
   public key: string;
   public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
@@ -210,18 +214,18 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
 
   // Value
 
-  public get value(): VALUE {
+  public get value(): ControlValue<FIELD> {
     return this.managers.value.current;
   }
 
-  public set value(value: VALUE) {
+  public set value(value: ControlValue<FIELD>) {
     this.managers.value.updateValue(value);
   }
 
   /**
    * Listen to value changes of the control
    */
-  public get valueChanges(): Observable<VALUE> {
+  public get valueChanges(): Observable<ControlValue<FIELD>> {
     return this.managers.value.changes;
   }
 
@@ -230,7 +234,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param value value to set
    * @param setAsDirty update dirty state to true
    */
-  public setValue = <VAL extends VALUE>(value: VAL | undefined | null, setAsDirty = true, emitEvent = true) => {
+  public setValue: ControlLike<FIELD>['setValue'] = (value, setAsDirty = true, emitEvent = true) => {
     this.managers.value.updateValue(value, setAsDirty, emitEvent);
   };
 
@@ -239,8 +243,26 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param values value to set
    * @param setAsDirty update dirty state to true
    */
-  public patchValue = <VAL extends VALUE>(values: Partial<VAL>, setAsDirty = true) => {
-    this.managers.value.updateValue(values, setAsDirty, true, true);
+  public patchValue: ControlLike<FIELD>['setValue'] = (values, setAsDirty = true, emitEvent = true) => {
+    this.managers.value.updateValue(values, setAsDirty, emitEvent, true);
+  };
+
+  /**
+   * Run value through field's dispatcher and set the result as the new value
+   */
+  public dispatchValue: ControlLike<FIELD>['dispatchValue'] = async (value, setAsDirty, emitEvent) => {
+    if (!this.field.dispatcher) return console.warn('No dispatcher defined for this control!');
+    const { dispatcher } = this.field;
+    const result = dispatcher({ control: this, value }) as MargaritaFormResolverOutput<ControlValue<FIELD>>;
+    if (result instanceof Promise) {
+      const value = await result;
+      this.setValue(value, setAsDirty, emitEvent);
+    } else if (result instanceof Observable) {
+      const value = await firstValueFrom(result);
+      this.setValue(value, setAsDirty, emitEvent);
+    } else {
+      this.setValue(result, setAsDirty, emitEvent);
+    }
   };
 
   /**
@@ -249,8 +271,8 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param mustBeUnique Should the value be unique (default = false)
    * @param setAsDirty Should the dirty state be set to true
    */
-  public addValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = false, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value] as VALUE, setAsDirty, emitEvent);
+  public addValue: ControlLike<FIELD>['addValue'] = (value, mustBeUnique = false, setAsDirty, emitEvent) => {
+    if (this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return console.warn('Value already exists!');
     this.managers.value.updateValue([...this.value, value], setAsDirty);
@@ -276,7 +298,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param setAsDirty Should the dirty state be set to true
    */
   public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value] as VALUE, setAsDirty, emitEvent);
+    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
     this.managers.value.updateValue([...this.value, value], setAsDirty);
@@ -419,15 +441,14 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Get all controls as an array
    */
-  public get controls(): MFCCF<FIELD>[] {
-    type CHILD_FIELD = NonNullable<FIELD['fields']>[number];
-    return this.managers.controls.array as MFCA<unknown, CHILD_FIELD>;
+  public get controls(): ControlLike<FIELD>['controls'] {
+    return this.managers.controls.array;
   }
 
   /**
    * Get all active controls as an array
    */
-  public get activeControls(): MFCCF<FIELD>[] {
+  public get activeControls(): ControlLike<FIELD>['activeControls'] {
     return this.managers.controls.array.filter((control) => control.state.active);
   }
 
@@ -436,18 +457,15 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
    * @returns The control that was found or added or null if control doesn't exist.
    */
-  public getControl = <VALUE = unknown, FIELD extends MFF = this['field']>(
-    identifier: string | number | (string | number)[]
-  ): MFC<VALUE, FIELD> | null => {
-    type CONTROL = MFC<VALUE, FIELD>;
+  public getControl: ControlLike<FIELD>['getControl'] = (identifier) => {
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
-      const control = this.managers.controls.getControl<CONTROL>(first);
+      const control = this.managers.controls.getControl(first);
       if (!control) return null;
       if (rest.length === 0) return control;
-      return control.getControl<VALUE, FIELD>(rest);
+      return control.getControl(rest);
     }
-    return this.managers.controls.getControl<CONTROL>(identifier);
+    return this.managers.controls.getControl(identifier) as any;
   };
 
   /**
@@ -455,7 +473,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param identifier name, index or key of the control
    * @returns boolean
    */
-  public hasControl = (identifier: string | number): boolean => {
+  public hasControl: ControlLike['hasControl'] = (identifier) => {
     const control = this.managers.controls.getControl(identifier);
     const exists = Boolean(control);
     return exists;
@@ -467,10 +485,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
-  public getOrAddControl = <VALUE = unknown, FIELD extends MFF = this['field']>(field: FIELD): MFC<VALUE, FIELD> => {
-    type CONTROL = MFC<VALUE, FIELD>;
-    const control = this.managers.controls.getControl<CONTROL>(field.name);
-    if (!control) return this.managers.controls.addControl<FIELD, VALUE>(field);
+  public getOrAddControl: ControlLike<this['field']>['getOrAddControl'] = (field) => {
+    const control = this.managers.controls.getControl(field.name) as any;
+    if (!control) return this.managers.controls.addControl(field) as any;
     return control;
   };
 
@@ -480,12 +497,12 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param replaceExisting Replace existing control with the same name when parent is not an array type
    * @returns Control that was added
    */
-  public addControl = <FIELD extends MFF = this['field'], VALUE = unknown>(field: FIELD, replaceExisting?: boolean): MFC<VALUE, FIELD> => {
+  public addControl: ControlLike['addControl'] = (field, replaceExisting) => {
     const exists = this.hasControl(field.name);
     if (this.expectGroup && exists && replaceExisting === undefined) {
       console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
     }
-    return this.managers.controls.addControl(field);
+    return this.managers.controls.addControl(field) as any;
   };
 
   /**
@@ -509,7 +526,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * Add new controls to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControls = <FIELD extends MFF = MFF>(fieldTemplates: string[] | FIELD[]): MFCA => {
+  public appendControls: ControlLike['appendControls'] = (fieldTemplates) => {
     return this.managers.controls.appendRepeatingControls(fieldTemplates);
   };
 
@@ -517,7 +534,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * Add new control to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControl = <FIELD extends MFF = MFF>(fieldTemplate?: string | FIELD, overrides?: Partial<FIELD>) => {
+  public appendControl: ControlLike['appendControl'] = (fieldTemplate, overrides) => {
     return this.managers.controls.appendRepeatingControl(fieldTemplate, overrides);
   };
 
@@ -554,7 +571,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * control.setRef(el);
    * ```
    */
-  public setRef = (ref: any | MargaritaFormBaseElement<this>): void => {
+  public setRef: ControlLike['setRef'] = (ref) => {
     return this.managers.ref.addRef(ref);
   };
 
@@ -677,44 +694,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param fallback The fallback value
    * @returns Field's value or fallback
    */
-  public getFieldValue = <OUTPUT>(key: keyof FIELD, fallback?: OUTPUT): OUTPUT => {
-    if (this.field[key]) return this.field[key] as OUTPUT;
-    return fallback as OUTPUT;
-  };
-
-  /**
-   * Get the control's parent's field's value
-   * @param key The field to get
-   * @param fallback The fallback value
-   * @returns Field's value or fallback
-   */
-  public getParentFieldValue = <OUTPUT>(key: string | number, fallback?: OUTPUT): OUTPUT => {
-    if (!this.isRoot && this.parent && key in this.parent.field) return this.parent.getFieldValue<OUTPUT>(key as any, fallback);
-    return fallback as OUTPUT;
-  };
-
-  /**
-   * Get the control's root's field's value
-   * @param key The field to get
-   * @param fallback The fallback value
-   * @returns Field's value or fallback
-   */
-  public getRootFieldValue = <OUTPUT>(key: string | number, fallback?: OUTPUT): OUTPUT => {
-    if (!this.isRoot && this.root && key in this.root.field) return this.root.getFieldValue<OUTPUT>(key as any, fallback);
-    return fallback as OUTPUT;
-  };
-
-  /**
-   * Dig through the control's parents to find field value
-   * @param key The field to get
-   * @param fallback The fallback value
-   * @param checkSelf If true, will check the control's own field
-   * @returns Field's value or fallback
-   */
-  public getDigFieldValue = <OUTPUT>(key: string | number, fallback: OUTPUT, checkSelf = true): OUTPUT => {
-    if (checkSelf && key in this.field) return this.getFieldValue(key as any, fallback) as OUTPUT;
-    if (!this.isRoot && this.parent) return this.parent.getDigFieldValue<OUTPUT>(key as any, fallback);
-    return fallback as OUTPUT;
+  public getFieldValue: ControlLike['getFieldValue'] = (key, defaultValue) => {
+    if (this.field[key]) return this.field[key] as any;
+    return defaultValue;
   };
 
   /**

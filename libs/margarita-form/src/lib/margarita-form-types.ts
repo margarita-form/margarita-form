@@ -15,9 +15,9 @@ export interface MargaritaFormControlContext {
 export type CommonRecord<TYPE = unknown> = Record<string | number | symbol, TYPE>;
 
 export interface MargaritaFormFieldContext<CONTROL extends MargaritaFormControl = MFC, PARAMS = any> {
-  value: CONTROL['value'];
-  params: PARAMS;
   control: CONTROL;
+  value?: CONTROL['value'];
+  params?: PARAMS;
   errorMessage?: string;
 }
 
@@ -50,13 +50,13 @@ export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
 export type MargaritaFormHandleLocalizeParentFn<FIELD> = (params: {
   field: FIELD;
-  parent: MFC<unknown, MFF>;
+  parent: MFC<MFF>;
   locales: string[];
 }) => Partial<FIELD> | CommonRecord;
 
 export type MargaritaFormHandleLocalizeChildFn<FIELD> = (params: {
   field: FIELD;
-  parent: MFC<unknown, MFF>;
+  parent: MFC<MFF>;
   locale: string;
 }) => Partial<FIELD> | CommonRecord;
 
@@ -76,9 +76,10 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF> extends Part
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
+  dispatcher?: MargaritaFormResolver<VALUE>;
   beforeSubmit?: MargaritaFormResolver;
   afterSubmit?: MargaritaFormResolver;
-  handleSubmit?: string | MargaritaFormSubmitHandler<VALUE> | MargaritaFormSubmitHandlers<VALUE>;
+  handleSubmit?: string | MargaritaFormSubmitHandler<MFF<VALUE, EXTENDS>> | MargaritaFormSubmitHandlers<MFF<VALUE, EXTENDS>>;
   locales?: string[];
   localize?: boolean;
   wasLocalized?: boolean;
@@ -145,11 +146,11 @@ export interface MargaritaFormConfig {
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
 }
 
-export type MargaritaFormSubmitHandler<VALUE = unknown> = (form: MF<VALUE>) => unknown | Promise<unknown>;
+export type MargaritaFormSubmitHandler<FIELD extends MFF = MFF> = (form: MF<FIELD>) => unknown | Promise<unknown>;
 
-export interface MargaritaFormSubmitHandlers<VALUE = unknown> {
-  valid: MargaritaFormSubmitHandler<VALUE>;
-  invalid?: MargaritaFormSubmitHandler<VALUE>;
+export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFF> {
+  valid: MargaritaFormSubmitHandler<FIELD>;
+  invalid?: MargaritaFormSubmitHandler<FIELD>;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
@@ -192,21 +193,95 @@ export interface BroadcastLike {
   listenToMessages<DATA>(): void | Observable<BroadcasterMessage<DATA>>;
 }
 
+type IsUnion<T, U extends T = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
+
+export type ControlIdentifier = string | number;
+export type DeepControlIdentifier<FIELD extends MFF> = IsUnion<FIELD['name']> extends true
+  ? FIELD['name'] | number | ControlIdentifier[]
+  : ControlIdentifier | ControlIdentifier[];
+
+export type ChildField<ParentField extends MFF> = NonNullable<ParentField['fields']>[number];
+export type ControlValue<Field extends MFF> = NonNullable<Field['initialValue']>;
+export type ControlValueItem<Field extends MFF> = ControlValue<Field>[number];
+export type ChildFieldFromName<ParentField extends MFF, NAME extends string> = Extract<ChildField<ParentField>, { name: NAME }>;
+
+type ValueFromParent<PARENT_FIELD extends MFF, IDENTIFIER extends PropertyKey> = ControlValue<PARENT_FIELD> extends Record<IDENTIFIER, any>
+  ? ControlValue<PARENT_FIELD>[IDENTIFIER]
+  : never;
+
+type FieldWithParentValue<BASE_FIELD extends MFF, PARENT_FIELD extends MFF, IDENTIFIER extends PropertyKey> = BASE_FIELD &
+  MFF<ValueFromParent<PARENT_FIELD, IDENTIFIER>>;
+
+export type ChildControl<
+  FIELD_TYPE,
+  IDENTIFIER,
+  PARENT_FIELD extends MFF,
+  CHILD_FIELD extends MFF = ChildField<PARENT_FIELD>
+> = FIELD_TYPE extends MFC
+  ? FIELD_TYPE
+  : FIELD_TYPE extends MFF
+  ? MFC<FIELD_TYPE>
+  : IDENTIFIER extends CHILD_FIELD['name']
+  ? MFC<
+      ChildFieldFromName<CHILD_FIELD, IDENTIFIER> extends never
+        ? FieldWithParentValue<CHILD_FIELD, PARENT_FIELD, IDENTIFIER>
+        : ChildFieldFromName<CHILD_FIELD, IDENTIFIER>
+    >
+  : MFC<CHILD_FIELD>;
+
+export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD>, CHILD_FIELD extends MFF = ChildField<FIELD>> {
+  get name(): FIELD['name'];
+
+  // Value
+
+  get value(): VALUE;
+  set value(value: VALUE);
+
+  setValue(value: VALUE | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): void;
+  patchValue(value: Partial<VALUE> | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): void;
+  dispatchValue(value: VALUE | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): Promise<void>;
+
+  addValue(value: ControlValueItem<FIELD>, mustBeUnique?: boolean, setAsDirty?: boolean, emitEvent?: boolean): void;
+
+  // Controls
+
+  get controls(): MFC<CHILD_FIELD>[];
+  get activeControls(): MFC<CHILD_FIELD>[];
+
+  addControl<CHILD_FIELD extends MFF = ChildField<FIELD>>(field: FIELD, replaceExisting?: boolean): MFC<CHILD_FIELD>;
+
+  getOrAddControl<CHILD_FIELD extends MFF = ChildField<FIELD>>(field: FIELD): MFC<CHILD_FIELD>;
+
+  hasControl(identifier: ControlIdentifier): boolean;
+
+  getControl<FIELD_TYPE, IDENTIFIER extends DeepControlIdentifier<ChildField<FIELD>> = DeepControlIdentifier<ChildField<FIELD>>>(
+    identifier: IDENTIFIER
+  ): ChildControl<FIELD_TYPE, IDENTIFIER, FIELD>;
+
+  appendControls<CHILD_FIELD extends MFF = FIELD>(fieldTemplates: string[] | CHILD_FIELD[]): MFC<CHILD_FIELD>[];
+
+  appendControl<CHILD_FIELD extends MFF = FIELD>(fieldTemplate?: string | CHILD_FIELD, overrides?: Partial<CHILD_FIELD>): MFC<CHILD_FIELD>;
+
+  setRef(ref: any): void;
+
+  getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;
+}
+
 // Shorthands
 
 /** Shorthand for {@link MargaritaFormField}  */
 export type MFF<VALUE = any, EXTENDS = any> = MargaritaFormField<VALUE, EXTENDS>;
 /** Shorthand for {@link MargaritaForm}  */
-export type MF<VALUE = any, FIELD extends MFF = MFF> = MargaritaForm<VALUE, FIELD>;
+export type MF<FIELD extends MFF = MFF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC<VALUE = any, FIELD extends MFF = MFF> = MargaritaFormControl<VALUE, FIELD>;
+export type MFC<FIELD extends MFF = MFF> = MargaritaFormControl<FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE<CONTROL extends MFC = MFC> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */
-export type MFCG<VALUE = any, FIELD extends MFF = any> = Record<string, MFC<VALUE, FIELD>>;
+export type MFCG<FIELD extends MFF = any> = Record<string, MFC<FIELD>>;
 /** Margarita form controls as array */
-export type MFCA<VALUE = any, FIELD extends MFF = any> = MFC<VALUE, FIELD>[];
+export type MFCA<FIELD extends MFF = any> = MFC<FIELD>[];
 /** Margarita form managers */
 export type MFCM = MargaritaFormControlManagers;
 /** Get child control */
-export type MFCCF<FIELD extends MFF> = MFC<unknown, NonNullable<FIELD['fields']>[number]>;
+export type MFCCF<FIELD extends MFF> = MFC<ChildField<FIELD>>;

@@ -1,7 +1,7 @@
 import { BehaviorSubject, filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
-import { MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
+import { ControlIdentifier, MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   public changes = new BehaviorSubject<MFC[]>([]);
@@ -145,7 +145,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const initialValue = field.initialValue && typeof field.initialValue === 'object' ? field.initialValue : undefined;
 
       const fallbackFn = () => ({});
-      const { parent = fallbackFn, child = fallbackFn } = this.control.getDigFieldValue<MargaritaFormHandleLocalize<FIELD>>(
+      const { parent = fallbackFn, child = fallbackFn } = this.control.getFieldValue<MargaritaFormHandleLocalize<FIELD>>(
         'handleLocalize',
         {}
       );
@@ -237,7 +237,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     if (emit) this._emitChanges();
   }
 
-  public getControl<CHILD_CONTROL extends MFC = MFC<unknown, CONTROL['field']>>(identifier: string | number): CHILD_CONTROL {
+  public getControl<CHILD_CONTROL extends MFC = MFC<unknown, CONTROL['field']>>(identifier: ControlIdentifier): CHILD_CONTROL {
     if (typeof identifier === 'number') {
       return this._controls[identifier] as CHILD_CONTROL;
     }
