@@ -2,9 +2,7 @@ import { nanoid } from 'nanoid';
 import {
   MF,
   MFC,
-  MFCA,
   MFF,
-  MargaritaFormBaseElement,
   MargaritaFormGroupings,
   MargaritaFormConfig,
   MargaritaFormResolver,
@@ -13,14 +11,11 @@ import {
   MargaritaFormValidator,
   MargaritaFormValidators,
   MargaritaFormControlContext,
-  MFCCF,
   ControlLike,
   ControlValue,
   MargaritaFormResolverOutput,
-  ControlValueItem,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay } from 'rxjs';
-import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 import { Params } from './managers/margarita-form-params-manager';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
@@ -30,7 +25,7 @@ import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
 
-export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> implements ControlLike<FIELD> {
+export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
   public key: string;
   public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
@@ -47,7 +42,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> imple
   }
 
   private _generateKey = (index = 0): string => {
-    const stringPath = this.getPath('indexes');
+    const stringPath = this.getPath('default');
     const key = toHash([...stringPath, index]);
     const exists = this.keyStore.has(key);
     if (exists) return this._generateKey(index + 1);
@@ -199,15 +194,17 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> imple
     await this.managers.field.updateField(changes as any, resetControl);
   };
 
-  public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF | typeof this)[] => {
-    const parentPath = this.isRoot ? [] : this.parent.getPath(type);
-    if (type === 'controls') {
+  public getPath: ControlLike<FIELD>['getPath'] = (outcome) => {
+    const parentPath = this.isRoot ? [] : this.parent.getPath(outcome);
+    if (outcome === 'controls') {
       return [...parentPath, this];
     }
-    if (type === 'uids') {
+    if (outcome === 'uids') {
       return [...parentPath, this.uid];
     }
-    // Default and indexes are the same!
+    if (outcome === 'keys') {
+      return [...parentPath, this.key];
+    }
     const part = !this.isRoot && this.parent.expectArray ? this.index : this.name;
     return [...parentPath, part];
   };
@@ -279,53 +276,54 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> imple
   };
 
   /**
-   * Remove a value from array
-   * @param value Value to remove from the array
-   * @param setAsDirty Should the dirty state be set to true
-   */
-  public removeValue = (value: unknown, setAsDirty = true) => {
-    if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
-    this.managers.value.updateValue(
-      this.value.filter((item) => !isEqual(value, item)),
-      setAsDirty
-    );
-  };
-
-  /**
    * Toggle a value in array
    * @param value Value to add or remove from the array
    * @param mustBeUnique Should the value be unique when adding (default = true)
    * @param setAsDirty Should the dirty state be set to true
    */
-  public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
+  public toggleValue: ControlLike<FIELD>['toggleValue'] = (value, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
+    if (this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
-    if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
-    this.managers.value.updateValue([...this.value, value], setAsDirty);
+    if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty, emitEvent);
+    this.managers.value.updateValue([...this.value, value], setAsDirty, emitEvent);
+  };
+
+  /**
+   * Remove a value from array
+   * @param value Value to remove from the array
+   * @param setAsDirty Should the dirty state be set to true
+   */
+  public removeValue: ControlLike<FIELD>['removeValue'] = (value, setAsDirty, emitEvent) => {
+    if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
+    this.managers.value.updateValue(
+      this.value.filter((item) => !isEqual(value, item)),
+      setAsDirty,
+      emitEvent
+    );
   };
 
   // States
 
-  public get state(): MargaritaFormStateValue {
+  public get state(): ControlLike<FIELD>['state'] {
     return this.managers.state.value;
   }
 
-  public get stateChanges(): Observable<MargaritaFormStateValue> {
+  public get stateChanges(): ControlLike<FIELD>['stateChanges'] {
     return this.managers.state.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
-  public getState = (key: keyof MargaritaFormStateValue) => {
+  public getState: ControlLike<FIELD>['getState'] = (key) => {
     return this.state[key];
   };
 
-  public getStateChanges = (key: keyof MargaritaFormStateValue) => {
+  public getStateChanges: ControlLike<FIELD>['getStateChanges'] = (key) => {
     return this.stateChanges.pipe(
       map((state) => state[key]),
       distinctUntilChanged()
     );
   };
 
-  public get validators(): MargaritaFormValidators {
+  public get validators(): ControlLike<FIELD>['validators'] {
     const fieldValidators = this.field.validators || {};
     const parentValidators = this.context.parent?.field?.validators || {};
     if (this.config.addDefaultValidators) {
@@ -360,11 +358,11 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> imple
     this.updateStateValue('active', !current);
   };
 
-  public updateStateValue = (key: keyof MargaritaFormState, value: MargaritaFormState[typeof key]) => {
+  public updateStateValue: ControlLike<FIELD>['updateStateValue'] = (key, value: MargaritaFormState[typeof key]) => {
     this.managers.state.updateState(key, value);
   };
 
-  public updateState = (changes: Partial<MargaritaFormState>) => {
+  public updateState: ControlLike<FIELD>['updateState'] = (changes) => {
     this.managers.state.updateStates(changes);
   };
 
@@ -372,7 +370,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> imple
    * Validate the control and update state. Mark the control as touched to show errors.
    * @param setAsTouched Set the touched state to true
    */
-  public validate = async (setAsTouched = true) => {
+  public validate: ControlLike<FIELD>['validate'] = async (setAsTouched = true) => {
     return await this.managers.state.validate(setAsTouched);
   };
 
@@ -461,7 +459,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD> = MFF> imple
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
       const control = this.managers.controls.getControl(first);
-      if (!control) return null;
+      if (!control) return undefined;
       if (rest.length === 0) return control;
       return control.getControl(rest);
     }
