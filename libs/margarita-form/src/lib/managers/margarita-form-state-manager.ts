@@ -231,7 +231,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
         this.control.managers.controls.changes.pipe(
           switchMap((controls) => {
             if (!controls.length) return Promise.resolve([]);
-            const stateChanges: Observable<MargaritaFormStateValue>[] = controls.map((control) => control.stateChanges);
+            const stateChanges = controls.map((control) => control.stateChanges);
             return combineLatest(stateChanges) as Observable<MargaritaFormStateChildren>;
           })
         )

@@ -10,9 +10,9 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   if (!control.config.detectInputElementValidations) return;
   if (!control.field.validation) control.field.validation = {};
 
-  const validation = control.field.validation as MargaritaFormFieldValidation;
+  const validation = control.field.validation;
 
-  const setValidation = (key: string, params: unknown) => (validation[key] = params);
+  const setValidation = (key: string, params: any) => (validation[key] = params);
 
   /* Required */
   if (!validation['required'] && node.required) {
