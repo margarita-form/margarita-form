@@ -4,7 +4,7 @@ import { useMargaritaForm } from '../hooks/use-margarita-form';
 import { FormProvider } from '../providers/form/form-provider';
 
 interface WithForm {
-  form: MargaritaForm<any, any>;
+  form: MargaritaForm<any>;
 }
 
 type FormField = MargaritaFormField<FormField> & CommonRecord;
@@ -32,7 +32,7 @@ export const Form = (props: FormComponentProps) => {
 type CreateFormProps = FormHTMLAttributes<HTMLFormElement> & WithField;
 
 export const CreateForm = ({ field, ...rest }: CreateFormProps) => {
-  const form = useMargaritaForm<unknown, FormField>(field);
+  const form = useMargaritaForm<FormField>(field);
   return <FormElement form={form} {...rest} />;
 };
 

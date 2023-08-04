@@ -5,7 +5,7 @@ import { ControlProvider } from '../control/control-provider';
 
 interface FormProviderProps {
   children: ReactNode;
-  form: MargaritaForm<any, any>;
+  form: MargaritaForm<any>;
 }
 
 export const FormProvider = ({ form, children }: FormProviderProps) => {
