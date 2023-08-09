@@ -20,7 +20,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/libs/margarita-form-react"],
+      "outputs": ["{workspaceRoot}/coverage/libs/margarita-form-react"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/libs/margarita-form-react"
