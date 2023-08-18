@@ -240,7 +240,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * @param values value to set
    * @param setAsDirty update dirty state to true
    */
-  public patchValue: ControlLike<FIELD>['setValue'] = (values, setAsDirty = true, emitEvent = true) => {
+  public patchValue: ControlLike<FIELD>['patchValue'] = (values, setAsDirty = true, emitEvent = true) => {
     this.managers.value.updateValue(values, setAsDirty, emitEvent, true);
   };
 
