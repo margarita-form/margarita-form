@@ -5,6 +5,7 @@ import { recipeFields } from './fields/receipe';
 import { websiteFields } from './fields/website';
 import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
+import { ControlError } from './components/error';
 
 registerManager('custom', CustomManager);
 
@@ -225,6 +226,7 @@ const FormField = ({ control }: FormFieldProps) => {
           <label htmlFor={uid}>{control.field.title}</label>
           {control.i18n?.description && <p>{control.i18n.description}</p>}
           <input id={uid} name={uid} type="text" ref={control.setRef} />
+          <ControlError control={control} />
         </div>
       );
 
@@ -234,6 +236,7 @@ const FormField = ({ control }: FormFieldProps) => {
           <label htmlFor={uid}>{control.field.title}</label>
           {control.i18n?.description && <p>{control.i18n.description}</p>}
           <textarea id={uid} name={uid} ref={control.setRef} />
+          <ControlError control={control} />
         </div>
       );
 
@@ -249,6 +252,7 @@ const FormField = ({ control }: FormFieldProps) => {
               </div>
             );
           })}
+          <ControlError control={control} />
         </div>
       );
 
@@ -257,6 +261,7 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
           <input id={uid} name={uid} type="checkbox" ref={control.setRef} />
+          <ControlError control={control} />
         </div>
       );
 
@@ -272,6 +277,7 @@ const FormField = ({ control }: FormFieldProps) => {
               </div>
             );
           })}
+          <ControlError control={control} />
         </div>
       );
 
@@ -284,6 +290,7 @@ const FormField = ({ control }: FormFieldProps) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
+          <ControlError control={control} />
         </div>
       );
 
@@ -296,6 +303,7 @@ const FormField = ({ control }: FormFieldProps) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
+          <ControlError control={control} />
         </div>
       );
 
@@ -344,6 +352,7 @@ const FormField = ({ control }: FormFieldProps) => {
               </button>
             );
           })}
+          <ControlError control={control} />
         </div>
       );
 
