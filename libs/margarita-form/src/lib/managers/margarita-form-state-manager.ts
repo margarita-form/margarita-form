@@ -123,7 +123,7 @@ export class MargaritaFormStateValue implements MargaritaFormState {
   private _shouldShowError: boolean | undefined = undefined;
   get shouldShowError() {
     if (this._shouldShowError === undefined) {
-      const interacted = this.touched || this.dirty;
+      const interacted = this.touched || (this.dirty && !this.focus);
       return this.validated && this.invalid && interacted;
     }
     return this._shouldShowError;
@@ -225,7 +225,6 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
     this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
       this.updateStates(state);
-      this.control.updateSyncId();
       this._emitChanges();
     });
 
@@ -293,6 +292,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
   private _emitChanges() {
     this.changes.next(this.value);
+    this.control.updateSyncId();
   }
 
   // Methods

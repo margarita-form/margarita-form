@@ -10,8 +10,7 @@ export const handleElementBlur = <CONTROL extends MFC = MFC>({
   control: CONTROL;
 }) => {
   return fromEvent<InputEvent>(node, 'blur').subscribe(() => {
-    control.updateStateValue('touched', true);
-    control.updateStateValue('focus', false);
+    control.updateState({ touched: true, focus: false });
   });
 };
 
