@@ -1,4 +1,4 @@
-import { BehaviorSubject, debounceTime } from 'rxjs';
+import { BehaviorSubject, debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC } from '../margarita-form-types';
@@ -19,7 +19,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
   public override _init() {
     const { storage, syncronization } = this.control.extensions;
-    const changes = this.changes.pipe(debounceTime(10));
+    const changes = this.changes.pipe(debounceTime(500), skip(1));
 
     this.createSubscription(changes, () => {
       if (this.control.field.useStorage) storage.saveStorageValue(this._value);
