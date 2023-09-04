@@ -40,7 +40,7 @@ export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL ex
   context: MargaritaFormFieldContext<CONTROL, PARAMS>
 ) => MargaritaFormResolverOutput<OUTPUT>;
 
-export type MargaritaFormFieldParams = CommonRecord<any | MargaritaFormResolver<any>>;
+export type MargaritaFormFieldParams = CommonRecord<NotFunction | MargaritaFormResolver<any>>;
 
 export type MargaritaFormFieldAttributes = CommonRecord<any | MargaritaFormResolver<any>>;
 
@@ -261,6 +261,8 @@ type ControlPath = (string | number | MFC | MF)[];
 type StateKey = keyof MargaritaFormState;
 
 export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD>, CHILD_FIELD extends MFF = ChildField<FIELD>> {
+  get<VALUE>(key: keyof MFC | OrString): VALUE;
+
   get name(): FIELD['name'];
   getPath(outcome?: 'default' | 'keys' | 'controls' | 'uids'): ControlPath;
 

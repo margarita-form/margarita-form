@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid';
 import {
-  MF,
   MFC,
   MFF,
   MargaritaFormGroupings,
@@ -14,6 +13,7 @@ import {
   ControlLike,
   ControlValue,
   MargaritaFormResolverOutput,
+  CommonRecord,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay } from 'rxjs';
 import { Params } from './managers/margarita-form-params-manager';
@@ -85,7 +85,17 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   // Context getters
 
-  public get root(): typeof this | MFC {
+  /**
+   * In some cases type of an attribute is not known by the compiler. Use this method to get the attribute with correct type.
+   * @param key The key of the attribute
+   * @returns The attribute value with custom type
+   */
+  public get: ControlLike<FIELD>['get'] = (key) => {
+    const value = (this as CommonRecord)[key];
+    return value as any;
+  };
+
+  public get root(): MFC {
     return this.context.root || this;
   }
 
@@ -93,7 +103,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     return this.root === this;
   }
 
-  public get parent(): typeof this | MF | MFC {
+  public get parent(): MFC {
     if (!this.context.parent) {
       console.warn('Root of controls reached!', this);
     }
