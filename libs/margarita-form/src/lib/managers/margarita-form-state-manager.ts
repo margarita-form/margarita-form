@@ -25,7 +25,16 @@ import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
 
 // States which can be modfiied in the field
-export const fieldStateKeys: (keyof UserDefinedStates)[] = ['enabled', 'disabled', 'editable', 'readOnly', 'active', 'inactive'];
+export const fieldStateKeys: (keyof UserDefinedStates)[] = [
+  'enabled',
+  'disabled',
+  'editable',
+  'readOnly',
+  'active',
+  'inactive',
+  'visible',
+  'hidden',
+];
 
 export class MargaritaFormStateValue implements MargaritaFormState {
   constructor(private control: MFC) {}
@@ -92,6 +101,15 @@ export class MargaritaFormStateValue implements MargaritaFormState {
   }
   set inactive(val: boolean) {
     this.active = !val;
+  }
+
+  // Visible & hidden
+  public visible = true;
+  get hidden() {
+    return !this.visible;
+  }
+  set hidden(val: boolean) {
+    this.visible = !val;
   }
 
   // Computed states

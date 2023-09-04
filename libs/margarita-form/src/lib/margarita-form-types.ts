@@ -116,6 +116,8 @@ export interface UserDefinedStates<TYPE = MargaritaFormFieldState> {
   readOnly: TYPE;
   active: TYPE;
   inactive: TYPE;
+  hidden: TYPE;
+  visible: TYPE;
 }
 
 export interface MargaritaFormState extends UserDefinedStates<boolean> {
