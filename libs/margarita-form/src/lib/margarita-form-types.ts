@@ -308,9 +308,9 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get controls(): MFC<CHILD_FIELD>[];
   get activeControls(): MFC<CHILD_FIELD>[];
 
-  addControl<CHILD_FIELD extends MFF = ChildField<FIELD>>(field: FIELD, replaceExisting?: boolean): MFC<CHILD_FIELD>;
+  addControl<CHILD_FIELD extends ChildField<FIELD>>(field: CHILD_FIELD, replaceExisting?: boolean): MFC<CHILD_FIELD>;
 
-  getOrAddControl<CHILD_FIELD extends MFF = ChildField<FIELD>>(field: FIELD): MFC<CHILD_FIELD>;
+  getOrAddControl<CHILD_FIELD extends ChildField<FIELD>>(field: CHILD_FIELD): MFC<CHILD_FIELD>;
 
   hasControl(identifier: ControlIdentifier): boolean;
 

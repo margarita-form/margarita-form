@@ -481,7 +481,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * @param identifier name, index or key of the control
    * @returns boolean
    */
-  public hasControl: ControlLike['hasControl'] = (identifier) => {
+  public hasControl: ControlLike<FIELD>['hasControl'] = (identifier) => {
     const control = this.managers.controls.getControl(identifier);
     const exists = Boolean(control);
     return exists;
@@ -493,7 +493,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
-  public getOrAddControl: ControlLike<this['field']>['getOrAddControl'] = (field) => {
+  public getOrAddControl: ControlLike<FIELD>['getOrAddControl'] = (field) => {
     const control = this.managers.controls.getControl(field.name) as any;
     if (!control) return this.managers.controls.addControl(field) as any;
     return control;
@@ -505,7 +505,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * @param replaceExisting Replace existing control with the same name when parent is not an array type
    * @returns Control that was added
    */
-  public addControl: ControlLike['addControl'] = (field, replaceExisting) => {
+  public addControl: ControlLike<FIELD>['addControl'] = (field, replaceExisting) => {
     const exists = this.hasControl(field.name);
     if (this.expectGroup && exists && replaceExisting === undefined) {
       console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
@@ -534,7 +534,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * Add new controls to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControls: ControlLike['appendControls'] = (fieldTemplates) => {
+  public appendControls: ControlLike<FIELD>['appendControls'] = (fieldTemplates) => {
     return this.managers.controls.appendRepeatingControls(fieldTemplates);
   };
 
@@ -542,7 +542,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * Add new control to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControl: ControlLike['appendControl'] = (fieldTemplate, overrides) => {
+  public appendControl: ControlLike<FIELD>['appendControl'] = (fieldTemplate, overrides) => {
     return this.managers.controls.appendRepeatingControl(fieldTemplate, overrides);
   };
 
@@ -579,7 +579,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * control.setRef(el);
    * ```
    */
-  public setRef: ControlLike['setRef'] = (ref) => {
+  public setRef: ControlLike<FIELD>['setRef'] = (ref) => {
     return this.managers.ref.addRef(ref);
   };
 
@@ -702,7 +702,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    * @param fallback The fallback value
    * @returns Field's value or fallback
    */
-  public getFieldValue: ControlLike['getFieldValue'] = (key, defaultValue) => {
+  public getFieldValue: ControlLike<FIELD>['getFieldValue'] = (key, defaultValue) => {
     if (this.field[key]) return this.field[key] as any;
     return defaultValue;
   };
