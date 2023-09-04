@@ -224,6 +224,8 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       if (index > -1) {
         const [control] = this._controls.splice(index, 1);
         this._removeCleanup(control);
+        const { onRemove } = control.field;
+        if (onRemove) onRemove({ control });
       }
     }
     if (emit) this._emitChanges();

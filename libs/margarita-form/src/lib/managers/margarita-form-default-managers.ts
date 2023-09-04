@@ -5,6 +5,7 @@ import { RefManager } from './margarita-form-ref-manager';
 import { StateManager } from './margarita-form-state-manager';
 import { ValueManager } from './margarita-form-value-manager';
 import { ConfigManager } from './margarita-form-config-manager';
+import { EventsManager } from './margarita-form-events-manager';
 
 export const margaritaFormControlManagers = {
   field: FieldManager,
@@ -14,6 +15,7 @@ export const margaritaFormControlManagers = {
   state: StateManager,
   ref: RefManager,
   params: ParamsManager,
+  events: EventsManager,
 };
 
 export const registerManager = (key: string, manager: any) => {

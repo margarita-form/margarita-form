@@ -89,8 +89,15 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF> extends Part
   validators?: MargaritaFormValidators;
   validation?: MargaritaFormFieldValidation;
   dispatcher?: MargaritaFormResolver<VALUE>;
+  transformer?: MargaritaFormResolver<VALUE>;
   beforeSubmit?: MargaritaFormResolver;
   afterSubmit?: MargaritaFormResolver;
+  onCreate?: MargaritaFormResolver;
+  onRemove?: MargaritaFormResolver;
+  onChanges?: MargaritaFormResolver;
+  onValueChanges?: MargaritaFormResolver;
+  onStateChanges?: MargaritaFormResolver;
+  onChildControlChanges?: MargaritaFormResolver;
   handleSubmit?: string | MargaritaFormSubmitHandler<MFF<VALUE, EXTENDS>> | MargaritaFormSubmitHandlers<MFF<VALUE, EXTENDS>>;
   locales?: string[];
   localize?: boolean;

@@ -15,7 +15,7 @@ import {
   MargaritaFormResolverOutput,
   CommonRecord,
 } from './margarita-form-types';
-import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay } from 'rxjs';
+import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, merge, shareReplay, skip } from 'rxjs';
 import { Params } from './managers/margarita-form-params-manager';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
@@ -24,6 +24,7 @@ import { ManagerInstances, createManagers } from './managers/margarita-form-crea
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
+import { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
 
 export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
   public key: string;
@@ -39,6 +40,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     this.keyStore = keyStore;
     this.key = this._generateKey(initialIndex);
     this.managers = createManagers<typeof this>(this);
+    if (field.onCreate) field.onCreate({ control: this });
   }
 
   private _generateKey = (index = 0): string => {
@@ -218,6 +220,33 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     const part = !this.isRoot && this.parent.expectArray ? this.index : this.name;
     return [...parentPath, part];
   };
+
+  // Events
+
+  public get changes(): Observable<{ name: keyof MargaritaFormControlManagers; change: unknown; control: MFC<FIELD> }> {
+    type Keys = keyof MargaritaFormControlManagers;
+    const changeObservables = Object.entries(this.managers)
+      .filter((entry) => 'changes' in entry[1])
+      .map(
+        ([name, manager]) =>
+          'changes' in manager &&
+          (manager.changes as Observable<any>).pipe(
+            skip(1),
+            debounceTime(10),
+            map((change) => ({ change, name }))
+          )
+      ) as Observable<{ change: unknown; name: Keys }>[];
+
+    return merge(...changeObservables).pipe(
+      map(({ name, change }) => {
+        return {
+          name,
+          change,
+          control: this,
+        };
+      })
+    );
+  }
 
   // Value
 

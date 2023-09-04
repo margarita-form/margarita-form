@@ -124,7 +124,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    */
   public updateValue(value: unknown, setAsDirty = true, emitEvent = true, patch = false) {
     // Todo: implement patch
-    this._value = value;
+    const { transformer } = this.control.field;
+    this._value = transformer ? transformer({ value, control: this.control }) : value;
     const isActive = this.control.state.active;
     if (isActive && setAsDirty) this.control.updateStateValue('dirty', true);
     if (emitEvent) this._emitChanges('children', setAsDirty, patch);
