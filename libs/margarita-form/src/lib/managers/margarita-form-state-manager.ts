@@ -199,6 +199,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
       const value = control.field[key];
       if (typeof value === 'boolean') this.updateStates({ [key]: value });
       if (typeof value === 'function') this.updateStates({ [key]: false });
+      if (value instanceof Promise) console.debug('Handling promise states is currently not implemented'); // Todo: handle promise
+      if (value instanceof Observable) console.debug('Handling observable states is currently not implemented'); // Todo: handle observable
     });
   }
 
@@ -207,7 +209,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
       switchMap((value) => {
         const state = fieldStateKeys.reduce((acc, key) => {
           const value = this.control.field[key];
-          if (value !== undefined) acc[key] = value;
+          if (typeof value === 'function') acc[key] = value;
           return acc;
         }, {} as CommonRecord);
 
