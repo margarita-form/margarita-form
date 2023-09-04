@@ -69,32 +69,41 @@ const AppWrapper = styled.div`
     width: 100%;
     padding: 20px;
     background: #f8f8f8;
-    min-height: 100%;
+    height: fit-content;
+    min-height: 100px;
+    max-height: 80vh;
+    overflow: auto;
     box-sizing: border-box;
     margin: 0;
+    position: sticky;
+    top: 20px;
   }
 `;
 
-export interface CustomField extends MargaritaFormField<unknown, CustomField> {
+export interface CustomFieldBase {
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
   title: string;
   options?: { label: string; value: string }[];
 }
 
-interface FormValue {
-  title: string;
-  description: string;
-  steps: { title: string; description: string }[];
+export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField> {}
+
+export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField> {
+  // name: string ;
 }
 
-type Field = MargaritaFormField<FormValue, CustomField>;
+export type CustomField = StepsField | OtherField;
+
+type FormValue = Record<string, unknown>;
+
+type RootField = MargaritaFormField<FormValue, CustomField>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
   const [currentFields, setCurrentFields] = useState(recipeFields);
   const [shouldReset, setShouldReset] = useState(true);
 
-  const form = useMargaritaForm<FormValue, Field>({
+  const form = useMargaritaForm<RootField>({
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
@@ -203,7 +212,7 @@ export function App() {
 }
 
 interface FormFieldProps {
-  control: MFC<unknown, CustomField>;
+  control: MFC<CustomField>;
 }
 
 const FormField = ({ control }: FormFieldProps) => {
