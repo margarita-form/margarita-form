@@ -81,15 +81,19 @@ const AppWrapper = styled.div`
   }
 `;
 
+interface I18NContent {
+  description?: string;
+}
+
 export interface CustomFieldBase {
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
   title: string;
   options?: { label: string; value: string }[];
 }
 
-export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField> {}
+export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField, I18NContent> {}
 
-export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField> {
+export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, I18NContent> {
   // name: string ;
 }
 
@@ -224,7 +228,7 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
-          {control.i18n?.description && <p>{control.i18n.description}</p>}
+          {control.i18n && <p>{control.i18n.description}</p>}
           <input id={uid} name={uid} type="text" ref={control.setRef} />
           <ControlError control={control} />
         </div>

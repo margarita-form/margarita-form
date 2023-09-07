@@ -4,6 +4,8 @@ import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
 import type { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
 import type { DefaultValidators, DefaultValidation } from './validators/default-validators';
+import { Params } from './managers/margarita-form-params-manager';
+import { MargaritaFormExtensions } from './extensions/margarita-form-extensions';
 
 export type CommonRecord<TYPE = unknown> = Record<PropertyKey, TYPE>;
 export type IsUnion<T, U extends T = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
@@ -77,7 +79,7 @@ export interface MargaritaFormHandleLocalize<FIELD> {
   child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
 }
 
-export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF> extends Partial<UserDefinedStates> {
+export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N = Record<string, any>> extends Partial<UserDefinedStates> {
   name: string;
   fields?: EXTENDS[];
   grouping?: MargaritaFormGroupings;
@@ -105,7 +107,7 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF> extends Part
   isLocaleField?: boolean;
   currentLocale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
-  i18n?: Record<string, unknown>;
+  i18n?: I18N;
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
@@ -167,7 +169,10 @@ export interface MargaritaFormConfig {
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
 }
 
-export type MargaritaFormSubmitHandler<FIELD extends MFF = MFF> = (form: MF<FIELD>) => unknown | Promise<unknown>;
+export type MargaritaFormSubmitHandler<FIELD extends MFF = MFF, PARAMS = any> = (
+  form: MFC<FIELD>,
+  params?: PARAMS
+) => unknown | Promise<unknown>;
 
 export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFF> {
   valid: MargaritaFormSubmitHandler<FIELD>;
@@ -272,8 +277,34 @@ type StateKey = keyof MargaritaFormState;
 export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD>, CHILD_FIELD extends MFF = ChildField<FIELD>> {
   get<VALUE>(key: keyof MFC | OrString): VALUE;
 
+  cleanup(): void;
+  resubscribe(): void;
+  updateSyncId(syncId: string): void;
+  updateKey(key: string): void;
+  get root(): MFC;
+  get isRoot(): boolean;
+  get parent(): MFC;
+  get config(): MargaritaFormConfig;
+  get extensions(): MargaritaFormExtensions;
+  get locales(): FIELD['locales'];
+  get currentLocale(): FIELD['locales'] extends string[] ? FIELD['locales'][number] : undefined;
+  get i18n(): FIELD['i18n'];
   get name(): FIELD['name'];
+  get index(): number;
+  get grouping(): MargaritaFormGroupings;
+  get expectArray(): boolean;
+  get expectFlat(): boolean;
+  get expectGroup(): boolean;
+  get expectChildControls(): boolean;
+
+  getManager<MANAGER>(key: string): MANAGER;
+
+  updateField(field: Partial<FIELD>, resetControl: boolean): Promise<void>;
   getPath(outcome?: 'default' | 'keys' | 'controls' | 'uids'): ControlPath;
+
+  // Events
+
+  get changes(): Observable<{ name: keyof MargaritaFormControlManagers; change: unknown; control: MFC<FIELD> }>;
 
   // Value
 
@@ -309,9 +340,18 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   updateState: <T extends Partial<MargaritaFormState>>(changes: T) => void;
 
   validate(setAsTouched?: boolean): Promise<boolean>;
+  registerValidator(key: string, validator: MargaritaFormValidator): void;
+
+  get params(): Params;
+  get paramsChanges(): Observable<Params>;
+
+  get resolvers(): MargaritaFormResolvers;
+  registerResolver(key: string, resolver: MargaritaFormResolver): void;
 
   // Controls
 
+  get hasControls(): boolean;
+  get hasActiveControls(): boolean;
   get controls(): MFC<CHILD_FIELD>[];
   get activeControls(): MFC<CHILD_FIELD>[];
 
@@ -329,11 +369,24 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
     identifier: IDENTIFIER
   ): ControlValue<FIELD> extends Array<any> ? undefined | _T : _T;
 
+  removeControl: <IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>>(identifier: IDENTIFIER) => void;
+  moveControl: <IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>>(
+    identifier: IDENTIFIER,
+    index: number
+  ) => void;
   appendControls<CHILD_FIELD extends MFF = FIELD>(fieldTemplates: string[] | CHILD_FIELD[]): MFC<CHILD_FIELD>[];
-
   appendControl<CHILD_FIELD extends MFF = FIELD>(fieldTemplate?: string | CHILD_FIELD, overrides?: Partial<CHILD_FIELD>): MFC<CHILD_FIELD>;
+  remove(): void;
+  moveToIndex(index: number): void;
 
   setRef(ref: any): void;
+
+  get onSubmit(): Observable<MFC<FIELD>>;
+  submit<OUTPUT, PARAMS = any>(params?: PARAMS): Promise<OUTPUT>;
+
+  resetValue(): void;
+  resetState(respectField?: boolean): void;
+  reset(): void;
 
   getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;
 }
