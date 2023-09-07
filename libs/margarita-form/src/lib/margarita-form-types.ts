@@ -280,8 +280,8 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 
   cleanup(): void;
   resubscribe(): void;
-  updateSyncId(syncId: string): void;
-  updateKey(key: string): void;
+  updateSyncId(syncId?: string): void;
+  updateKey(): void;
   get root(): MFC;
   get isRoot(): boolean;
   get parent(): MFC;
@@ -297,6 +297,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get expectFlat(): boolean;
   get expectGroup(): boolean;
   get expectChildControls(): boolean;
+  get fields(): CHILD_FIELD[];
 
   getManager<MANAGER>(key: string): MANAGER;
 

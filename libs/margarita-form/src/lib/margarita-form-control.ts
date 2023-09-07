@@ -1,13 +1,8 @@
 import { nanoid } from 'nanoid';
 import {
-  MFC,
   MFF,
-  MargaritaFormGroupings,
-  MargaritaFormConfig,
-  MargaritaFormResolver,
   MargaritaFormResolvers,
   MargaritaFormState,
-  MargaritaFormValidator,
   MargaritaFormValidators,
   MargaritaFormControlContext,
   ControlLike,
@@ -16,10 +11,9 @@ import {
   CommonRecord,
 } from './margarita-form-types';
 import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, merge, shareReplay, skip } from 'rxjs';
-import { Params } from './managers/margarita-form-params-manager';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
-import { isEqual, isIncluded, valueExists } from './helpers/check-value';
+import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
@@ -43,7 +37,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   private _generateKey = (): string => {
     // console.debug('Generating key for control:', this.field.name);
-    const stringPath = this.getPath('indexes');
+    const stringPath = this.getPath();
     const key = toHash([...stringPath]);
     return key;
   };
@@ -194,7 +188,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     return false;
   }
 
-  public get fields(): MFCCF<FIELD>[] {
+  public get fields(): ControlLike<FIELD>['fields'] {
     if (!this.expectChildControls) return [];
     return (this.field.fields as any) || [];
   }

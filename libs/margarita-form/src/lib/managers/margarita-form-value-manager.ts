@@ -59,7 +59,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _setValue(value: unknown) {
     const { transformer } = this.control.field;
     const _value = transformer ? transformer({ value, control: this.control }) : value;
-    
+
     if (!this.control.isRoot && this.control.parent.expectArray) {
       // this._value = {
       //   value,
@@ -469,7 +469,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           const resolveCurrentValue = () => {
             if (isArray) {
               if (checkMetadata) {
-                return this._value.find((val) => val.key === control.key);
+                return this._value.find((val: CommonRecord) => val?.['key'] === control.key);
               }
               return this._value[index];
             }
