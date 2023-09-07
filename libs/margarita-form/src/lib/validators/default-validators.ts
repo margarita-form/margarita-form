@@ -39,3 +39,12 @@ export const defaultValidators = {
   unique: uniqueValidator(),
   url: urlValidator(),
 };
+
+export type DefaultValidators = typeof defaultValidators;
+export type DefaultValidatorNames = keyof DefaultValidators;
+export type DefaultValidator<T extends DefaultValidatorNames> = DefaultValidators[T];
+
+type ValidatorParam<T extends DefaultValidatorNames> = Parameters<DefaultValidators[T]>[0]['params'];
+export type DefaultValidation = {
+  [K in DefaultValidatorNames]: ValidatorParam<K>;
+};

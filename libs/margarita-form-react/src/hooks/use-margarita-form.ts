@@ -2,9 +2,9 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createFormStore } from '../misc/margarita-form-store';
 import { MFF, createMargaritaForm } from '@margarita-form/core';
 
-export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<VALUE> = MFF<VALUE>>(field: FIELD) => {
+export const useMargaritaForm = <FIELD extends MFF = MFF>(field: FIELD) => {
   const form = useMemo(() => {
-    return createMargaritaForm<VALUE, FIELD>(field);
+    return createMargaritaForm<FIELD>(field);
   }, [field.name]);
 
   useEffect(() => {

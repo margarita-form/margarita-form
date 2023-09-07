@@ -25,7 +25,16 @@ import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
 
 // States which can be modfiied in the field
-export const fieldStateKeys: (keyof UserDefinedStates)[] = ['enabled', 'disabled', 'editable', 'readOnly', 'active', 'inactive'];
+export const fieldStateKeys: (keyof UserDefinedStates)[] = [
+  'enabled',
+  'disabled',
+  'editable',
+  'readOnly',
+  'active',
+  'inactive',
+  'visible',
+  'hidden',
+];
 
 export class MargaritaFormStateValue implements MargaritaFormState {
   constructor(private control: MFC) {}
@@ -94,6 +103,15 @@ export class MargaritaFormStateValue implements MargaritaFormState {
     this.active = !val;
   }
 
+  // Visible & hidden
+  public visible = true;
+  get hidden() {
+    return !this.visible;
+  }
+  set hidden(val: boolean) {
+    this.visible = !val;
+  }
+
   // Computed states
 
   // Has value
@@ -105,7 +123,7 @@ export class MargaritaFormStateValue implements MargaritaFormState {
   private _shouldShowError: boolean | undefined = undefined;
   get shouldShowError() {
     if (this._shouldShowError === undefined) {
-      const interacted = this.touched || this.dirty;
+      const interacted = this.touched || (this.dirty && !this.focus);
       return this.validated && this.invalid && interacted;
     }
     return this._shouldShowError;
@@ -181,6 +199,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
       const value = control.field[key];
       if (typeof value === 'boolean') this.updateStates({ [key]: value });
       if (typeof value === 'function') this.updateStates({ [key]: false });
+      if (value instanceof Promise) console.debug('Handling promise states is currently not implemented'); // Todo: handle promise
+      if (value instanceof Observable) console.debug('Handling observable states is currently not implemented'); // Todo: handle observable
     });
   }
 
@@ -189,7 +209,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
       switchMap((value) => {
         const state = fieldStateKeys.reduce((acc, key) => {
           const value = this.control.field[key];
-          if (value !== undefined) acc[key] = value;
+          if (typeof value === 'function') acc[key] = value;
           return acc;
         }, {} as CommonRecord);
 
@@ -207,7 +227,6 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
     this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
       this.updateStates(state);
-      this.control.updateSyncId();
       this._emitChanges();
     });
 
@@ -231,7 +250,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
         this.control.managers.controls.changes.pipe(
           switchMap((controls) => {
             if (!controls.length) return Promise.resolve([]);
-            const stateChanges: Observable<MargaritaFormStateValue>[] = controls.map((control) => control.stateChanges);
+            const stateChanges = controls.map((control) => control.stateChanges);
             return combineLatest(stateChanges) as Observable<MargaritaFormStateChildren>;
           })
         )
@@ -275,6 +294,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
   private _emitChanges() {
     this.changes.next(this.value);
+    this.control.updateSyncId();
   }
 
   // Methods

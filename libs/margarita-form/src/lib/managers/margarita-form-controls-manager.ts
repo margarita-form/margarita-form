@@ -1,7 +1,7 @@
 import { BehaviorSubject, filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
-import { MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
+import { DeepControlIdentifier, MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   public changes = new BehaviorSubject<MFC[]>([]);
@@ -120,22 +120,14 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     return this.addControl({ ...field, ...overrides });
   }
 
-  public addControls<FIELD extends MFF = CONTROL['field'], VALUE = unknown>(
-    fields: FIELD[],
-    resetControl = false,
-    emit = true
-  ): MargaritaFormControl<VALUE, FIELD>[] {
+  public addControls<FIELD extends MFF = CONTROL['field']>(fields: FIELD[], resetControl = false, emit = true): MFC<FIELD>[] {
     if (!fields) throw 'No fields provided!';
     return fields.map((field) => {
       return this.addControl(field, resetControl, emit);
     });
   }
 
-  public addControl<FIELD extends MFF = CONTROL['field'], VALUE = unknown>(
-    field: FIELD,
-    resetControl = false,
-    emit = true
-  ): MargaritaFormControl<VALUE, FIELD> {
+  public addControl<FIELD extends MFF = CONTROL['field']>(field: FIELD, resetControl = false, emit = true): MFC<FIELD> {
     if (!field) throw 'No field provided!';
 
     const shouldLocalize = field.localize && this.control.locales;
@@ -145,7 +137,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const initialValue = field.initialValue && typeof field.initialValue === 'object' ? field.initialValue : undefined;
 
       const fallbackFn = () => ({});
-      const { parent = fallbackFn, child = fallbackFn } = this.control.getDigFieldValue<MargaritaFormHandleLocalize<FIELD>>(
+      const { parent = fallbackFn, child = fallbackFn } = this.control.getFieldValue<MargaritaFormHandleLocalize<FIELD>>(
         'handleLocalize',
         {}
       );
@@ -174,7 +166,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
         const existingControl = this.getControl(field.name);
         if (existingControl) {
           existingControl.updateField(localizedField);
-          return existingControl as MargaritaFormControl<VALUE, FIELD>;
+          return existingControl as MFC<FIELD>;
         }
       }
 
@@ -185,11 +177,11 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const existingControl = this.getControl(field.name);
       if (existingControl) {
         existingControl.updateField(field);
-        return existingControl as MargaritaFormControl<VALUE, FIELD>;
+        return existingControl as MFC<FIELD>;
       }
     }
 
-    const control = new MargaritaFormControl<VALUE, FIELD>(field, {
+    const control = new MargaritaFormControl<FIELD>(field, {
       parent: this.control,
       root: this.control.root,
       initialIndex: this._controls.length,
@@ -200,13 +192,13 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   public appendControl<CHILD_CONTROL extends MFC>(control: CHILD_CONTROL, resetControl = false, emit = true): CHILD_CONTROL {
     if (this._requireUniqueNames) {
-      const prevControl = this.getControl<CHILD_CONTROL>(control.name);
+      const prevControl = this.getControl(control.name);
       if (resetControl) {
         this.removeControl(control.name);
       } else if (prevControl) {
         prevControl.managers.field.setField(control.field);
         if (emit) this._emitChanges();
-        return prevControl;
+        return prevControl as CHILD_CONTROL;
       }
     }
 
@@ -231,14 +223,16 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       if (index > -1) {
         const [control] = this._controls.splice(index, 1);
         this._removeCleanup(control);
+        const { onRemove } = control.field;
+        if (onRemove) onRemove({ control });
       }
     }
     if (emit) this._emitChanges();
   }
 
-  public getControl<CHILD_CONTROL extends MFC = MFC<unknown, CONTROL['field']>>(identifier: string | number): CHILD_CONTROL {
+  public getControl(identifier: DeepControlIdentifier<CONTROL['field']>): MFC | undefined {
     if (typeof identifier === 'number') {
-      return this._controls[identifier] as CHILD_CONTROL;
+      return this._controls[identifier];
     }
     if (typeof identifier === 'string') {
       const actuallyNumber = Number(identifier);
@@ -246,7 +240,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
         return this.getControl(actuallyNumber) as CHILD_CONTROL;
       }
     }
-    return this._controls.find((control) => [control.name, control.key].includes(identifier)) as CHILD_CONTROL;
+    return this._controls.find((control) => [control.name, control.key].includes(identifier));
   }
 
   public getControlIndex(identifier: string) {

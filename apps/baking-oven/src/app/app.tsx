@@ -5,6 +5,7 @@ import { recipeFields } from './fields/receipe';
 import { websiteFields } from './fields/website';
 import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
+import { ControlError } from './components/error';
 import { lifecycleFields } from './fields/lifecycle';
 
 registerManager('custom', CustomManager);
@@ -70,32 +71,45 @@ const AppWrapper = styled.div`
     width: 100%;
     padding: 20px;
     background: #f8f8f8;
-    min-height: 100%;
+    height: fit-content;
+    min-height: 100px;
+    max-height: 80vh;
+    overflow: auto;
     box-sizing: border-box;
     margin: 0;
+    position: sticky;
+    top: 20px;
   }
 `;
 
-export interface CustomField extends MargaritaFormField<unknown, CustomField> {
+interface I18NContent {
+  description?: string;
+}
+
+export interface CustomFieldBase {
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
   title: string;
   options?: { label: string; value: string }[];
 }
 
-interface FormValue {
-  title: string;
-  description: string;
-  steps: { title: string; description: string }[];
+export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField, I18NContent> {}
+
+export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, I18NContent> {
+  // name: string ;
 }
 
-type Field = MargaritaFormField<FormValue, CustomField>;
+export type CustomField = StepsField | OtherField;
+
+type FormValue = Record<string, unknown>;
+
+type RootField = MargaritaFormField<FormValue, CustomField>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
   const [currentFields, setCurrentFields] = useState(lifecycleFields);
   const [shouldReset, setShouldReset] = useState(true);
 
-  const form = useMargaritaForm<FormValue, Field>({
+  const form = useMargaritaForm<RootField>({
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
@@ -209,7 +223,7 @@ export function App() {
 }
 
 interface FormFieldProps {
-  control: MFC<unknown, CustomField>;
+  control: MFC<CustomField>;
 }
 
 const FormField = ({ control }: FormFieldProps) => {
@@ -220,8 +234,9 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
-          {control.i18n?.description && <p>{control.i18n.description}</p>}
+          {control.i18n && <p>{control.i18n.description}</p>}
           <input id={uid} name={uid} type="text" ref={control.setRef} />
+          <ControlError control={control} />
         </div>
       );
 
@@ -231,6 +246,7 @@ const FormField = ({ control }: FormFieldProps) => {
           <label htmlFor={uid}>{control.field.title}</label>
           {control.i18n?.description && <p>{control.i18n.description}</p>}
           <textarea id={uid} name={uid} ref={control.setRef} />
+          <ControlError control={control} />
         </div>
       );
 
@@ -246,6 +262,7 @@ const FormField = ({ control }: FormFieldProps) => {
               </div>
             );
           })}
+          <ControlError control={control} />
         </div>
       );
 
@@ -254,6 +271,7 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
           <input id={uid} name={uid} type="checkbox" ref={control.setRef} />
+          <ControlError control={control} />
         </div>
       );
 
@@ -269,6 +287,7 @@ const FormField = ({ control }: FormFieldProps) => {
               </div>
             );
           })}
+          <ControlError control={control} />
         </div>
       );
 
@@ -281,6 +300,7 @@ const FormField = ({ control }: FormFieldProps) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
+          <ControlError control={control} />
         </div>
       );
 
@@ -293,6 +313,7 @@ const FormField = ({ control }: FormFieldProps) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
+          <ControlError control={control} />
 
           <button
             type="button"
@@ -351,6 +372,7 @@ const FormField = ({ control }: FormFieldProps) => {
               </button>
             );
           })}
+          <ControlError control={control} />
 
           <button
             type="button"

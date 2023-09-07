@@ -85,7 +85,7 @@ type ArrayField = { arrayName: unknown[] };
 describe('margaritaForm', () => {
   it('#0 Common getters', () => {
     const locales = ['en', 'fi'];
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField, arrayField], locales });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [groupField, arrayField], locales });
     const groupControl = form.getControl([groupField.name]);
     const arrayControl = form.getControl([arrayField.name]);
     const commonControl = form.getControl([groupField.name, commonField.name]);
@@ -124,19 +124,19 @@ describe('margaritaForm', () => {
   });
 
   it('#1 Create single level schema with one field and check initial value', () => {
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [commonField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [commonField] });
     expect(form.value).toHaveProperty([commonField.name], fieldNameInitialValue);
     form.cleanup();
   });
 
   it("#2 Create two level schema with one field each and parent's initial value overriding child's value", () => {
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [groupField] });
     expect(form.value).toHaveProperty([groupField.name, commonField.name], fromParentValue);
     form.cleanup();
   });
 
   it("#3 Create two level schema with one field each and root's initial value overriding all child values", () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [groupField],
       initialValue: {
@@ -150,7 +150,7 @@ describe('margaritaForm', () => {
   });
 
   it('#4 Create two level schema with first level being an "array". Starting with 1 child.', () => {
-    const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [arrayField] });
+    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [arrayField] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
 
     form.cleanup();
@@ -158,14 +158,14 @@ describe('margaritaForm', () => {
 
   it('#5 Create two level schema with first level being an "array". Starting with 0 children.', () => {
     const repeat0 = { ...arrayField, startWith: 0 };
-    const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [repeat0] });
+    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [repeat0] });
     expect(form.value).toHaveProperty([arrayField.name], undefined);
     form.cleanup();
   });
 
   it('#6 Create two level schema with first level being an "array". Starting with 2 children created with "startWith" property', () => {
     const repeat2 = { ...arrayField, startWith: 2 };
-    const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [repeat2] });
+    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [repeat2] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
     expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fromParentValue);
     expect(form.value.arrayName).toHaveLength(2);
@@ -175,7 +175,7 @@ describe('margaritaForm', () => {
   it('#7 Create two level schema with first level being an "array". Starting with 3 children created with parent\'s initial value', () => {
     const initialValue = { fieldName: fieldNameInitialValue };
     const initialValueOf3 = { ...arrayField, initialValue: [initialValue, initialValue, initialValue] };
-    const form = createMargaritaForm<ArrayField, MFF>({ name: nanoid(), fields: [initialValueOf3] });
+    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [initialValueOf3] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fieldNameInitialValue);
     expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fieldNameInitialValue);
     expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], fieldNameInitialValue);
@@ -185,7 +185,7 @@ describe('margaritaForm', () => {
 
   it('#8 Create single level schema where root value is set with setValue', () => {
     const value = '#8';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [commonField, uncommonField, groupField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [commonField, uncommonField, groupField] });
     form.setValue({ [commonField.name]: value });
     expect(form.value).toHaveProperty([commonField.name], value);
     expect(form.value).toHaveProperty([uncommonField.name], undefined);
@@ -194,7 +194,7 @@ describe('margaritaForm', () => {
 
   it('#9 Create single level schema where control value is set with setValue', () => {
     const value = '#9';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [commonField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [commonField] });
     const control = form.getControl(commonField.name);
     control && control.setValue(value);
     expect(form.value).toHaveProperty([commonField.name], value);
@@ -203,7 +203,7 @@ describe('margaritaForm', () => {
 
   it('#10 Create two level schema where root value is set with setValue', () => {
     const value = '#10';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [groupField] });
     form.setValue({ [groupField.name]: { [commonField.name]: value } });
     expect(form.value).toHaveProperty([groupField.name, commonField.name], value);
     form.cleanup();
@@ -211,7 +211,7 @@ describe('margaritaForm', () => {
 
   it('#11 Create two level schema where control value is set with setValue', () => {
     const value = '#11';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [groupField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [groupField] });
     const group = form.getControl(groupField.name);
     const control = group?.getControl(commonField.name);
     control?.setValue(value);
@@ -222,7 +222,7 @@ describe('margaritaForm', () => {
 
   it('#12 Create single level schema where control array value is set with setValue', () => {
     const value = '#12';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [arrayField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [arrayField] });
     form.setValue({ [arrayField.name]: [{ [commonField.name]: value }] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], value);
     form.cleanup();
@@ -230,7 +230,7 @@ describe('margaritaForm', () => {
 
   it('#13 Create single level schema where control array is continued with setValue', () => {
     const value = '#13';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [arrayField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [arrayField] });
     form.setValue({ [arrayField.name]: [{ [commonField.name]: value }, { [commonField.name]: value }] });
 
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], value);
@@ -242,7 +242,7 @@ describe('margaritaForm', () => {
 
   it("#14 Create single level schema where control's value is set from root with patch", () => {
     const value = '#14';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [commonField, uncommonField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [commonField, uncommonField] });
     form.patchValue({ [commonField.name]: value });
     expect(form.value).toHaveProperty([commonField.name], value);
     expect(form.value).toHaveProperty([uncommonField.name], uncommonField.initialValue);
@@ -251,7 +251,7 @@ describe('margaritaForm', () => {
 
   it("#15 Create two level schema where control's value is set from root with patch", () => {
     const value = '#15';
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [uncommonGroupField, uncommonField] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [uncommonGroupField, uncommonField] });
     form.patchValue({ [groupField.name]: { [commonField.name]: value } });
     expect(form.value).toHaveProperty([uncommonField.name], uncommonField.initialValue);
     expect(form.value).toHaveProperty([groupField.name, commonField.name], value);
@@ -260,7 +260,7 @@ describe('margaritaForm', () => {
   });
 
   it('#16 Create new controls programatically', () => {
-    const form = createMargaritaForm<unknown, MFF>({ name: nanoid(), fields: [] });
+    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [] });
 
     form.addControl(commonField);
     form.addControl(undefinedField);
@@ -292,7 +292,7 @@ describe('margaritaForm', () => {
   });
 
   it('#17 Remove new controls programatically', () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField, uncommonField, { ...arrayField, startWith: 3 }],
     });
@@ -310,7 +310,7 @@ describe('margaritaForm', () => {
   });
 
   it('#18 Reorder (move) new controls programatically', () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [{ ...arrayField, startWith: 3 }],
     });
@@ -337,7 +337,7 @@ describe('margaritaForm', () => {
   });
 
   it('#19 Check that paths work as should', () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField, groupField, { ...arrayField, startWith: 3 }],
     });
@@ -358,19 +358,15 @@ describe('margaritaForm', () => {
 
     const arrayStringPath = firstArrayControl.getPath('default');
     expect(arrayStringPath[1]).toBe(arrayField.name);
+    expect(arrayStringPath[2]).toBe(0);
     expect(arrayStringPath[3]).toBe(commonControl.name);
-
-    const arrayIndexesPath = firstArrayControl.getPath('indexes');
-    expect(arrayIndexesPath[1]).toBe(arrayField.name);
-    expect(arrayIndexesPath[2]).toBe(0);
-    expect(arrayIndexesPath[3]).toBe(commonControl.name);
 
     form.cleanup();
   });
 
   it('#20 Check that addValue, removeValue and toggleValue works', () => {
     const initialValue = ['first', 'second'];
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [
         { ...commonField, initialValue },
@@ -407,7 +403,7 @@ describe('margaritaForm', () => {
   });
 
   it('#21 Check that default states are what they should be', () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField, groupField, arrayField, undefinedField],
     });
@@ -466,7 +462,7 @@ describe('margaritaForm', () => {
   });
 
   it('#21-B Check that state methods work', async () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField, groupField],
     });
@@ -502,7 +498,7 @@ describe('margaritaForm', () => {
   });
 
   it('#22 Check basic validators', async () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [invalidField],
     });
@@ -547,7 +543,7 @@ describe('margaritaForm', () => {
   });
 
   it('#23 Check advanced validators', async () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField, asyncGroupField],
     });
@@ -578,7 +574,7 @@ describe('margaritaForm', () => {
   });
 
   it('#24 Check that validate works', async () => {
-    const form = createMargaritaForm<unknown, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [{ ...commonField, validation: { required: true } }],
     });
@@ -602,7 +598,7 @@ describe('margaritaForm', () => {
   });
 
   it('#25 Check that form submit works correctly', async () => {
-    const form = createMargaritaForm<any, MFF>({
+    const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [{ ...commonField, initialValue: undefined, validation: { required: true } }],
       handleSubmit: {
@@ -671,7 +667,7 @@ describe('margaritaForm', () => {
   };
 
   it('#26 Check that storages work corretly', async () => {
-    const nullForm = createMargaritaForm<any, MFF>({
+    const nullForm = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField],
       useStorage: ValueStorage,
@@ -683,7 +679,7 @@ describe('margaritaForm', () => {
 
     ValueStorage.value = storageValue;
 
-    const valueForm = createMargaritaForm<any, MFF>({
+    const valueForm = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [commonField],
       useStorage: ValueStorage,
@@ -774,8 +770,6 @@ describe('margaritaForm', () => {
       fields: ChildField[];
     }
 
-    type FormField = RootField | ChildField;
-
     interface CustomValue {
       typedField: 'Hello world!';
     }
@@ -787,17 +781,17 @@ describe('margaritaForm', () => {
       maybe: false,
     };
 
-    const form = createMargaritaForm<CustomValue, FormField>({
+    const form = createMargaritaForm<RootField>({
       name: nanoid(),
       type: 'root',
       fields: [typedField],
     });
 
-    const typedControl = form.getControl([typedField.name]);
+    const typedControl = form.getControl('typedField');
     if (!typedControl) throw 'No control found!';
     expect(typedControl.field.type).toBe('custom');
 
-    const typedControl2 = form.getControl<string, CustomField>([typedField.name]);
+    const typedControl2 = form.getControl<CustomField>([typedField.name]);
     if (!typedControl2) throw 'No control found!';
     expect(typedControl2.field.type).toBe('custom');
     expect(typedControl2.field.lorem).toBe('ipsum');
@@ -815,6 +809,6 @@ describe('margaritaForm', () => {
    * - Arrays of controls where controls are created with "start with" parameter
    * - Array of non-groups where initial value is set from root and does not match arrays "start with"
    * - Array of groups where initial value is set from root and does not match arrays "start with"
-   *
+   * - GetControl related type tests
    */
 });

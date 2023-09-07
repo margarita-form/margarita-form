@@ -4,7 +4,7 @@ import { HTMLAttributes, createElement, Fragment } from 'react';
 import { useGetOrAddControl } from '../hooks/use-get-or-add-control';
 
 interface WithControl {
-  control: MargaritaFormControl<any, any>;
+  control: MargaritaFormControl<any>;
 }
 
 type ControlField<VALUE = any> = MargaritaFormField<VALUE, ControlField> & CommonRecord;
@@ -45,7 +45,7 @@ export const Control = (props: ControlComponentProps) => {
 type CreateFormProps = HTMLAttributes<HTMLFormElement> & WithField;
 
 const CreateControl = ({ field, ...rest }: CreateFormProps) => {
-  const control = useGetOrAddControl<unknown, ControlField>(field);
+  const control = useGetOrAddControl<ControlField>(field);
   if (!control) throw 'No control found and control could not be created!';
   return <ControlElement control={control} {...rest} />;
 };

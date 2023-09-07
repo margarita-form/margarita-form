@@ -1,10 +1,7 @@
 import { nanoid } from 'nanoid';
 import {
-  MF,
   MFC,
-  MFCA,
   MFF,
-  MargaritaFormBaseElement,
   MargaritaFormGroupings,
   MargaritaFormConfig,
   MargaritaFormResolver,
@@ -13,10 +10,12 @@ import {
   MargaritaFormValidator,
   MargaritaFormValidators,
   MargaritaFormControlContext,
-  MFCCF,
+  ControlLike,
+  ControlValue,
+  MargaritaFormResolverOutput,
+  CommonRecord,
 } from './margarita-form-types';
-import { Observable, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs';
-import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
+import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, merge, shareReplay, skip } from 'rxjs';
 import { Params } from './managers/margarita-form-params-manager';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
@@ -25,8 +24,9 @@ import { ManagerInstances, createManagers } from './managers/margarita-form-crea
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
+import { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
 
-export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIELD> = MFF> {
+export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
   public key: string;
   public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
@@ -38,6 +38,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     // console.debug('Creating control:', field.name, { field });
     this.key = this._generateKey();
     this.managers = createManagers<typeof this>(this);
+    if (field.onCreate) field.onCreate({ control: this });
   }
 
   private _generateKey = (): string => {
@@ -50,7 +51,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Unsubscribe from all subscriptions for current control
    */
-  public cleanup = () => {
+  public cleanup: ControlLike<FIELD>['cleanup'] = () => {
     Object.values(this.managers).forEach((manager) => manager.cleanup());
     this._listeningToChanges = false;
   };
@@ -58,46 +59,56 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Resubscribe to all subscriptions for current control
    */
-  public resubscribe = () => {
+  public resubscribe: ControlLike<FIELD>['resubscribe'] = () => {
     if (this._listeningToChanges === false) {
       Object.values(this.managers).forEach((manager) => manager.resubscribe());
     }
     this._listeningToChanges = true;
   };
 
-  public updateSyncId = (syncId = nanoid(4)) => {
+  public updateSyncId: ControlLike<FIELD>['updateSyncId'] = (syncId = nanoid(4)) => {
     this.syncId = syncId;
   };
 
-  public updateKey = () => {
+  public updateKey: ControlLike<FIELD>['updateKey'] = () => {
     this.key = this._generateKey();
     this.controls.forEach((control) => control.updateKey());
   };
 
   // Context getters
 
-  public get root(): typeof this | MFC {
+  /**
+   * In some cases type of an attribute is not known by the compiler. Use this method to get the attribute with correct type.
+   * @param key The key of the attribute
+   * @returns The attribute value with custom type
+   */
+  public get: ControlLike<FIELD>['get'] = (key) => {
+    const value = (this as CommonRecord)[key];
+    return value as any;
+  };
+
+  public get root(): ControlLike<FIELD>['root'] {
     return this.context.root || this;
   }
 
-  public get isRoot(): boolean {
+  public get isRoot(): ControlLike<FIELD>['isRoot'] {
     return this.root === this;
   }
 
-  public get parent(): typeof this | MF | MFC {
+  public get parent(): ControlLike<FIELD>['parent'] {
     if (!this.context.parent) {
       console.warn('Root of controls reached!', this);
     }
     return this.context.parent || this;
   }
 
-  public get config(): MargaritaFormConfig {
+  public get config(): ControlLike<FIELD>['config'] {
     if (!this.managers.config) return ConfigManager.generateConfig(this.field);
     if (!this.field.config) return this.isRoot ? this.managers.config.current : this.parent.config;
     return this.managers.config.current;
   }
 
-  public get extensions(): MargaritaFormExtensions {
+  public get extensions(): ControlLike<FIELD>['extensions'] {
     const cachedExtensions = this.cache.get('extensions');
     if (cachedExtensions) return cachedExtensions as MargaritaFormExtensions;
     const extensions = initializeExtensions(this);
@@ -105,39 +116,38 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     return extensions;
   }
 
-  public get getManager() {
-    return <MANAGER>(key: string): MANAGER => {
-      const found = (this.managers as any)[key];
-      if (!found) throw `Manager "${key}" not found!`;
-      return found;
-    };
-  }
+  public getManager: ControlLike<FIELD>['getManager'] = (key) => {
+    const found = (this.managers as any)[key];
+    if (!found) throw `Manager "${key}" not found!`;
+    return found;
+  };
 
-  public get locales(): undefined | string[] {
+  public get locales(): ControlLike<FIELD>['locales'] {
     if (this.isRoot) return this.field.locales;
     return this.field.locales || this.parent.locales;
   }
 
-  public get currentLocale(): undefined | string {
-    if (this.isRoot) return this.field.currentLocale;
-    return this.field.currentLocale || this.parent.currentLocale;
+  public get currentLocale(): ControlLike<FIELD>['currentLocale'] {
+    type Locale = ControlLike<FIELD>['currentLocale'];
+    if (this.isRoot) return this.field.currentLocale as Locale;
+    return (this.field.currentLocale || this.parent.currentLocale) as Locale;
   }
 
-  public get i18n() {
+  public get i18n(): ControlLike<FIELD>['i18n'] {
     const { field, extensions } = this;
     const { i18n } = field;
-    if (!i18n) return null;
+    if (!i18n) return undefined;
     const { localization } = extensions;
     return localization.getLocalizedValue(i18n, this.currentLocale);
   }
 
   // Field and metadata getters
 
-  public get name(): string {
+  public get name(): ControlLike<FIELD>['name'] {
     return this.field.name;
   }
 
-  public get index(): number {
+  public get index(): ControlLike<FIELD>['index'] {
     if (this.parent?.managers?.controls) {
       const resolvedIndex = this.parent.managers.controls.getControlIndex(this.key);
       if (resolvedIndex > -1) return resolvedIndex;
@@ -150,35 +160,35 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Get the way how the child controls should be grouped
    */
-  public get grouping(): MargaritaFormGroupings {
+  public get grouping(): ControlLike<FIELD>['grouping'] {
     return this.field.grouping || 'group';
   }
 
   /**
    * Check if control's output should be an array
    */
-  public get expectArray(): boolean {
+  public get expectArray(): ControlLike<FIELD>['expectArray'] {
     return this.grouping === 'array';
   }
 
   /**
    * Check if control's output should be merged to parent
    */
-  public get expectFlat(): boolean {
+  public get expectFlat(): ControlLike<FIELD>['expectFlat'] {
     return this.grouping === 'flat';
   }
 
   /**
    * Check if control's output should be an group / object
    */
-  public get expectGroup(): boolean {
+  public get expectGroup(): ControlLike<FIELD>['expectGroup'] {
     return !this.expectArray && !this.expectFlat;
   }
 
   /**
    * Check if control's output should be an group / object
    */
-  public get expectChildControls(): boolean {
+  public get expectChildControls(): ControlLike<FIELD>['expectChildControls'] {
     if (this.field.grouping) return true;
     if (this.field.fields) return true;
     return false;
@@ -189,37 +199,67 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     return (this.field.fields as any) || [];
   }
 
-  public updateField = async (changes: Partial<FIELD | MFF>, resetControl = false) => {
+  public updateField: ControlLike<FIELD>['updateField'] = async (changes, resetControl = false) => {
     await this.managers.field.updateField(changes as any, resetControl);
   };
 
-  public getPath = (type?: 'default' | 'indexes' | 'controls' | 'uids'): (string | number | MFC | MF | typeof this)[] => {
-    const parentPath = this.isRoot ? [] : this.parent.getPath(type);
-    if (type === 'controls') {
+  public getPath: ControlLike<FIELD>['getPath'] = (outcome) => {
+    const parentPath = this.isRoot ? [] : this.parent.getPath(outcome);
+    if (outcome === 'controls') {
       return [...parentPath, this];
     }
-    if (type === 'uids') {
+    if (outcome === 'uids') {
       return [...parentPath, this.uid];
+    }
+    if (outcome === 'keys') {
+      return [...parentPath, this.key];
     }
     // Default and indexes are the same!
     const part = !this.isRoot && this.parent.expectArray ? this.index + ':' + this.name : this.name;
     return [...parentPath, part];
   };
 
+  // Events
+
+  public get changes(): ControlLike<FIELD>['changes'] {
+    type Keys = keyof MargaritaFormControlManagers;
+    const changeObservables = Object.entries(this.managers)
+      .filter((entry) => 'changes' in entry[1])
+      .map(
+        ([name, manager]) =>
+          'changes' in manager &&
+          (manager.changes as Observable<any>).pipe(
+            skip(1),
+            debounceTime(10),
+            map((change) => ({ change, name }))
+          )
+      ) as Observable<{ change: unknown; name: Keys }>[];
+
+    return merge(...changeObservables).pipe(
+      map(({ name, change }) => {
+        return {
+          name,
+          change,
+          control: this,
+        };
+      })
+    );
+  }
+
   // Value
 
-  public get value(): VALUE {
+  public get value(): ControlLike<FIELD>['value'] {
     return this.managers.value.current;
   }
 
-  public set value(value: VALUE) {
+  public set value(value) /* Set type is automatically added */ {
     this.managers.value.updateValue(value);
   }
 
   /**
    * Listen to value changes of the control
    */
-  public get valueChanges(): Observable<VALUE> {
+  public get valueChanges(): ControlLike<FIELD>['valueChanges'] {
     return this.managers.value.changes;
   }
 
@@ -228,7 +268,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param value value to set
    * @param setAsDirty update dirty state to true
    */
-  public setValue = <VAL extends VALUE>(value: VAL | undefined | null, setAsDirty = true, emitEvent = true) => {
+  public setValue: ControlLike<FIELD>['setValue'] = (value, setAsDirty = true, emitEvent = true) => {
     this.managers.value.updateValue(value, setAsDirty, emitEvent);
   };
 
@@ -237,8 +277,26 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param values value to set
    * @param setAsDirty update dirty state to true
    */
-  public patchValue = <VAL extends VALUE>(values: Partial<VAL>, setAsDirty = true) => {
-    this.managers.value.updateValue(values, setAsDirty, true, true);
+  public patchValue: ControlLike<FIELD>['patchValue'] = (values, setAsDirty = true, emitEvent = true) => {
+    this.managers.value.updateValue(values, setAsDirty, emitEvent, true);
+  };
+
+  /**
+   * Run value through field's dispatcher and set the result as the new value
+   */
+  public dispatchValue: ControlLike<FIELD>['dispatchValue'] = async (value, setAsDirty, emitEvent) => {
+    if (!this.field.dispatcher) return console.warn('No dispatcher defined for this control!');
+    const { dispatcher } = this.field;
+    const result = dispatcher({ control: this, value }) as MargaritaFormResolverOutput<ControlValue<FIELD>>;
+    if (result instanceof Promise) {
+      const value = await result;
+      this.setValue(value, setAsDirty, emitEvent);
+    } else if (result instanceof Observable) {
+      const value = await firstValueFrom(result);
+      this.setValue(value, setAsDirty, emitEvent);
+    } else {
+      this.setValue(result, setAsDirty, emitEvent);
+    }
   };
 
   /**
@@ -247,24 +305,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param mustBeUnique Should the value be unique (default = false)
    * @param setAsDirty Should the dirty state be set to true
    */
-  public addValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = false, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value] as VALUE, setAsDirty, emitEvent);
+  public addValue: ControlLike<FIELD>['addValue'] = (value, mustBeUnique = false, setAsDirty, emitEvent) => {
+    if (this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add a value!';
     if (mustBeUnique && isIncluded(value, this.value)) return console.warn('Value already exists!');
     this.managers.value.updateValue([...this.value, value], setAsDirty);
-  };
-
-  /**
-   * Remove a value from array
-   * @param value Value to remove from the array
-   * @param setAsDirty Should the dirty state be set to true
-   */
-  public removeValue = (value: unknown, setAsDirty = true) => {
-    if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
-    this.managers.value.updateValue(
-      this.value.filter((item) => !isEqual(value, item)),
-      setAsDirty
-    );
   };
 
   /**
@@ -273,35 +318,49 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param mustBeUnique Should the value be unique when adding (default = true)
    * @param setAsDirty Should the dirty state be set to true
    */
-  public toggleValue = (value: unknown, initializeWhenUndefined = true, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
-    if (initializeWhenUndefined && this.value === undefined) return this.setValue([value] as VALUE, setAsDirty, emitEvent);
+  public toggleValue: ControlLike<FIELD>['toggleValue'] = (value, mustBeUnique = true, setAsDirty = true, emitEvent = true) => {
+    if (this.value === undefined) return this.setValue([value], setAsDirty, emitEvent);
     if (!Array.isArray(this.value)) throw 'Control value must be an array to add or remove a value!';
-    if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty);
-    this.managers.value.updateValue([...this.value, value], setAsDirty);
+    if (mustBeUnique && isIncluded(value, this.value)) return this.removeValue(value, setAsDirty, emitEvent);
+    this.managers.value.updateValue([...this.value, value], setAsDirty, emitEvent);
+  };
+
+  /**
+   * Remove a value from array
+   * @param value Value to remove from the array
+   * @param setAsDirty Should the dirty state be set to true
+   */
+  public removeValue: ControlLike<FIELD>['removeValue'] = (value, setAsDirty, emitEvent) => {
+    if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
+    this.managers.value.updateValue(
+      this.value.filter((item) => !isEqual(value, item)),
+      setAsDirty,
+      emitEvent
+    );
   };
 
   // States
 
-  public get state(): MargaritaFormStateValue {
+  public get state(): ControlLike<FIELD>['state'] {
     return this.managers.state.value;
   }
 
-  public get stateChanges(): Observable<MargaritaFormStateValue> {
+  public get stateChanges(): ControlLike<FIELD>['stateChanges'] {
     return this.managers.state.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
-  public getState = (key: keyof MargaritaFormStateValue) => {
+  public getState: ControlLike<FIELD>['getState'] = (key) => {
     return this.state[key];
   };
 
-  public getStateChanges = (key: keyof MargaritaFormStateValue) => {
+  public getStateChanges: ControlLike<FIELD>['getStateChanges'] = (key) => {
     return this.stateChanges.pipe(
       map((state) => state[key]),
       distinctUntilChanged()
     );
   };
 
-  public get validators(): MargaritaFormValidators {
+  public get validators(): ControlLike<FIELD>['validators'] {
     const fieldValidators = this.field.validators || {};
     const parentValidators = this.context.parent?.field?.validators || {};
     if (this.config.addDefaultValidators) {
@@ -310,37 +369,37 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     return { ...parentValidators, ...fieldValidators };
   }
 
-  public enable = () => {
+  public enable: ControlLike<FIELD>['enable'] = () => {
     this.updateStateValue('enabled', true);
   };
 
-  public disable = () => {
+  public disable: ControlLike<FIELD>['disable'] = () => {
     this.updateStateValue('enabled', false);
   };
 
-  public toggleEnabled = () => {
+  public toggleEnabled: ControlLike<FIELD>['toggleEnabled'] = () => {
     const current = this.getState('enabled');
     this.updateStateValue('enabled', !current);
   };
 
-  public activate = () => {
+  public activate: ControlLike<FIELD>['activate'] = () => {
     this.updateStateValue('active', true);
   };
 
-  public deactivate = () => {
+  public deactivate: ControlLike<FIELD>['deactivate'] = () => {
     this.updateStateValue('active', false);
   };
 
-  public toggleActive = () => {
+  public toggleActive: ControlLike<FIELD>['toggleActive'] = () => {
     const current = this.getState('active');
     this.updateStateValue('active', !current);
   };
 
-  public updateStateValue = (key: keyof MargaritaFormState, value: MargaritaFormState[typeof key]) => {
+  public updateStateValue: ControlLike<FIELD>['updateStateValue'] = (key, value: MargaritaFormState[typeof key]) => {
     this.managers.state.updateState(key, value);
   };
 
-  public updateState = (changes: Partial<MargaritaFormState>) => {
+  public updateState: ControlLike<FIELD>['updateState'] = (changes) => {
     this.managers.state.updateStates(changes);
   };
 
@@ -348,11 +407,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * Validate the control and update state. Mark the control as touched to show errors.
    * @param setAsTouched Set the touched state to true
    */
-  public validate = async (setAsTouched = true) => {
+  public validate: ControlLike<FIELD>['validate'] = async (setAsTouched = true) => {
     return await this.managers.state.validate(setAsTouched);
   };
 
-  public registerValidator = (name: string, validator: MargaritaFormValidator) => {
+  public registerValidator: ControlLike<FIELD>['registerValidator'] = (name, validator) => {
     const currentValidators = this.validators;
     const validators: MargaritaFormValidators = {
       ...currentValidators,
@@ -365,18 +424,18 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
 
   // Params
 
-  public get params(): Params {
+  public get params(): ControlLike<FIELD>['params'] {
     return this.managers.params.current;
   }
 
-  public get paramsChanges(): Observable<Params> {
+  public get paramsChanges(): ControlLike<FIELD>['paramsChanges'] {
     return this.managers.params.changes.pipe(debounceTime(1), shareReplay(1));
   }
 
   /**
    * Get resolvers for the control
    */
-  public get resolvers(): MargaritaFormResolvers {
+  public get resolvers(): ControlLike<FIELD>['resolvers'] {
     const fieldResolvers = this.field.resolvers || {};
     const parentResolvers = this.context.parent?.field?.resolvers || {};
     return { ...parentResolvers, ...fieldResolvers };
@@ -387,7 +446,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param name string
    * @param resolver MargaritaFormResolver
    */
-  public registerResolver = (name: string, resolver: MargaritaFormResolver) => {
+  public registerResolver: ControlLike<FIELD>['registerResolver'] = (name, resolver) => {
     const currentResolvers = this.resolvers;
     const resolvers: MargaritaFormResolvers = {
       ...currentResolvers,
@@ -403,29 +462,28 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
   /**
    * Check if control has any child controls
    */
-  public get hasControls(): boolean {
+  public get hasControls(): ControlLike<FIELD>['hasControls'] {
     return this.managers.controls.hasControls;
   }
 
   /**
    * Check if control has any active child controls
    */
-  public get hasActiveControls(): boolean {
+  public get hasActiveControls(): ControlLike<FIELD>['hasActiveControls'] {
     return this.managers.controls.array.length > 0;
   }
 
   /**
    * Get all controls as an array
    */
-  public get controls(): MFCCF<FIELD>[] {
-    type CHILD_FIELD = NonNullable<FIELD['fields']>[number];
-    return this.managers.controls.array as MFCA<unknown, CHILD_FIELD>;
+  public get controls(): ControlLike<FIELD>['controls'] {
+    return this.managers.controls.array;
   }
 
   /**
    * Get all active controls as an array
    */
-  public get activeControls(): MFCCF<FIELD>[] {
+  public get activeControls(): ControlLike<FIELD>['activeControls'] {
     return this.managers.controls.array.filter((control) => control.state.active);
   }
 
@@ -434,18 +492,15 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
    * @returns The control that was found or added or null if control doesn't exist.
    */
-  public getControl = <VALUE = unknown, FIELD extends MFF = this['field']>(
-    identifier: string | number | (string | number)[]
-  ): MFC<VALUE, FIELD> | null => {
-    type CONTROL = MFC<VALUE, FIELD>;
+  public getControl: ControlLike<FIELD>['getControl'] = (identifier) => {
     if (Array.isArray(identifier)) {
       const [first, ...rest] = identifier;
-      const control = this.managers.controls.getControl<CONTROL>(first);
-      if (!control) return null;
+      const control = this.managers.controls.getControl(first);
+      if (!control) return undefined;
       if (rest.length === 0) return control;
-      return control.getControl<VALUE, FIELD>(rest);
+      return control.getControl(rest);
     }
-    return this.managers.controls.getControl<CONTROL>(identifier);
+    return this.managers.controls.getControl(identifier) as any;
   };
 
   /**
@@ -453,7 +508,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param identifier name, index or key of the control
    * @returns boolean
    */
-  public hasControl = (identifier: string | number): boolean => {
+  public hasControl: ControlLike<FIELD>['hasControl'] = (identifier) => {
     const control = this.managers.controls.getControl(identifier);
     const exists = Boolean(control);
     return exists;
@@ -465,10 +520,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param field The field to use as a template for the new control
    * @returns The control that was found or added
    */
-  public getOrAddControl = <VALUE = unknown, FIELD extends MFF = this['field']>(field: FIELD): MFC<VALUE, FIELD> => {
-    type CONTROL = MFC<VALUE, FIELD>;
-    const control = this.managers.controls.getControl<CONTROL>(field.name);
-    if (!control) return this.managers.controls.addControl<FIELD, VALUE>(field);
+  public getOrAddControl: ControlLike<FIELD>['getOrAddControl'] = (field) => {
+    const control = this.managers.controls.getControl(field.name) as any;
+    if (!control) return this.managers.controls.addControl(field) as any;
     return control;
   };
 
@@ -478,20 +532,20 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param replaceExisting Replace existing control with the same name when parent is not an array type
    * @returns Control that was added
    */
-  public addControl = <FIELD extends MFF = this['field'], VALUE = unknown>(field: FIELD, replaceExisting?: boolean): MFC<VALUE, FIELD> => {
+  public addControl: ControlLike<FIELD>['addControl'] = (field, replaceExisting) => {
     const exists = this.hasControl(field.name);
     if (this.expectGroup && exists && replaceExisting === undefined) {
       console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
     }
-    return this.managers.controls.addControl(field);
+    return this.managers.controls.addControl(field) as any;
   };
 
   /**
    * Removes a child control from the form group.
    * @param identifier name, index or key of the control to remove
    */
-  public removeControl = (identifier: string | number) => {
-    this.managers.controls.removeControl(identifier);
+  public removeControl: ControlLike<FIELD>['removeControl'] = (identifier) => {
+    this.managers.controls.removeControl(identifier as string); // Todo: fix type
   };
 
   /**
@@ -499,15 +553,15 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param identifier name, index or key of the control to move
    * @param toIndex index to move the control to
    */
-  public moveControl = (identifier: string, toIndex: number) => {
-    this.managers.controls.moveControl(identifier, toIndex);
+  public moveControl: ControlLike<FIELD>['moveControl'] = (identifier, toIndex) => {
+    this.managers.controls.moveControl(identifier as string, toIndex); // Todo: fix type
   };
 
   /**
    * Add new controls to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControls = <FIELD extends MFF = MFF>(fieldTemplates: string[] | FIELD[]): MFCA => {
+  public appendControls: ControlLike<FIELD>['appendControls'] = (fieldTemplates) => {
     return this.managers.controls.appendRepeatingControls(fieldTemplates);
   };
 
@@ -515,14 +569,14 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * Add new control to the form array.
    * @param field The field to use as a template for the new controls
    */
-  public appendControl = <FIELD extends MFF = MFF>(fieldTemplate?: string | FIELD, overrides?: Partial<FIELD>) => {
+  public appendControl: ControlLike<FIELD>['appendControl'] = (fieldTemplate, overrides) => {
     return this.managers.controls.appendRepeatingControl(fieldTemplate, overrides);
   };
 
   /**
    * Remove the control from the parent
    */
-  public remove = () => {
+  public remove: ControlLike<FIELD>['remove'] = () => {
     this.parent.removeControl(this.key);
   };
 
@@ -530,7 +584,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * Move control to another index
    * @param toIndex index to move the control to
    */
-  public moveToIndex = (toIndex: number) => {
+  public moveToIndex: ControlLike<FIELD>['moveToIndex'] = (toIndex) => {
     if (this.isRoot) {
       console.warn('Could not move control, already in root!');
     } else {
@@ -552,17 +606,24 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * control.setRef(el);
    * ```
    */
-  public setRef = (ref: any | MargaritaFormBaseElement<this>): void => {
+  public setRef: ControlLike<FIELD>['setRef'] = (ref) => {
     return this.managers.ref.addRef(ref);
   };
 
   // Submit
 
-  public get onSubmit(): Observable<this> {
+  public get onSubmit(): ControlLike<FIELD>['onSubmit'] {
     return this.getStateChanges('submits').pipe(map(() => this));
   }
 
-  public submit = async () => {
+  /**
+   * Submit the form. If the form is invalid, the invalid submit handler will be called.
+   * Define submit handlers in the field's handleSubmit property. You can define a different handler for valid and invalid submits but only valid submit handler is required. If handleSubmit is a function it will be used as the valid handler.
+   * If handleSubmit or handleSubmit.valid is a string, it will be used as a url for a POST request.
+   * @param params Params that get passed as the second argument to the submit handler
+   * @returns Promise with the submit handler's response
+   */
+  public submit: ControlLike<FIELD>['submit'] = async (params) => {
     try {
       await this.validate();
       if (!this.field.handleSubmit && !this.managers.ref.formAction) throw 'Add "handleSubmit" option to submit form!';
@@ -576,7 +637,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
         const handleValidSubmit = async () => {
           try {
             await this._handleBeforeSubmit();
-            const submitResponse = await this._resolveValidSubmitHandler();
+            const submitResponse = await this._resolveValidSubmitHandler(params);
             this.updateStateValue('submitResult', 'success');
             switch (this.config.handleSuccesfullSubmit) {
               case 'disable':
@@ -607,7 +668,7 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
       }
 
       // Handle invalid submit
-      const invalidSubmitHandler = this._resolveInvalidSubmitHandler();
+      const invalidSubmitHandler = this._resolveInvalidSubmitHandler(params);
       return await invalidSubmitHandler.finally(() => {
         const submits = this.state.submits || 0;
         this.updateState({
@@ -623,18 +684,18 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     }
   };
 
-  private async _resolveValidSubmitHandler(): Promise<any> {
+  private async _resolveValidSubmitHandler(params: any): Promise<any> {
     const { handleSubmit } = this.field;
-    if (typeof handleSubmit === 'string') return await this._resolveInvalidSubmitPostHandler(handleSubmit);
-    if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this));
-    if (handleSubmit?.valid) return await Promise.resolve(handleSubmit.valid(this));
+    if (typeof handleSubmit === 'string') return await this._resolveValidSubmitPostHandler(handleSubmit);
+    if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this, params));
+    if (handleSubmit?.valid) return await Promise.resolve(handleSubmit.valid(this, params));
 
     const action = this.managers.ref.formAction;
     if (!action) throw 'No submit handler for valid submit!';
-    return await this._resolveInvalidSubmitPostHandler(action);
+    return await this._resolveValidSubmitPostHandler(action);
   }
 
-  private async _resolveInvalidSubmitPostHandler(url: string) {
+  private async _resolveValidSubmitPostHandler(url: string) {
     return await fetch(url, {
       method: 'POST',
       body: JSON.stringify(this.value),
@@ -644,11 +705,11 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
     });
   }
 
-  private async _resolveInvalidSubmitHandler(): Promise<any> {
+  private async _resolveInvalidSubmitHandler(params: any): Promise<any> {
     const { handleSubmit } = this.field;
     const defaultHandler = () => console.log('Form is invalid!', { form: this });
     if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
-    if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(this));
+    if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(this, params));
     return console.log('Form is invalid!', {
       form: this,
     });
@@ -656,15 +717,15 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
 
   // Misc
 
-  public resetValue = () => {
+  public resetValue: ControlLike<FIELD>['resetValue'] = () => {
     this.setValue(undefined);
   };
 
-  public resetState = (respectField = false) => {
+  public resetState: ControlLike<FIELD>['resetState'] = (respectField = false) => {
     this.managers.state.resetState(respectField);
   };
 
-  public reset = () => {
+  public reset: ControlLike<FIELD>['reset'] = () => {
     this.resetValue();
     this.resetState();
   };
@@ -675,44 +736,9 @@ export class MargaritaFormControl<VALUE = unknown, FIELD extends MFF<VALUE, FIEL
    * @param fallback The fallback value
    * @returns Field's value or fallback
    */
-  public getFieldValue = <OUTPUT>(key: keyof FIELD, fallback?: OUTPUT): OUTPUT => {
-    if (this.field[key]) return this.field[key] as OUTPUT;
-    return fallback as OUTPUT;
-  };
-
-  /**
-   * Get the control's parent's field's value
-   * @param key The field to get
-   * @param fallback The fallback value
-   * @returns Field's value or fallback
-   */
-  public getParentFieldValue = <OUTPUT>(key: string | number, fallback?: OUTPUT): OUTPUT => {
-    if (!this.isRoot && this.parent && key in this.parent.field) return this.parent.getFieldValue<OUTPUT>(key as any, fallback);
-    return fallback as OUTPUT;
-  };
-
-  /**
-   * Get the control's root's field's value
-   * @param key The field to get
-   * @param fallback The fallback value
-   * @returns Field's value or fallback
-   */
-  public getRootFieldValue = <OUTPUT>(key: string | number, fallback?: OUTPUT): OUTPUT => {
-    if (!this.isRoot && this.root && key in this.root.field) return this.root.getFieldValue<OUTPUT>(key as any, fallback);
-    return fallback as OUTPUT;
-  };
-
-  /**
-   * Dig through the control's parents to find field value
-   * @param key The field to get
-   * @param fallback The fallback value
-   * @param checkSelf If true, will check the control's own field
-   * @returns Field's value or fallback
-   */
-  public getDigFieldValue = <OUTPUT>(key: string | number, fallback: OUTPUT, checkSelf = true): OUTPUT => {
-    if (checkSelf && key in this.field) return this.getFieldValue(key as any, fallback) as OUTPUT;
-    if (!this.isRoot && this.parent) return this.parent.getDigFieldValue<OUTPUT>(key as any, fallback);
-    return fallback as OUTPUT;
+  public getFieldValue: ControlLike<FIELD>['getFieldValue'] = (key, defaultValue) => {
+    if (this.field[key]) return this.field[key] as any;
+    return defaultValue;
   };
 
   /**
