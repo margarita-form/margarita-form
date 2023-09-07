@@ -19,6 +19,7 @@ import {
   MargaritaFormStateChildren,
   MargaritaFormValidatorResult,
   UserDefinedStates,
+  MargaritaFormStateAllErrors,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
 import { mapResolverEntries } from '../helpers/resolve-function-outputs';
@@ -37,11 +38,12 @@ export const fieldStateKeys: (keyof UserDefinedStates)[] = [
 ];
 
 export class MargaritaFormStateValue implements MargaritaFormState {
-  constructor(private control: MFC) {}
+  constructor(public control: MFC) {}
 
   // Single states
 
   public errors: CommonRecord = {};
+  public allErrors: CommonRecord = {};
   public children: MargaritaFormStateChildren = [];
   public focus = false;
 
@@ -269,10 +271,22 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
         return acc;
       }, {} as MargaritaFormStateErrors);
 
+      const hasErrors = Object.keys(errors).length > 0;
+      const currentPathAsString = this.control.getPath().join('.');
+      const initialAllErrors = hasErrors ? ([{ path: currentPathAsString, errors }] as MargaritaFormStateAllErrors) : [];
+
+      const childErrors = children.map((child) => child.allErrors);
+
+      const allErrors = childErrors.reduce((acc, allErrors) => {
+        acc.push(...allErrors);
+        return acc;
+      }, initialAllErrors);
+
       const changes = {
         valid,
         errors,
         children,
+        allErrors,
         validating: false,
         validated: true,
       };

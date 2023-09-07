@@ -113,6 +113,7 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N = Recor
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
+export type MargaritaFormStateAllErrors = { path: string; errors: MargaritaFormStateErrors }[];
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
 export type MargaritaFormFieldState = MargaritaFormResolverOutput<boolean> | MargaritaFormResolver<boolean>;
@@ -144,8 +145,10 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   submits: number;
   submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
   errors: MargaritaFormStateErrors;
+  allErrors: MargaritaFormStateAllErrors;
   children?: MargaritaFormStateChildren;
   hasValue?: boolean;
+  control?: MFC;
 }
 
 export type GenerateKeyFunction = (control: MFC) => string;
