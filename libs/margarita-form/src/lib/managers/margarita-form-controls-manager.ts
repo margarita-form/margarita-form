@@ -76,7 +76,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   private _emitChanges(syncValue = true) {
     this.changes.next(this._controls);
-    if (syncValue) this.control.managers.value._syncChildValues(false, true);
+    if (syncValue) this.control.managers.value._syncValue(false, true, false, true);
   }
 
   public get hasControls(): boolean {
@@ -184,7 +184,6 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const control = new MargaritaFormControl<FIELD>(field, {
       parent: this.control,
       root: this.control.root,
-      keyStore: this.control.keyStore,
       initialIndex: this._controls.length,
     });
 
@@ -210,7 +209,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   private _removeCleanup(control: MFC) {
     if (control) {
-      control.managers.value._syncParentValue();
+      // control.managers.value._syncParentValue();
       control.cleanup();
     }
   }
@@ -235,6 +234,12 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     if (typeof identifier === 'number') {
       return this._controls[identifier];
     }
+    if (typeof identifier === 'string') {
+      const actuallyNumber = Number(identifier);
+      if (!isNaN(actuallyNumber)) {
+        return this.getControl(actuallyNumber) as CHILD_CONTROL;
+      }
+    }
     return this._controls.find((control) => [control.name, control.key].includes(identifier));
   }
 
@@ -247,7 +252,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const [item] = this._controls.splice(currentIndex, 1);
     this._controls.splice(toIndex, 0, item);
     if (emit) this._emitChanges(false);
-    this.control.managers.value._syncCurrentValue(true, true);
+    this.control.managers.value._syncValue(true, true, false);
   }
 }
 

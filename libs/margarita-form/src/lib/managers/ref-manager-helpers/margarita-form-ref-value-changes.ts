@@ -21,6 +21,8 @@ export const setNodeValueOnControlValueChanges = <CONTROL extends MFC = MFC>({
           node.checked = true;
         } else if (typeof value === 'boolean') {
           node.checked = value;
+        } else if (value === undefined) {
+          node.checked = false;
         }
       } else if ('value' in node) {
         if (typeof value === 'object') {
@@ -79,20 +81,14 @@ export const setControlValueOnNodeValueChanges = <CONTROL extends MFC = MFC>({
       const value = getNodeValue();
 
       if (value !== undefined) {
-        if (control.hasControls) {
-          if (typeof value === 'string') {
-            const object = JSON.parse(value);
-            return control.setValue(object);
-          }
-          if (typeof value === 'object') {
-            return control.setValue(value);
-          }
-        } else {
-          return control.setValue(value);
+        if (control.hasControls && typeof value === 'string') {
+          const object = JSON.parse(value);
+          return control.setValue(object);
         }
+        return control.setValue(value);
       }
     } catch (error) {
-      //
+      console.error(error);
     }
   });
 };

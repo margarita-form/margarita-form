@@ -19,7 +19,7 @@ import { Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, me
 import { Params } from './managers/margarita-form-params-manager';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
-import { isEqual, isIncluded } from './helpers/check-value';
+import { isEqual, isIncluded, valueExists } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
@@ -30,24 +30,21 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public key: string;
   public uid: string = nanoid(4);
   public syncId: string = nanoid(4);
-  public keyStore: Set<string>;
   private _listeningToChanges = true;
   public managers: ManagerInstances;
   private cache = new Map<string, unknown>();
 
   constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
-    const { initialIndex, keyStore = new Set<string>() } = context;
-    this.keyStore = keyStore;
-    this.key = this._generateKey(initialIndex);
+    // console.debug('Creating control:', field.name, { field });
+    this.key = this._generateKey();
     this.managers = createManagers<typeof this>(this);
     if (field.onCreate) field.onCreate({ control: this });
   }
 
-  private _generateKey = (index = 0): string => {
-    const stringPath = this.getPath('default');
-    const key = toHash([...stringPath, index]);
-    const exists = this.keyStore.has(key);
-    if (exists) return this._generateKey(index + 1);
+  private _generateKey = (): string => {
+    // console.debug('Generating key for control:', this.field.name);
+    const stringPath = this.getPath('indexes');
+    const key = toHash([...stringPath]);
     return key;
   };
 
@@ -57,7 +54,6 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public cleanup: ControlLike<FIELD>['cleanup'] = () => {
     Object.values(this.managers).forEach((manager) => manager.cleanup());
     this._listeningToChanges = false;
-    this.keyStore.delete(this.key);
   };
 
   /**
@@ -66,7 +62,6 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public resubscribe: ControlLike<FIELD>['resubscribe'] = () => {
     if (this._listeningToChanges === false) {
       Object.values(this.managers).forEach((manager) => manager.resubscribe());
-      this.keyStore.add(this.key);
     }
     this._listeningToChanges = true;
   };
@@ -75,14 +70,9 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     this.syncId = syncId;
   };
 
-  public updateKey: ControlLike<FIELD>['updateKey'] = (key = nanoid(4)) => {
-    if (key !== this.key) {
-      if (this.keyStore.has(key)) {
-        return console.warn(`Key ${key} already exists, all keys must be unique!`);
-      }
-      this.key = key;
-      this.keyStore.add(key);
-    }
+  public updateKey: ControlLike<FIELD>['updateKey'] = () => {
+    this.key = this._generateKey();
+    this.controls.forEach((control) => control.updateKey());
   };
 
   // Context getters
@@ -159,9 +149,12 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   public get index(): ControlLike<FIELD>['index'] {
     if (this.parent?.managers?.controls) {
-      return this.parent.managers.controls.getControlIndex(this.key);
+      const resolvedIndex = this.parent.managers.controls.getControlIndex(this.key);
+      if (resolvedIndex > -1) return resolvedIndex;
     }
-    return this.context.initialIndex ?? -1;
+
+    const { initialIndex = -1 } = this.context;
+    return initialIndex;
   }
 
   /**
@@ -201,6 +194,11 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     return false;
   }
 
+  public get fields(): MFCCF<FIELD>[] {
+    if (!this.expectChildControls) return [];
+    return (this.field.fields as any) || [];
+  }
+
   public updateField: ControlLike<FIELD>['updateField'] = async (changes, resetControl = false) => {
     await this.managers.field.updateField(changes as any, resetControl);
   };
@@ -216,7 +214,8 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     if (outcome === 'keys') {
       return [...parentPath, this.key];
     }
-    const part = !this.isRoot && this.parent.expectArray ? this.index : this.name;
+    // Default and indexes are the same!
+    const part = !this.isRoot && this.parent.expectArray ? this.index + ':' + this.name : this.name;
     return [...parentPath, part];
   };
 

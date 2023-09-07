@@ -8,6 +8,10 @@ export class MargaritaForm<FIELD extends MFF = MFF> extends MargaritaFormControl
     const name = field.name;
     if (!name) throw new Error('Form name is required!');
 
-    this.managers.value._syncChildValues(false, true);
+    console.log('----------');
+    console.log('Starting loopediloop');
+    this.managers.value.refreshSync();
+    console.log('Loopediloop done');
+    console.log('----------');
   }
 }

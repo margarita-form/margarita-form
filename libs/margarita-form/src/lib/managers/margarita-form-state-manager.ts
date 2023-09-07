@@ -287,7 +287,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
     this.createSubscription(activeChangesSubscriptionObservable, () => {
       if (!this.control.isRoot) {
-        this.control.parent.managers.value._syncCurrentValue(false, true);
+        this.control.parent.managers.value._syncValue(false, true, false);
       }
     });
   }

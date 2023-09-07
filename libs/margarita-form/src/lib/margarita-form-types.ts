@@ -23,7 +23,6 @@ export interface MargaritaFormControlContext {
   form?: MF;
   root?: MF | MFC;
   parent?: MF | MFC;
-  keyStore?: Set<string>;
   initialIndex?: number;
 }
 
@@ -154,6 +153,7 @@ export type GenerateKeyFunction = (control: MFC) => string;
 export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
   addMetadataToArrays?: boolean | 'flat';
+  allowUnresolvedArrayChildNames?: boolean;
   detectAndRemoveMetadataForArrays?: boolean;
   allowConcurrentSubmits?: boolean;
   asyncFunctionWarningTimeout?: number;
@@ -210,6 +210,7 @@ export interface BroadcastLikeConstructor {
 
 export interface BroadcasterMessage<DATA = unknown> {
   key: string;
+  uid: string;
   value?: DATA;
   requestSend?: boolean;
 }
