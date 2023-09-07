@@ -46,7 +46,7 @@ export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
     const valueChanged = JSON.stringify(value) !== JSON.stringify(cachedValue);
     if (!valueChanged) return;
     this.cache.set(key, value);
-    this.source.postMessage({ key, value });
+    this.source.postMessage({ key, value, uid: this.control.uid });
   }
 
   public subscribeToMessages<DATA = any>(
@@ -55,15 +55,16 @@ export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
   ): void | { observable: void | Observable<BroadcasterMessage<DATA>>; handler: (event: BroadcasterMessage<DATA>) => void } {
     const key = this.syncronizationKey;
     if (!this.source) return console.warn('Trying to start syncronization without a source!');
-    this.source.postMessage({ key, requestSend: true });
+    this.source.postMessage({ key, uid: this.control.uid, requestSend: true });
 
     const observable = this.source.listenToMessages<DATA>();
 
     const handler = (message: BroadcasterMessage<DATA>) => {
       if (!this.source) return console.warn('Trying to start syncronization without a source!');
+      if (message.uid === this.control.uid) return;
       const value = getCurrent();
       if (message.requestSend) {
-        this.source.postMessage({ key, value });
+        this.source.postMessage({ key, value, uid: this.control.uid });
       } else if (message.key === key) {
         const valueChanged = JSON.stringify(message.value) !== JSON.stringify(value);
         if (valueChanged) {

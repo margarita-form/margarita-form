@@ -5,6 +5,7 @@ import { recipeFields } from './fields/receipe';
 import { websiteFields } from './fields/website';
 import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
+import { lifecycleFields } from './fields/lifecycle';
 
 registerManager('custom', CustomManager);
 
@@ -91,14 +92,14 @@ type Field = MargaritaFormField<FormValue, CustomField>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(recipeFields);
+  const [currentFields, setCurrentFields] = useState(lifecycleFields);
   const [shouldReset, setShouldReset] = useState(true);
 
   const form = useMargaritaForm<FormValue, Field>({
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
-    useStorage: 'localStorage',
+    // useStorage: 'localStorage',
     useSyncronization: 'broadcastChannel',
     currentLocale: 'en',
     handleLocalize: {
@@ -130,15 +131,20 @@ export function App() {
     config: {
       resetFormOnFieldChanges: shouldReset,
       handleSuccesfullSubmit: 'enable',
-      addMetadataToArrays: true,
-      detectAndRemoveMetadataForArrays: false,
+      addMetadataToArrays: 'flat',
+      // detectAndRemoveMetadataForArrays: false,
     },
   });
+
+  // console.log('Rendering form', form.uid);
 
   return (
     <AppWrapper>
       <div className="form-wrapper">
         <Form form={form}>
+          <p>
+            Form uid: <strong>{form.uid}</strong>
+          </p>
           <h2>Config</h2>
 
           <div>
@@ -287,6 +293,16 @@ const FormField = ({ control }: FormFieldProps) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const random = Math.ceil(Math.random() * 5 + 1);
+              control.setValue({ 'level-2-text': 'Random title / ' + random });
+            }}
+          >
+            Randomize value
+          </button>
         </div>
       );
 
@@ -299,7 +315,7 @@ const FormField = ({ control }: FormFieldProps) => {
             return (
               <div className="step-container" key={childGroup.key}>
                 <h3>
-                  {childGroup.field.title}: {childGroup.index + 1}
+                  {childGroup.field.title}: {childGroup.index + 1} ({childGroup.key})
                 </h3>
 
                 <button
@@ -308,14 +324,14 @@ const FormField = ({ control }: FormFieldProps) => {
                     childGroup.remove();
                   }}
                 >
-                  Delete step
+                  Delete
                 </button>
 
                 <div className="step-fields">
                   {childGroup.expectChildControls ? (
                     childGroup.controls.map((control) => <FormField key={control.key} control={control} />)
                   ) : (
-                    <FormField key={childGroup.key} control={childGroup} />
+                    <FormField control={childGroup} />
                   )}
                 </div>
               </div>
@@ -335,6 +351,17 @@ const FormField = ({ control }: FormFieldProps) => {
               </button>
             );
           })}
+
+          <button
+            type="button"
+            onClick={() => {
+              const random = Math.ceil(Math.random() * 5 + 1);
+              const value = Array.from({ length: random }, (val, i: number) => ({ 'level-3-text': 'Random title / ' + (i + 1) }));
+              control.setValue(value);
+            }}
+          >
+            Randomize
+          </button>
         </div>
       );
 
