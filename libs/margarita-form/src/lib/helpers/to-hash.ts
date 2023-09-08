@@ -15,6 +15,10 @@ const toPhash = (h: number, x: string): number => {
   return h;
 };
 
+/**
+ * Turns any value into a hash string. Useful for generating unique ids that need to stay consistent when value is the same but be always unique when value is different.
+ * @returns A hash string.
+ */
 export const toHash = (value: unknown): string => {
   const numericHash = toPhash(5381, JSON.stringify(value)) >>> 0;
   return toAlphabeticName(numericHash);

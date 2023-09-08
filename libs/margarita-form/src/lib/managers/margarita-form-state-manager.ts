@@ -42,8 +42,8 @@ export class MargaritaFormStateValue implements MargaritaFormState {
 
   // Single states
 
-  public errors: CommonRecord = {};
-  public allErrors: CommonRecord = {};
+  public errors: MargaritaFormStateErrors = {};
+  public allErrors: MargaritaFormStateAllErrors = [];
   public children: MargaritaFormStateChildren = [];
   public focus = false;
 
