@@ -77,8 +77,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
   private _emitChanges() {
     this.control.updateSyncId();
-    console.log('Emitting changes for:', this.control.name, this.control.key, this._value);
-
     this.changes.next(this._value);
   }
 
