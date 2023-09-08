@@ -6,7 +6,7 @@ import { valueExists } from '../helpers/check-value';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _value: CONTROL['value'] = undefined;
-  public changes = new BehaviorSubject<CONTROL['value']>(undefined);
+  public changes: BehaviorSubject<CONTROL['value']>;
 
   constructor(public control: CONTROL) {
     super();
@@ -17,6 +17,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     if (initialValue) {
       this._setValue(initialValue);
     }
+
+    this.changes = new BehaviorSubject<CONTROL['value']>(this._value);
   }
 
   public override _init() {
@@ -75,6 +77,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
   private _emitChanges() {
     this.control.updateSyncId();
+    console.log('Emitting changes for:', this.control.name, this.control.key, this._value);
+
     this.changes.next(this._value);
   }
 
