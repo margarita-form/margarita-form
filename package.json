@@ -28,13 +28,13 @@
   },
   "private": true,
   "devDependencies": {
-    "@nx/eslint-plugin": "16.7.4",
-    "@nx/js": "16.7.4",
-    "@nx/linter": "16.7.4",
-    "@nx/node": "16.7.4",
-    "@nx/react": "16.7.4",
-    "@nx/vite": "16.7.4",
-    "@nx/workspace": "16.7.4",
+    "@nx/eslint-plugin": "16.8.1",
+    "@nx/js": "16.8.1",
+    "@nx/linter": "16.8.1",
+    "@nx/node": "16.8.1",
+    "@nx/react": "16.8.1",
+    "@nx/vite": "16.8.1",
+    "@nx/workspace": "16.8.1",
     "@swc/cli": "0.1.62",
     "@swc/core": "^1.2.173",
     "@testing-library/react": "13.4.0",
@@ -61,7 +61,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "inquirer": "^9.1.5",
     "jsdom": "22.1.0",
-    "nx": "16.7.4",
+    "nx": "16.8.1",
     "prettier": "^2.6.2",
     "typedoc": "^0.24.8",
     "typescript": "5.1.6",
@@ -86,3 +86,4 @@
     "packages/*"
   ]
 }
+
