@@ -142,12 +142,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     this._syncValue(setAsDirty, emitEvent, patch, updateParent, updateChildren);
   }
 
-  public refreshSync() {
+  public refreshSync(origin = true) {
     console.debug('Refresh sync:', this.control.name, this.control.key);
 
     // Sync children
     this.control.controls.forEach((control) => {
-      control.managers.value.refreshSync();
+      control.managers.value.refreshSync(false);
     });
 
     // Update key (just in case)
@@ -159,6 +159,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     // Emit initial value
     this._emitChanges();
+
+    if (!this.control.isRoot && origin) this.control.parent.managers.value._syncDownstreamValue(this.control, false, false);
+
     console.debug('Done:', this.control.name);
   }
 
