@@ -243,7 +243,10 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     return this._controls.find((control) => [control.name, control.key].includes(identifier));
   }
 
-  public getControlIndex(identifier: string) {
+  public getControlIndex(identifier: string | MFC) {
+    if (identifier instanceof MargaritaFormControl) {
+      return this._controls.findIndex((control) => control === identifier);
+    }
     return this._controls.findIndex((control) => [control.name, control.key].includes(identifier));
   }
 
@@ -251,8 +254,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const currentIndex = this.getControlIndex(identifier);
     const [item] = this._controls.splice(currentIndex, 1);
     this._controls.splice(toIndex, 0, item);
-    if (emit) this._emitChanges(false);
-    this.control.managers.value._syncValue(true, true, false);
+    if (emit) this._emitChanges(true);
   }
 }
 

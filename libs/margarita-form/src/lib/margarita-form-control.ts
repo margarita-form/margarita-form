@@ -143,7 +143,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   public get index(): ControlLike<FIELD>['index'] {
     if (!this.isRoot && this.parent.managers.controls) {
-      const resolvedIndex = this.parent.managers.controls.getControlIndex(this.key);
+      const resolvedIndex = this.parent.managers.controls.getControlIndex(this);
       if (resolvedIndex > -1) return resolvedIndex;
     }
 
