@@ -122,6 +122,8 @@ export interface MargaritaFormConfig {
   useCacheForForms?: boolean;
   storageKey?: 'key' | 'name' | GenerateKeyFunction;
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
+  transformUndefinedToNull?: boolean;
+  allowEmptyString?: boolean;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {

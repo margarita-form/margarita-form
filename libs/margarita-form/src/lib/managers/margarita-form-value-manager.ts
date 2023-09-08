@@ -57,6 +57,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   private _setValue(value: unknown) {
+    // Transform value with custom transformer script
     const { transformer } = this.control.field;
     const _value = transformer ? transformer({ value, control: this.control }) : value;
 
@@ -275,13 +276,22 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
+  private getUndefinedValue(control: MFC) {
+    const { transformUndefinedToNull, allowEmptyString } = control.config;
+    const { value } = control;
+    if (allowEmptyString && value === '') return value;
+    const val = transformUndefinedToNull ? null : undefined;
+    return val;
+  }
+
   public _syncDownstreamValue(childControl: MFC, setAsDirty = true, emitEvent = true) {
     console.debug('Sync Downstream value:', this.control.name);
 
     this.control.updateKey();
     const { expectArray, expectGroup, expectFlat, isRoot } = this.control;
     // const parentIsArray = !isRoot && this.control.parent.expectArray;
-    const value = childControl.value;
+    const exists = valueExists(childControl.value);
+    const value = exists ? childControl.value : this.getUndefinedValue(childControl);
     const key = expectArray ? childControl.index : childControl.name;
 
     // if (parentIsArray) {
@@ -315,8 +325,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const entries = this.control.activeControls.reduce((acc, child) => {
       const exists = valueExists(child.value);
       const key = expectArray ? child.index : child.name;
-      if (!exists) acc.push([key, undefined]);
-      else if (child.value && child.expectFlat && typeof child.value === 'object') {
+      if (!exists) {
+        const val = this.getUndefinedValue(child);
+        acc.push([key, val]);
+      } else if (child.value && child.expectFlat && typeof child.value === 'object') {
         const childEntries = Object.entries(child.value);
         acc.push(...childEntries);
       } else {

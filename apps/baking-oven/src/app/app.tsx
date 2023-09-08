@@ -114,7 +114,7 @@ export function App() {
     fields: currentFields,
     locales: ['en', 'fi'],
     // useStorage: 'localStorage',
-    useSyncronization: 'broadcastChannel',
+    // useSyncronization: 'broadcastChannel',
     currentLocale: 'en',
     handleLocalize: {
       parent: () => {
