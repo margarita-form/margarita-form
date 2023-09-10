@@ -45,11 +45,13 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     if (!forceNew && typeof this.value === 'object') {
       if ('_uid' in this.value) {
         const uid = this.value._uid as string;
+        if (this.uid === uid) return uid;
         if (this.context.idStore.has(uid)) return this._resolveUid(true);
         this.context.idStore.add(uid);
         return uid;
       }
     }
+    if (!forceNew && this.uid) return this.uid;
     const uid = nanoid(4);
     this.context.idStore.add(uid);
     return uid;
@@ -83,6 +85,10 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   public updateSyncId: ControlLike<FIELD>['updateSyncId'] = () => {
     this.syncId = nanoid(4);
+  };
+
+  public updateUid: ControlLike<FIELD>['updateUid'] = () => {
+    this.uid = this._resolveUid();
   };
 
   public updateKey: ControlLike<FIELD>['updateKey'] = () => {
