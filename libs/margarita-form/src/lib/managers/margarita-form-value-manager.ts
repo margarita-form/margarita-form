@@ -187,7 +187,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       this._setValue(value);
     }
 
-    if (updateParent) {
+    if (!this.control.isRoot && updateParent) {
       this.control.parent.managers.value._syncDownstreamValue(this.control, setAsDirty, emitEvent);
     }
 
