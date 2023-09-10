@@ -334,9 +334,9 @@ const FormField = ({ control }: FormFieldProps) => {
 
           {control.controls.map((childGroup) => {
             return (
-              <div className="step-container" key={childGroup.key}>
+              <div className="step-container" key={childGroup.uid}>
                 <h3>
-                  {childGroup.field.title}: {childGroup.index + 1} ({childGroup.key})
+                  {childGroup.field.title}: {childGroup.index + 1} ({childGroup.key} & {childGroup.syncId})
                 </h3>
 
                 <button
