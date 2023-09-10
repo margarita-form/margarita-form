@@ -24,8 +24,8 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public key: string;
   public uid: string;
   public syncId: string = nanoid(4);
-  private _listeningToChanges = true;
   public managers: ManagerInstances;
+  private _listeningToChanges = true;
   private cache = new Map<string, unknown>();
 
   constructor(
@@ -68,6 +68,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public cleanup: ControlLike<FIELD>['cleanup'] = () => {
     Object.values(this.managers).forEach((manager) => manager.cleanup());
     this._listeningToChanges = false;
+    this.context.idStore.delete(this.uid);
   };
 
   /**
