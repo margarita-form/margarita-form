@@ -20,7 +20,20 @@ export const lifecycleFields: CustomField[] = [
       },
     ],
   },
-
+  {
+    type: 'group',
+    name: 'flat-group',
+    title: 'Level 1 flat',
+    grouping: 'flat',
+    fields: [
+      {
+        type: 'text',
+        name: 'level-2-flat-value',
+        title: 'Level 2 text (flat)',
+        initialValue: 'level-2-text-initial-flat-value',
+      },
+    ],
+  },
   {
     type: 'repeatable',
     name: 'level-1-array',
