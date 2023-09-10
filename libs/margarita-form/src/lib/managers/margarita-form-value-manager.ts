@@ -109,7 +109,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
   private _getInheritedValue() {
     if (this.control.isRoot) return undefined;
-
+    const { field, expectFlat } = this.control;
     const { value: parentValue, expectArray } = this.control.parent || {};
     if (typeof parentValue !== 'object') return undefined;
 
@@ -118,8 +118,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       if (inheritedValue !== undefined) {
         return inheritedValue;
       }
-    } else if ('key' in parentValue) {
-      const inheritedValue = _get(parentValue, ['value', this.control.name], undefined);
+    } else if (expectFlat && field.fields) {
+      const inheritedValue = field.fields.reduce((acc, field) => {
+        acc[field.name] = _get(parentValue, [field.name], undefined);
+        return acc;
+      }, {} as CommonRecord);
+
       if (inheritedValue !== undefined) {
         return inheritedValue;
       }
