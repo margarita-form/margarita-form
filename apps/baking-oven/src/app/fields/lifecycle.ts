@@ -28,6 +28,9 @@ export const lifecycleFields: CustomField[] = [
     grouping: 'array',
     // startWith: ['level-2-group', 'level-2-group', 'level-2-group'],
     startWith: 2,
+    config: {
+      addMetadata: true,
+    },
     fields: [
       {
         title: 'Level 2 group',

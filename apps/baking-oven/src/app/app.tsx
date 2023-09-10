@@ -113,8 +113,8 @@ export function App() {
     name: currentFields === recipeFields ? 'recipe' : 'website',
     fields: currentFields,
     locales: ['en', 'fi'],
-    // useStorage: 'localStorage',
-    // useSyncronization: 'broadcastChannel',
+    useStorage: 'localStorage',
+    useSyncronization: 'broadcastChannel',
     currentLocale: 'en',
     handleLocalize: {
       parent: () => {
@@ -145,8 +145,6 @@ export function App() {
     config: {
       resetFormOnFieldChanges: shouldReset,
       handleSuccesfullSubmit: 'enable',
-      addMetadataToArrays: 'flat',
-      // detectAndRemoveMetadataForArrays: false,
     },
   });
 
@@ -336,7 +334,7 @@ const FormField = ({ control }: FormFieldProps) => {
             return (
               <div className="step-container" key={childGroup.uid}>
                 <h3>
-                  {childGroup.field.title}: {childGroup.index + 1} ({childGroup.key} & {childGroup.syncId})
+                  {childGroup.field.title}: {childGroup.index + 1} ({childGroup.key} & {childGroup.uid})
                 </h3>
 
                 <button
