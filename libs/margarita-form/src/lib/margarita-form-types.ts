@@ -145,7 +145,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 
   cleanup(): void;
   resubscribe(): void;
-  updateSyncId(syncId?: string): void;
+  updateSyncId(): void;
   updateKey(): void;
   get root(): MFC;
   get isRoot(): boolean;
@@ -157,6 +157,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get i18n(): FIELD['i18n'];
   get name(): FIELD['name'];
   get index(): number;
+  get valueHash(): string;
   get grouping(): MargaritaFormGroupings;
   get expectArray(): boolean;
   get expectFlat(): boolean;

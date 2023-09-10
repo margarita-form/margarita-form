@@ -60,8 +60,8 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     this._listeningToChanges = true;
   };
 
-  public updateSyncId: ControlLike<FIELD>['updateSyncId'] = (syncId = nanoid(4)) => {
-    this.syncId = syncId;
+  public updateSyncId: ControlLike<FIELD>['updateSyncId'] = () => {
+    this.syncId = nanoid(4);
   };
 
   public updateKey: ControlLike<FIELD>['updateKey'] = () => {
@@ -149,6 +149,19 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
     const { initialIndex = -1 } = this.context;
     return initialIndex;
+  }
+
+  public get valueHash(): ControlLike<FIELD>['valueHash'] {
+    try {
+      const map = {
+        key: this.key,
+        value: this.value,
+      };
+      return toHash(map);
+    } catch (error) {
+      console.log('Could not create valueHash!', { error });
+      return 'value-hash-error';
+    }
   }
 
   /**
