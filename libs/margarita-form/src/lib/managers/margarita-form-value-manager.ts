@@ -260,21 +260,35 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           const emit = true;
           const patch = false;
 
-          control.managers.value.updateValue(value, dirty, emit, patch, false, true);
-        } else {
-          const resolveFieldIdentifier = () => {
-            if (!isArray) return key;
-            if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
-            if ('_name' in (value as CommonRecord)) return (value as CommonRecord)['_name'] as string;
-            return 0;
-          };
-
-          const fieldIdentifier = resolveFieldIdentifier();
-
-          this.control.managers.controls.appendRepeatingControl(fieldIdentifier, {
-            initialValue: value,
-          });
+          return control.managers.value.updateValue(value, dirty, emit, patch, false, true);
         }
+
+        const childIsFlat = this.control.controls.some((child) => child.expectFlat);
+
+        if (childIsFlat) {
+          const childControl = this.control.controls.flatMap((control) => control.controls).find((child) => child.name === key);
+
+          if (childControl) {
+            const dirty = false;
+            const emit = true;
+            const patch = false;
+
+            return childControl.managers.value.updateValue(value, dirty, emit, patch, false, true);
+          }
+        }
+
+        const resolveFieldIdentifier = () => {
+          if (!isArray) return key;
+          if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
+          if ('_name' in (value as CommonRecord)) return (value as CommonRecord)['_name'] as string;
+          return 0;
+        };
+
+        const fieldIdentifier = resolveFieldIdentifier();
+
+        this.control.managers.controls.appendRepeatingControl(fieldIdentifier, {
+          initialValue: value,
+        });
       });
     }
   }
@@ -288,29 +302,20 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public _syncDownstreamValue(childControl: MFC, setAsDirty = true, emitEvent = true) {
-    const { expectArray, expectGroup, expectFlat, isRoot } = this.control;
-    // console.debug('Sync Downstream value:', this.control.name, expectArray);
+    // console.debug('Sync Downstream value:', this.control.name);
+    const { expectArray, expectGroup, isRoot } = this.control;
+    const { expectFlat } = childControl;
     this.control.updateKey();
 
     const exists = valueExists(childControl.value);
     const value = exists ? childControl.value : this.getUndefinedValue(childControl);
     const key = expectArray ? childControl.index : childControl.name;
 
-    // if (parentIsArray) {
-    //   if (this._value.value) this._value.value[key] = value;
-    //   else this._value.value = { [key]: value };
-    //   if (expectArray) this._value.value = Object.values(this._value);
-    // } else {
-    //   if (this._value) this._value[key] = value;
-    //   else this._value = { [key]: value };
-    //   if (expectArray) this._value = Object.values(this._value);
-    // }
-
-    if (this._value) this._value[key] = value;
+    if (this._value && expectFlat) this._value = { ...this._value, ...value };
+    else if (this._value) this._value[key] = value;
     else if (expectGroup) this._value = { [key]: value };
     else if (expectArray) this._value = [value];
-    // else if (expectFlat) this._value = [value];
-    // if (expectArray) this._value = Object.values(this._value);
+    else if (expectFlat) this._value = { ...value };
 
     if (setAsDirty) this.control.updateStateValue('dirty', true);
     if (emitEvent) this._emitChanges();
