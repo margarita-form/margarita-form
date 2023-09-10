@@ -3,7 +3,7 @@ import { MFC, MFF, MargaritaFormConfig } from '../margarita-form-types';
 
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
-  addMetadataToArrays: false,
+  addMetadata: false,
   allowUnresolvedArrayChildNames: false,
   detectAndRemoveMetadataForArrays: false,
   allowConcurrentSubmits: false,

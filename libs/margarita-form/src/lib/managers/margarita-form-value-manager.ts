@@ -38,7 +38,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         );
 
         if (subscription && subscription.observable) {
-          this.createSubscription(subscription.observable, subscription.handler);
+          this.createSubscription(subscription.observable.pipe(debounceTime(500), skip(1)), subscription.handler);
         }
       } catch (error) {
         console.error(`Could not syncronize value!`, { control: this.control, error });
@@ -50,7 +50,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         const observable = storage.getStorageValueListener<CONTROL['value']>();
 
         if (observable) {
-          this.createSubscription(observable, (value) => this.updateValue(value, false, true, false));
+          this.createSubscription(observable.pipe(debounceTime(500), skip(1)), (value) => this.updateValue(value, false, true, false));
         }
       } catch (error) {
         console.error(`Could not subscribe to storage changes!`, { control: this.control, error });
@@ -59,20 +59,28 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   private _setValue(value: unknown) {
+    // Add metadata to value
+    const _addMetadata = () => {
+      const { addMetadata } = this.control.config;
+      if (addMetadata && typeof value === 'object' && !Array.isArray(value)) {
+        return {
+          _key: this.control.key,
+          _name: this.control.name,
+          _uid: this.control.uid,
+          ...value,
+        };
+      }
+      return value;
+    };
+
+    const _valueWithMetadata = _addMetadata();
+
     // Transform value with custom transformer script
     const { transformer } = this.control.field;
-    const _value = transformer ? transformer({ value, control: this.control }) : value;
+    const _value = transformer ? transformer({ value: _valueWithMetadata, control: this.control }) : _valueWithMetadata;
 
-    if (!this.control.isRoot && this.control.parent.expectArray) {
-      // this._value = {
-      //   value,
-      //   key: this.control.key,
-      //   name: this.control.name,
-      // };
-      this._value = _value;
-    } else {
-      this._value = _value;
-    }
+    // Set value
+    this._value = _value;
   }
 
   private _emitChanges() {
@@ -116,6 +124,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
   private _getStorageValue() {
     const { storage } = this.control.extensions;
+
     if (!storage.enabled) return undefined;
     const storageValue = storage.getStorageValue();
     return storageValue;
@@ -132,22 +141,18 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     return this._value;
   }
 
-  /**
-   * Set value of the control
-   * @param value value to set
-   * @param setAsDirty update dirty state to true
-   */
-  public updateValue(value: unknown, setAsDirty = true, emitEvent = true, patch = false, updateParent = true, updateChildren = true) {
-    this._setValue(value);
-    this._syncValue(setAsDirty, emitEvent, patch, updateParent, updateChildren);
-  }
-
-  public refreshSync(origin = true) {
-    console.debug('Refresh sync:', this.control.name, this.control.key);
+  public refreshSync(origin = true, initial = true) {
+    // console.debug('Refresh sync:', this.control.name, this.control.key);
 
     // Sync children
+    const { expectArray } = this.control;
+    const valueIsArray = Array.isArray(this._value);
+    if (initial && expectArray && valueIsArray) {
+      this._syncUpstreamValue(false);
+    }
+
     this.control.controls.forEach((control) => {
-      control.managers.value.refreshSync(false);
+      control.managers.value.refreshSync(false, initial);
     });
 
     // Update key (just in case)
@@ -161,113 +166,97 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     this._emitChanges();
 
     if (!this.control.isRoot && origin) this.control.parent.managers.value._syncDownstreamValue(this.control, false, false);
+    // console.debug('Done:', this.control.name);
+  }
 
-    console.debug('Done:', this.control.name);
+  /**
+   * Set value of the control
+   * @param value value to set
+   * @param setAsDirty update dirty state to true
+   */
+  public updateValue(value: unknown, setAsDirty = true, emitEvent = true, patch = false, updateParent = true, updateChildren = true) {
+    this._setValue(value);
+    this._syncValue(setAsDirty, emitEvent, patch, updateParent, updateChildren);
   }
 
   public async _syncValue(setAsDirty = true, emitEvent = true, patch = false, updateParent = false, updateChildren = false) {
-    console.debug('Sync update value:', this.control.name, this.control.key);
+    // console.debug('Sync update value:', this.control.name, this.control.key);
+
     // Step 1, create or delete changed array children
     if (this.control.expectChildControls && updateChildren) {
-      this._syncUpstreamValue();
+      this._syncUpstreamValue(patch);
     }
 
-    // Step 2, update children
-    // this.control.controls.forEach((control) => {
-    //   console.log('updateChildren', updateChildren);
-
-    //   control.managers.value._syncValue(setAsDirty, emitEvent, false, false, updateChildren);
-    // });
-
-    // Step 3, update self
+    // Step 2, update key
     this.control.updateKey();
 
-    if (!updateChildren || patch) {
-      const value = this._resolveValue();
-      this._setValue(value);
-    }
+    // Step 3, sync own value
+    const value = this._resolveValue();
+    this._setValue(value);
 
+    // Step 4, sync parent value
     if (!this.control.isRoot && updateParent) {
       this.control.parent.managers.value._syncDownstreamValue(this.control, setAsDirty, emitEvent);
     }
 
+    // Step 5, emit changes
     if (setAsDirty) this.control.updateStateValue('dirty', true);
     if (emitEvent) this._emitChanges();
-    console.debug('Done:', this.control.name);
+    // console.debug('Done:', this.control.name);
   }
 
-  public _syncUpstreamValue() {
+  public _syncUpstreamValue(patch: boolean) {
     const currentValue = this._value;
+    const { hasControls, expectArray, controls } = this.control;
 
-    console.debug('Sync upstream value:', currentValue);
-
-    if (typeof currentValue === 'object') {
-      // const isArray = Array.isArray(value);
-      const { addMetadataToArrays, detectAndRemoveMetadataForArrays, allowUnresolvedArrayChildNames } = this.control.config;
-      const checkMetadata = addMetadataToArrays || detectAndRemoveMetadataForArrays;
-
-      const parseValue = (currentValue: any) => {
-        try {
-          if (addMetadataToArrays === 'flat') {
-            const { key, name, ...rest } = currentValue;
-            if (Object.keys(rest).length === 0) return { key, name, value: undefined };
-            return { key, name, value: rest };
-          }
-
-          if (checkMetadata) {
-            const { key, name, ...rest } = currentValue;
-            if ('value' in rest) return { key, name, value: rest.value };
-            if (Object.keys(rest).length > 0) return { key, name, value: rest };
-            return { key, name, value: undefined };
-          }
-        } catch (error) {
-          console.error('Parse value error:', error);
+    // console.debug('Sync upstream value:', currentValue);
+    const exists = valueExists(currentValue);
+    if (!exists && hasControls) {
+      // Clear or remove all controls
+      const copy = [...controls];
+      copy.forEach((control) => {
+        if (expectArray) {
+          control.parent.managers.controls.removeControl(control.key, false);
+        } else {
+          control.managers.value.updateValue(undefined, true, true, false, false, true);
         }
-
-        return { value: currentValue, key: undefined };
-      };
-
-      const resolveValueAndKey = (currentValue: any) => {
-        const currentValueExists = valueExists(currentValue);
-        if (currentValueExists) return parseValue(currentValue);
-        return { value: undefined, key: undefined, name: undefined };
-      };
-
+      });
+    } else if (typeof currentValue === 'object') {
       const isArray = Array.isArray(currentValue);
+      const isMap = !isArray && typeof currentValue === 'object';
 
-      if (isArray) {
-        console.debug('Removals for:', this.control.name, this.control.key);
-
-        this.control.controls.forEach((control, index) => {
-          const exists = valueExists(currentValue[index]);
-          // if (!exists) return control.remove();
-          if (!exists) {
-            console.debug('Remove control:', { index, control: control.name, key: control.key });
+      // Update or delete controls
+      const copy = [...controls];
+      copy.forEach((control, index) => {
+        if (isArray) {
+          const value = currentValue[index];
+          const exists = valueExists(value);
+          if (!exists && isArray) {
             control.parent.managers.controls.removeControl(control.key, false);
           }
-        });
-      }
-
-      console.debug('Additions and updates for:', this.control.name, this.control.key);
+        } else if (isMap) {
+          const value = (currentValue as CommonRecord)[control.name];
+          const exists = valueExists(value);
+          if (!exists && !patch) {
+            control.managers.value.updateValue(undefined, true, true, false, false, true);
+          }
+        }
+      });
 
       Object.entries(currentValue).forEach(([key, value]) => {
+        if (['_key', '_name', '_uid'].includes(key)) return;
         const control = this.control.getControl(key);
         if (control) {
-          console.debug('Update control:', { key, value });
-
           const dirty = false;
           const emit = true;
           const patch = false;
 
           control.managers.value.updateValue(value, dirty, emit, patch, false, true);
         } else {
-          console.debug('Create control:', { key, value });
-          // For arrays key is number, for objects key is string
-
           const resolveFieldIdentifier = () => {
             if (!isArray) return key;
-            if (!value) return 0;
-            if (addMetadataToArrays && 'key' in (value as CommonRecord)) return (value as CommonRecord)['key'] as string;
+            if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
+            if ('_name' in (value as CommonRecord)) return (value as CommonRecord)['_name'] as string;
             return 0;
           };
 
@@ -290,11 +279,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public _syncDownstreamValue(childControl: MFC, setAsDirty = true, emitEvent = true) {
-    console.debug('Sync Downstream value:', this.control.name);
-
-    this.control.updateKey();
     const { expectArray, expectGroup, expectFlat, isRoot } = this.control;
-    // const parentIsArray = !isRoot && this.control.parent.expectArray;
+    // console.debug('Sync Downstream value:', this.control.name, expectArray);
+    this.control.updateKey();
+
     const exists = valueExists(childControl.value);
     const value = exists ? childControl.value : this.getUndefinedValue(childControl);
     const key = expectArray ? childControl.index : childControl.name;
@@ -332,7 +320,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       const key = expectArray ? child.index : child.name;
       if (!exists) {
         const val = this.getUndefinedValue(child);
-        acc.push([key, val]);
+        if (val !== undefined) acc.push([key, val]);
       } else if (child.value && child.expectFlat && typeof child.value === 'object') {
         const childEntries = Object.entries(child.value);
         acc.push(...childEntries);
@@ -345,197 +333,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const obj = Object.fromEntries(entries);
     if (expectArray) return Object.values(obj);
     return obj;
-  }
-
-  private _resolveValueOG(): CONTROL['value'] {
-    if (this.control.expectChildControls) {
-      if (!this.control.hasControls) return undefined;
-      if (this.control.expectArray) {
-        return this.control.activeControls.reduce((acc, control) => {
-          if (control.expectFlat) throw { message: 'Flat controls cannot be added to array!', control };
-          if (control.config.addMetadataToArrays) {
-            if (control.config.addMetadataToArrays === 'flat') {
-              const isGroup = control.expectGroup;
-              if (!isGroup)
-                throw 'To add metadata to array where child is not an object, change "addMetadataToArrays" to true instead of "flat"!';
-
-              const value = valueExists(control.value) ? (control.value as CommonRecord) : {};
-              if (typeof value !== 'object') throw 'Cannot add flat metadata to array where child is not an object!';
-              if ('name' in value) throw 'Cannot add flat metadata to array where child has "name" property!';
-              if ('key' in value) throw 'Cannot add flat metadata to array where child has "key" property!';
-
-              acc.push({
-                ...value,
-                key: control.key,
-                name: control.name,
-              });
-              return acc;
-            }
-            acc.push({
-              value: control.value,
-              key: control.key,
-              name: control.name,
-            });
-            return acc;
-          }
-          acc.push(control.value);
-          return acc;
-        }, [] as CONTROL['value']);
-      }
-
-      const entries = this.control.activeControls.reduce((acc, control) => {
-        const exists = valueExists(control.value);
-        if (!exists) acc.push([control.name, undefined]);
-        else if (control.value && control.expectFlat && typeof control.value === 'object') {
-          const childEntries = Object.entries(control.value);
-          acc.push(...childEntries);
-        } else {
-          acc.push([control.name, control.value]);
-        }
-        return acc;
-      }, [] as [string, unknown][]);
-
-      return Object.fromEntries(entries);
-    }
-    return this._value;
-  }
-
-  /**
-   * @Internal
-   */
-  public _syncParentValue(setAsDirty = true, emitEvent = true) {
-    console.trace('INVALID FUNCTION CALLED');
-    /*
-    if (!this.control.isRoot) {
-      this.control.parent.managers.value._syncCurrentValue(setAsDirty, emitEvent);
-    }
-    */
-  }
-
-  /**
-   * @Internal
-   */
-  public _syncChildValuesOG(setAsDirty = true, patch = false) {
-    const value: unknown = this._value;
-    if (this.control.expectChildControls) {
-      if (this.control.expectArray) {
-        const isArray = Array.isArray(value);
-        const { addMetadataToArrays, detectAndRemoveMetadataForArrays, allowUnresolvedArrayChildNames } = this.control.config;
-        const checkMetadata = addMetadataToArrays || detectAndRemoveMetadataForArrays;
-
-        const parseValue = (currentValue: any) => {
-          try {
-            if (addMetadataToArrays === 'flat') {
-              const { key, name, ...rest } = currentValue;
-              if (Object.keys(rest).length === 0) return { key, name, value: undefined };
-              return { key, name, value: rest };
-            }
-
-            if (checkMetadata) {
-              const { key, name, ...rest } = currentValue;
-              if ('value' in rest) return { key, name, value: rest.value };
-              if (Object.keys(rest).length > 0) return { key, name, value: rest };
-              return { key, name, value: undefined };
-            }
-          } catch (error) {
-            console.error('Parse value error:', error);
-          }
-
-          return { value: currentValue, key: undefined };
-        };
-
-        const resolveValueAndKey = (currentValue: any, control?: MFC | null) => {
-          const currentValueExists = valueExists(currentValue);
-          if (currentValueExists) return parseValue(currentValue);
-          if (control) return { value: control.value, key: undefined, name: undefined };
-          return { value: undefined, key: undefined, name: undefined };
-        };
-
-        if (isArray) {
-          value.forEach((currentValue, index) => {
-            const { value: _value, name, key } = resolveValueAndKey(currentValue);
-            const control = this.control.getControl(key) || this.control.getControl(index);
-            if (control) {
-              const isTheExpectedControl = checkMetadata && control.name === name;
-              if (isTheExpectedControl) return;
-              control.updateKey();
-              const validValue = valueExists(_value);
-              if (validValue || !patch) return control.setValue(_value, setAsDirty, false);
-            } else {
-              const couldNotResolveType = !name && this.control.fields.length > 1 && !allowUnresolvedArrayChildNames;
-
-              if (couldNotResolveType) {
-                console.warn(
-                  'Could not resolve name of array item with certainty. To be safe, provide "addMetadataToArrays: true" to the array field config. To hide this message add "allowUnresolvedArrayChildNames: true" to the array field config."',
-                  { index, value: _value, parent: this.control }
-                );
-              }
-
-              const addedControl = this.control.managers.controls.appendRepeatingControl(name, {
-                initialValue: _value,
-              });
-              addedControl.updateKey();
-            }
-          });
-        }
-
-        const controls = [...this.control.controls]; // Copy array to avoid problems caused by mutation of original array
-
-        controls.forEach((control, index) => {
-          control.managers.value._syncCurrentValue(false, false, 'children');
-          const resolveCurrentValue = () => {
-            if (isArray) {
-              if (checkMetadata) {
-                return this._value.find((val: CommonRecord) => val?.['key'] === control.key);
-              }
-              return this._value[index];
-            }
-            return this._value;
-          };
-          const currentValue: any = resolveCurrentValue();
-          const hasValue = valueExists(currentValue);
-          if (!hasValue && !patch) {
-            control.remove();
-          } else {
-            const { value: _value } = resolveValueAndKey(currentValue, control);
-            control.updateKey();
-            if (_value || !patch) control.setValue(_value, setAsDirty, false);
-          }
-        });
-      } else {
-        this._updateChildGroupValues(value, setAsDirty, patch);
-      }
-      this._syncCurrentValue(setAsDirty, true);
-    } else {
-      // this._emitChanges('parent', setAsDirty);
-    }
-  }
-
-  public _updateChildGroupValues(parentValue: unknown, setAsDirty = true, patch = false) {
-    this.control.controls.forEach((control) => {
-      if (control.expectFlat) {
-        control.managers.value._updateChildGroupValues(parentValue, setAsDirty, patch);
-      } else {
-        const updatedValue = _get(parentValue, [control.name], patch ? control.value : undefined);
-        control.setValue(updatedValue, setAsDirty);
-      }
-    });
-  }
-
-  /**
-   * @Internal
-   */
-  public _syncCurrentValue(setAsDirty = true, emitEvent = true, update: 'parent' | 'children' | 'none' = 'parent') {
-    const value = this._resolveValue();
-    this._value = value;
-    if (setAsDirty) this.control.updateStateValue('dirty', true);
-    // if (emitEvent) this._emitChanges(update, setAsDirty);
-    else if (update === 'parent') this._syncParentValue(setAsDirty, emitEvent);
-    else if (update === 'children') this._syncChildValues(setAsDirty, emitEvent);
-  }
-
-  public async _syncChildValues(setAsDirty = true, patch = false) {
-    console.trace('WRONG FUNCTION CALLED');
   }
 }
 

@@ -107,7 +107,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
 
 export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
-  addMetadataToArrays?: boolean | 'flat';
+  addMetadata?: boolean;
   allowUnresolvedArrayChildNames?: boolean;
   detectAndRemoveMetadataForArrays?: boolean;
   allowConcurrentSubmits?: boolean;

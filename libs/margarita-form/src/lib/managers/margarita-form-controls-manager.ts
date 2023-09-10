@@ -76,7 +76,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   private _emitChanges(syncValue = true) {
     this.changes.next(this._controls);
-    if (syncValue) this.control.managers.value.refreshSync();
+    if (syncValue) this.control.managers.value.refreshSync(true, false);
   }
 
   public get hasControls(): boolean {

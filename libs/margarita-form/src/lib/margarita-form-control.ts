@@ -159,7 +159,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
       };
       return toHash(map);
     } catch (error) {
-      console.log('Could not create valueHash!', { error });
+      console.warn('Could not create valueHash!', { error });
       return 'value-hash-error';
     }
   }
