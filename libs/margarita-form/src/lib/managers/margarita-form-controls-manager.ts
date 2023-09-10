@@ -58,9 +58,18 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const fieldNames = new Set(fields.map((field) => field.name));
       const hasDifferentFields = fieldNames.size > 1;
       const { addMetadata } = this.control.config;
-      if (hasDifferentFields && !addMetadata) {
+      if (hasDifferentFields) {
         const path = this.control.getPath().join('.');
-        throw `Control "${path}" has multiple different fields specified for array grouping without metadata being added to them! Please add "addMetadata" to the control config.`;
+        if (!addMetadata) {
+          throw `Control "${path}" has different fields specified for array grouping without metadata being added to them! Please add "addMetadata" to the control config.`;
+        }
+
+        const someFieldsAreNotMaps = fields.filter((field) => !field.fields || ![undefined, 'group'].includes(field.grouping));
+
+        if (someFieldsAreNotMaps.length > 0) {
+          const fieldNames = someFieldsAreNotMaps.map((field) => field.name).join(', ');
+          throw `Control "${path}" has fields (${fieldNames}) where metadata cannot be added! To fix this, only add fields to the array where child fields are expected and grouping is not array or flat.`;
+        }
       }
 
       const startFrom = this._controls.length;
