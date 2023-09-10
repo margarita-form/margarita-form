@@ -219,7 +219,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const [removed] = this._controls.splice(identifier, 1);
       this._removeCleanup(removed);
     } else {
-      const index = this._controls.findIndex((control) => [control.name, control.key].includes(identifier));
+      const index = this._controls.findIndex((control) => [control.name, control.key, control.uid].includes(identifier));
       if (index > -1) {
         const [control] = this._controls.splice(index, 1);
         this._removeCleanup(control);
