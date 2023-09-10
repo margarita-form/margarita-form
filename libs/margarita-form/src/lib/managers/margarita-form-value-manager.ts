@@ -6,6 +6,7 @@ import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
+  private initialized = false;
   private _value: CONTROL['value'] = undefined;
   public changes: BehaviorSubject<CONTROL['value']>;
 
@@ -20,33 +21,37 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
 
     this.changes = new BehaviorSubject<CONTROL['value']>(this._value);
+    this.initialized = true;
   }
 
   public override _init() {
     const { storage, syncronization } = this.control.extensions;
     const changes = this.changes.pipe(debounceTime(500), skip(1));
+    const { useStorage, useSyncronization } = this.control.field;
+    const shouldListen = useStorage || useSyncronization;
+    if (shouldListen) {
+      this.createSubscription(changes, () => {
+        if (useStorage) storage.saveStorageValue(this._value);
+        if (useSyncronization) syncronization.broadcastChange(this._value);
+      });
+    }
 
-    this.createSubscription(changes, () => {
-      if (this.control.field.useStorage) storage.saveStorageValue(this._value);
-      if (this.control.field.useSyncronization) syncronization.broadcastChange(this._value);
-    });
-
-    if (this.control.field.useSyncronization) {
+    if (useSyncronization) {
       try {
         const subscription = syncronization.subscribeToMessages<CONTROL['value']>(
-          (value) => this.updateValue(value, false, true, false),
+          (value) => this.updateValue(value, true, false),
           () => this._value
         );
 
         if (subscription && subscription.observable) {
-          this.createSubscription(subscription.observable.pipe(debounceTime(500), skip(1)), subscription.handler);
+          this.createSubscription(subscription.observable.pipe(), subscription.handler);
         }
       } catch (error) {
         console.error(`Could not syncronize value!`, { control: this.control, error });
       }
     }
 
-    if (this.control.field.useStorage) {
+    if (useStorage) {
       try {
         const observable = storage.getStorageValueListener<CONTROL['value']>();
 
@@ -65,11 +70,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       const { addMetadata } = this.control.config;
       if (addMetadata && typeof value === 'object' && !Array.isArray(value)) {
         const { key, name, uid } = this.control;
-        const { _uid } = (this._value || {}) as CommonRecord;
+        const { _uid = uid || nanoid(4) } = (this._value || {}) as CommonRecord;
         return {
           _key: key,
           _name: name,
-          _uid: _uid || uid || nanoid(4),
+          _uid: _uid,
           ...value,
         };
       }
@@ -84,6 +89,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     // Set value
     this._value = _value;
+    if (this.initialized) this.control.updateUid();
   }
 
   private _emitChanges() {
