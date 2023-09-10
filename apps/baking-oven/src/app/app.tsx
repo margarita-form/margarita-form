@@ -91,9 +91,12 @@ export interface CustomFieldBase {
   options?: { label: string; value: string }[];
 }
 
-export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField, I18NContent> {}
+const locales = ['en', 'fi'] as const;
+type Locales = (typeof locales)[number];
 
-export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, I18NContent> {
+export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField, Locales, I18NContent> {}
+
+export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, Locales, I18NContent> {
   // name: string ;
 }
 
@@ -101,7 +104,7 @@ export type CustomField = StepsField | OtherField;
 
 type FormValue = Record<string, unknown>;
 
-type RootField = MargaritaFormField<FormValue, CustomField>;
+type RootField = MargaritaFormField<FormValue, CustomField, Locales>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
@@ -110,10 +113,10 @@ export function App() {
 
   const form = useMargaritaForm<RootField>({
     ...currentFields,
+    localize: true,
     locales: ['en', 'fi'],
     useStorage: 'localStorage',
     useSyncronization: 'broadcastChannel',
-    currentLocale: 'en',
     handleLocalize: {
       parent: () => {
         return {
@@ -230,7 +233,7 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
-          {control.i18n && <p>{control.i18n.description}</p>}
+          {control.i18n?.description && <p>{control.i18n.description}</p>}
           <input id={uid} name={uid} type="text" ref={control.setRef} />
           <ControlError control={control} />
         </div>
@@ -240,7 +243,7 @@ const FormField = ({ control }: FormFieldProps) => {
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
-          {control.i18n?.description && <p>{control.i18n.description}</p>}
+          {control.i18n && <p>{control.i18n.description}</p>}
           <textarea id={uid} name={uid} ref={control.setRef} />
           <ControlError control={control} />
         </div>

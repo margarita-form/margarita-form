@@ -88,6 +88,8 @@ export type ChildControl<
 /**
  * Transform i18n object to a record of where each value is mapped into a record of locales.
  */
-export type I18NValues<I18NType extends object> = keyof I18NType extends never
-  ? undefined
-  : Record<keyof I18NType, Record<string, I18NType[keyof I18NType]>>;
+export type I18NField<LOCALES extends string, I18NType extends object> = {
+  [K in keyof I18NType]: {
+    [L in LOCALES]: I18NType[K];
+  };
+};

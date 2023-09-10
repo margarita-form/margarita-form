@@ -33,13 +33,13 @@ import {
   ControlIdentifier,
   DeepControlIdentifier,
   ChildControl,
-  I18NValues,
+  I18NField,
 } from './typings/helper-types';
 import { OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
-export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N extends object = Record<string, any>>
+export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES extends string = never, I18N extends object = never>
   extends Partial<UserDefinedStates> {
   name: string;
   fields?: EXTENDS[];
@@ -62,16 +62,18 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N extends
   onStateChanges?: MargaritaFormResolver;
   onChildControlChanges?: MargaritaFormResolver;
   handleSubmit?: string | MargaritaFormSubmitHandler<MFF<VALUE, EXTENDS>> | MargaritaFormSubmitHandlers<MFF<VALUE, EXTENDS>>;
-  locales?: string[];
-  localize?: boolean;
+  locales?: Readonly<LOCALES[]>;
+  localize?: LOCALES extends never ? undefined : boolean;
+  currentLocale?: LOCALES extends never ? undefined : LOCALES;
   wasLocalized?: boolean;
   isLocaleField?: boolean;
-  currentLocale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
-  i18n?: I18NValues<I18N>;
+  i18n?: I18NField<LOCALES, I18N>;
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
+  __value?: VALUE;
+  __i18n?: I18N;
 }
 
 export interface UserDefinedStates<TYPE = MargaritaFormFieldState> {
@@ -155,9 +157,9 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get parent(): MFC;
   get config(): MargaritaFormConfig;
   get extensions(): MargaritaFormExtensions;
-  get locales(): FIELD['locales'];
+  get locales(): Exclude<FIELD['locales'], undefined>;
   get currentLocale(): FIELD['locales'] extends string[] ? FIELD['locales'][number] : undefined;
-  get i18n(): FIELD['i18n'];
+  get i18n(): FIELD['__i18n'];
   get name(): FIELD['name'];
   get index(): number;
   get valueHash(): string;
@@ -265,7 +267,12 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 // Shorthands
 
 /** Shorthand for {@link MargaritaFormField}  */
-export type MFF<VALUE = any, EXTENDS = any> = MargaritaFormField<VALUE, EXTENDS>;
+export type MFF<VALUE = any, EXTENDS = any, LOCALES extends string = string, I18N extends object = any> = MargaritaFormField<
+  VALUE,
+  EXTENDS,
+  LOCALES,
+  I18N
+>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<FIELD extends MFF = MFF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
