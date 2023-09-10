@@ -69,7 +69,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         return {
           _key: key,
           _name: name,
-          _uid: _uid || uid || nanoid(),
+          _uid: _uid || uid || nanoid(4),
           ...value,
         };
       }
