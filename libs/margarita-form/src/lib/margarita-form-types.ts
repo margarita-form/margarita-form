@@ -33,12 +33,14 @@ import {
   ControlIdentifier,
   DeepControlIdentifier,
   ChildControl,
+  I18NValues,
 } from './typings/helper-types';
 import { OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
-export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N = Record<string, any>> extends Partial<UserDefinedStates> {
+export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N extends object = Record<string, any>>
+  extends Partial<UserDefinedStates> {
   name: string;
   fields?: EXTENDS[];
   grouping?: MargaritaFormGroupings;
@@ -66,7 +68,7 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, I18N = Recor
   isLocaleField?: boolean;
   currentLocale?: string;
   handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
-  i18n?: I18N;
+  i18n?: I18NValues<I18N>;
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
