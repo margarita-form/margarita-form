@@ -3,6 +3,7 @@ import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
+import { nanoid } from 'nanoid';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _value: CONTROL['value'] = undefined;
@@ -63,10 +64,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const _addMetadata = () => {
       const { addMetadata } = this.control.config;
       if (addMetadata && typeof value === 'object' && !Array.isArray(value)) {
+        const { key, name, uid } = this.control;
+        const { _uid } = (this._value || {}) as CommonRecord;
         return {
-          _key: this.control.key,
-          _name: this.control.name,
-          _uid: this.control.uid,
+          _key: key,
+          _name: name,
+          _uid: _uid || uid || nanoid(),
           ...value,
         };
       }
@@ -165,7 +168,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     // Emit initial value
     this._emitChanges();
 
-    if (!this.control.isRoot && origin) this.control.parent.managers.value._syncDownstreamValue(this.control, false, false);
+    if (!this.control.isRoot && origin) this.control.parent.managers.value._syncDownstreamValue(this.control, false, true);
     // console.debug('Done:', this.control.name);
   }
 

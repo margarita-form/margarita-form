@@ -22,18 +22,38 @@ import { MargaritaFormControlManagers } from './managers/margarita-form-default-
 
 export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
   public key: string;
-  public uid: string = nanoid(4);
+  public uid: string;
   public syncId: string = nanoid(4);
   private _listeningToChanges = true;
   public managers: ManagerInstances;
   private cache = new Map<string, unknown>();
 
-  constructor(public field: FIELD, public context: MargaritaFormControlContext = {}) {
+  constructor(
+    public field: FIELD,
+    public context: MargaritaFormControlContext = {
+      idStore: new Set<string>(),
+    }
+  ) {
     // console.debug('Creating control:', field.name, { field });
     this.key = this._generateKey();
     this.managers = createManagers<typeof this>(this);
     if (field.onCreate) field.onCreate({ control: this });
+    this.uid = this._resolveUid();
   }
+
+  private _resolveUid = (forceNew = false): string => {
+    if (!forceNew && typeof this.value === 'object') {
+      if ('_uid' in this.value) {
+        const uid = this.value._uid as string;
+        if (this.context.idStore.has(uid)) return this._resolveUid(true);
+        this.context.idStore.add(uid);
+        return uid;
+      }
+    }
+    const uid = nanoid(4);
+    this.context.idStore.add(uid);
+    return uid;
+  };
 
   private _generateKey = (): string => {
     // console.debug('Generating key for control:', this.field.name);

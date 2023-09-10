@@ -8,6 +8,7 @@ export interface MargaritaFormControlContext {
   root?: MF | MFC;
   parent?: MF | MFC;
   initialIndex?: number;
+  idStore: Set<string>;
 }
 
 export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC, PARAMS = any> {

@@ -55,6 +55,14 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
     if (this.control.expectArray) {
       if (!fields) throw 'No fields provided for array grouping!';
+      const fieldNames = new Set(fields.map((field) => field.name));
+      const hasDifferentFields = fieldNames.size > 1;
+      const { addMetadata } = this.control.config;
+      if (hasDifferentFields && !addMetadata) {
+        const path = this.control.getPath().join('.');
+        throw `Control "${path}" has multiple different fields specified for array grouping without metadata being added to them! Please add "addMetadata" to the control config.`;
+      }
+
       const startFrom = this._controls.length;
       const shouldBuildArray = resetControls || startFrom <= 0;
       if (shouldBuildArray && !this.control.value) {
@@ -62,6 +70,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
         const startWithArray = Array.isArray(startWith)
           ? startWith.map((name) => fields.find((field: MFF) => field.name === name))
           : Array.from({ length: startWith }, () => fields[0]);
+
         startWithArray.forEach((field) => {
           if (!field) throw 'Invalid field provided for array grouping!';
           this.addControl(field, resetControls, false);
@@ -185,6 +194,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       parent: this.control,
       root: this.control.root,
       initialIndex: this._controls.length,
+      idStore: this.control.context.idStore,
     });
 
     return this.appendControl(control as any, resetControl, emit);
