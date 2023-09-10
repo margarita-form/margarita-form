@@ -159,7 +159,7 @@ describe('margaritaForm', () => {
   it('#5 Create two level schema with first level being an "array". Starting with 0 children.', () => {
     const repeat0 = { ...arrayField, startWith: 0 };
     const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [repeat0] });
-    expect(form.value).toHaveProperty([arrayField.name], undefined);
+    expect(form.value).not.toHaveProperty([arrayField.name]);
     form.cleanup();
   });
 
@@ -188,7 +188,7 @@ describe('margaritaForm', () => {
     const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [commonField, uncommonField, groupField] });
     form.setValue({ [commonField.name]: value });
     expect(form.value).toHaveProperty([commonField.name], value);
-    expect(form.value).toHaveProperty([uncommonField.name], undefined);
+    expect(form.value).not.toHaveProperty([uncommonField.name]);
     form.cleanup();
   });
 
@@ -255,7 +255,7 @@ describe('margaritaForm', () => {
     form.patchValue({ [groupField.name]: { [commonField.name]: value } });
     expect(form.value).toHaveProperty([uncommonField.name], uncommonField.initialValue);
     expect(form.value).toHaveProperty([groupField.name, commonField.name], value);
-    expect(form.value).toHaveProperty([groupField.name, uncommonField.name], undefined);
+    expect(form.value).not.toHaveProperty([groupField.name, uncommonField.name]);
     form.cleanup();
   });
 
@@ -267,8 +267,8 @@ describe('margaritaForm', () => {
     form.addControl({ ...arrayField, startWith: 3 });
 
     expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
-    expect(form.value).toHaveProperty([undefinedField.name], undefined);
     expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], fromParentValue);
+    expect(form.value).not.toHaveProperty([undefinedField.name]);
 
     form.getOrAddControl({ ...commonField, initialValue: 'Should not be this value!' });
     expect(form.value).toHaveProperty([commonField.name], commonField.initialValue);
