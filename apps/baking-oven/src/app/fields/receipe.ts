@@ -1,6 +1,6 @@
 import { CustomField } from '../app';
 
-export const recipeFields: CustomField[] = [
+const recipeFields: CustomField[] = [
   {
     type: 'text',
     name: 'title',
@@ -28,6 +28,7 @@ export const recipeFields: CustomField[] = [
     title: 'Steps how to make the recipe',
     grouping: 'array',
     startWith: ['note', 'step', 'step'],
+    config: { addMetadata: true },
     fields: [
       {
         title: 'Step',
@@ -63,10 +64,17 @@ export const recipeFields: CustomField[] = [
       {
         name: 'note',
         title: 'Note',
-        type: 'textarea',
-        validation: {
-          required: true,
-        },
+        type: 'group',
+        fields: [
+          {
+            name: 'text',
+            title: 'Text',
+            type: 'textarea',
+            validation: {
+              required: true,
+            },
+          },
+        ],
       },
     ],
   },
@@ -129,3 +137,8 @@ export const recipeFields: CustomField[] = [
     initialValue: true,
   },
 ];
+
+export const recipeConfig = {
+  name: 'recipe',
+  fields: recipeFields,
+};

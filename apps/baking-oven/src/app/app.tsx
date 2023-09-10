@@ -1,12 +1,11 @@
 import styled from 'styled-components';
 import { useMargaritaForm, MargaritaFormField, Form, MFC } from '@margarita-form/react';
 import { useState } from 'react';
-import { recipeFields } from './fields/receipe';
-import { websiteFields } from './fields/website';
+import { recipeConfig } from './fields/receipe';
+import { websiteConfig } from './fields/website';
 import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
 import { ControlError } from './components/error';
-import { lifecycleFields } from './fields/lifecycle';
 
 registerManager('custom', CustomManager);
 
@@ -106,12 +105,11 @@ type RootField = MargaritaFormField<FormValue, CustomField>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(lifecycleFields);
+  const [currentFields, setCurrentFields] = useState(recipeConfig);
   const [shouldReset, setShouldReset] = useState(true);
 
   const form = useMargaritaForm<RootField>({
-    name: currentFields === recipeFields ? 'recipe' : 'website',
-    fields: currentFields,
+    ...currentFields,
     locales: ['en', 'fi'],
     useStorage: 'localStorage',
     useSyncronization: 'broadcastChannel',
@@ -179,7 +177,7 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setCurrentFields(recipeFields);
+                setCurrentFields(recipeConfig);
               }}
             >
               Recipe fields
@@ -187,7 +185,7 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setCurrentFields(websiteFields);
+                setCurrentFields(websiteConfig);
               }}
             >
               Website fields

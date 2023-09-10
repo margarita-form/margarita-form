@@ -1,6 +1,6 @@
 import { CustomField } from '../app';
 
-export const websiteFields: CustomField[] = [
+const websiteFields: CustomField[] = [
   {
     type: 'text',
     name: 'title',
@@ -50,3 +50,8 @@ export const websiteFields: CustomField[] = [
     },
   },
 ];
+
+export const websiteConfig = {
+  name: 'Website',
+  fields: websiteFields,
+};
