@@ -146,6 +146,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   cleanup(): void;
   resubscribe(): void;
   updateSyncId(): void;
+  updateUid(): void;
   updateKey(): void;
   get root(): MFC;
   get isRoot(): boolean;
