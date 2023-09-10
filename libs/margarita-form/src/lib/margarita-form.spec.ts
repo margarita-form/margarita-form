@@ -1,6 +1,6 @@
-import { debounceTime, firstValueFrom, map } from 'rxjs';
+import { Observable, debounceTime, firstValueFrom, map } from 'rxjs';
 import { createMargaritaForm } from './create-margarita-form';
-import { MFC, MFF, MargaritaFormField, MargaritaFormFieldContext, StorageLike } from './margarita-form-types';
+import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormFieldContext, StorageLike } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 
 const fieldNameInitialValue = 'Hello world';
@@ -357,8 +357,9 @@ describe('margaritaForm', () => {
     expect(commonControlsPath[2]).toBe(commonControl);
 
     const arrayStringPath = firstArrayControl.getPath('default');
+
     expect(arrayStringPath[1]).toBe(arrayField.name);
-    expect(arrayStringPath[2]).toBe(0);
+    expect(arrayStringPath[2]).toBe(`0:${groupControl.name}`);
     expect(arrayStringPath[3]).toBe(commonControl.name);
 
     form.cleanup();
@@ -655,34 +656,55 @@ describe('margaritaForm', () => {
 
   const storageValue = 'storage-value';
 
-  const ValueStorage: StorageLike & any = {
-    value: null,
-    getItem: () => (ValueStorage.value ? { [commonField.name]: ValueStorage.value } : null),
-    setItem: (key: string, value: unknown) => {
-      ValueStorage.value = value;
-    },
-    removeItem: () => {
-      ValueStorage.value = null;
-    },
-  };
+  class ValueStorage implements StorageLike {
+    public value: null | CommonRecord = null;
+
+    constructor() {
+      //
+    }
+
+    getItem(key: string) {
+      if (!this.value || !this.value[key]) return null;
+      return this.value[key];
+    }
+
+    public setItem(key: string, value: any): void {
+      const current = this.value || {};
+      this.value = { ...current, [key]: value };
+    }
+    public removeItem(key: string): void {
+      this.value = { ...this.value, [key]: undefined };
+    }
+
+    public listenToChanges(key: string): Observable<any> {
+      return new Observable((subscriber) => {
+        const value = this.getItem(key);
+        return subscriber.next(value);
+      });
+    }
+  }
+
+  const storage = new ValueStorage();
 
   it('#26 Check that storages work corretly', async () => {
+    const formName = nanoid();
     const nullForm = createMargaritaForm<MFF>({
-      name: nanoid(),
+      name: formName,
       fields: [commonField],
-      useStorage: ValueStorage,
+      useStorage: storage,
     });
     const commonControlNull = nullForm.getControl([commonField.name]);
     if (!commonControlNull) throw 'No control found!';
+
     expect(commonControlNull.value).toBe(commonField.initialValue);
     nullForm.cleanup();
 
-    ValueStorage.value = storageValue;
+    storage.setItem(nullForm.key, { [commonField.name]: storageValue });
 
     const valueForm = createMargaritaForm<MFF>({
-      name: nanoid(),
+      name: formName,
       fields: [commonField],
-      useStorage: ValueStorage,
+      useStorage: storage,
     });
 
     const commonControlValue = valueForm.getControl([commonField.name]);
