@@ -5,7 +5,7 @@ import { BrowserBroadcastChannel } from './broadcasters/browser-broadcast-channe
 export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
   private source: BroadcastLike | undefined;
   public enabled = false;
-  private cache = new Map<string, any>();
+  private cache = new Map<string, string>();
 
   constructor(public control: CONTROL) {
     this.source = this._getSyncApi();
@@ -43,9 +43,10 @@ export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
     if (!this.source) return console.warn('Trying to start syncronization without a source!');
     const key = this.syncronizationKey;
     const cachedValue = this.cache.get(key);
-    const valueChanged = JSON.stringify(value) !== JSON.stringify(cachedValue);
+    const valueChanged = JSON.stringify(value) !== cachedValue;
+
     if (!valueChanged) return;
-    this.cache.set(key, value);
+    this.cache.set(key, JSON.stringify(value));
     this.source.postMessage({ key, value, uid: this.control.uid });
   }
 
@@ -69,7 +70,7 @@ export class MargaritaFormSyncronizationExtension<CONTROL extends MFC> {
         const valueChanged = JSON.stringify(message.value) !== JSON.stringify(value);
         if (valueChanged) {
           callback(message.value as DATA);
-          this.cache.set(key, message.value);
+          this.cache.set(key, JSON.stringify(message.value));
         }
       }
     };
