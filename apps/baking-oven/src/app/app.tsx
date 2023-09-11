@@ -86,7 +86,7 @@ interface I18NContent {
 }
 
 export interface CustomFieldBase {
-  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized';
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized' | 'localized-array';
   title: string;
   options?: { label: string; value: string }[];
 }
@@ -108,7 +108,7 @@ type RootField = MargaritaFormField<FormValue, CustomField, Locales>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(recipeConfig);
+  const [currentFields, setCurrentFields] = useState(websiteConfig);
   const [shouldReset, setShouldReset] = useState(true);
 
   const form = useMargaritaForm<RootField>({
@@ -291,6 +291,19 @@ const FormField = ({ control }: FormFieldProps) => {
       );
 
     case 'localized':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          <div className="locales-fields">
+            {control.controls.map((localeControl) => {
+              return <FormField key={localeControl.key} control={localeControl} />;
+            })}
+          </div>
+          <ControlError control={control} />
+        </div>
+      );
+
+    case 'localized-array':
       return (
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>

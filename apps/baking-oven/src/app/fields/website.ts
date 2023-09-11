@@ -49,6 +49,47 @@ const websiteFields: CustomField[] = [
       placeholder: 'Enter a password',
     },
   },
+  {
+    type: 'text',
+    name: 'content',
+    title: 'Page content array',
+    localize: true,
+    config: { localizationOutput: 'array' },
+    handleLocalize: {
+      parent: () => {
+        return {
+          title: 'Localized array',
+          type: 'localized-array',
+        };
+      },
+      child: ({ locale }) => {
+        return {
+          title: `Section (${locale})`,
+          type: 'group',
+        };
+      },
+    },
+    fields: [
+      {
+        name: 'sectionName',
+        title: 'Section name',
+        type: 'text',
+        initialValue: 'Section X',
+        validation: {
+          required: true,
+        },
+      },
+      {
+        name: 'sectionContent',
+        title: 'Section content',
+        type: 'textarea',
+        initialValue: 'Section content',
+        validation: {
+          required: true,
+        },
+      },
+    ],
+  },
 ];
 
 export const websiteConfig = {

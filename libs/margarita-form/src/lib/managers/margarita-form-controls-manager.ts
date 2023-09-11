@@ -1,7 +1,8 @@
 import { BehaviorSubject, filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
-import { DeepControlIdentifier, MFC, MFCA, MFCG, MFF, MargaritaFormHandleLocalize } from '../margarita-form-types';
+import { DeepControlIdentifier, MFC, MFCA, MFCG, MFF } from '../margarita-form-types';
+import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   public changes = new BehaviorSubject<MFC[]>([]);
@@ -74,7 +75,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
       const startFrom = this._controls.length;
       const shouldBuildArray = resetControls || startFrom <= 0;
-      if (shouldBuildArray && !this.control.value) {
+      if (shouldBuildArray && !Array.isArray(this.control.value)) {
         // Skip if value is already set as it determines the length of the array
         const startWithArray = Array.isArray(startWith)
           ? startWith.map((name) => fields.find((field: MFF) => field.name === name))
@@ -151,44 +152,8 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const shouldLocalize = field.localize && this.control.locales;
 
     if (shouldLocalize) {
-      const locales = this.control.locales || [];
-      const initialValue = field.initialValue && typeof field.initialValue === 'object' ? field.initialValue : undefined;
-
-      const fallbackFn = () => ({});
-      const { parent = fallbackFn, child = fallbackFn } = this.control.getFieldValue<MargaritaFormHandleLocalize<FIELD>>(
-        'handleLocalize',
-        {}
-      );
-
-      const localizedField: FIELD = {
-        ...field,
-        localize: false,
-        wasLocalized: true,
-        validation: null,
-        initialValue,
-        ...parent({ field, parent: this.control, locales }),
-        fields: locales.map((locale) => {
-          return {
-            ...field,
-            localize: false,
-            name: locale,
-            isLocaleField: true,
-            currentLocale: locale,
-            initialValue: initialValue ? undefined : field.initialValue,
-            ...child({ field, parent: this.control, locale }),
-          };
-        }),
-      };
-
-      if (!resetControl) {
-        const existingControl = this.getControl(field.name);
-        if (existingControl) {
-          existingControl.updateField(localizedField);
-          return existingControl as MFC<FIELD>;
-        }
-      }
-
-      return this.addControl(localizedField, resetControl, emit);
+      const localizedField = MargaritaFormI18NExtension.localizeField(this.control, field);
+      return this.addControl(localizedField as FIELD, resetControl, emit);
     }
 
     if (this.control.expectGroup && !resetControl) {
@@ -228,7 +193,6 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   private _removeCleanup(control: MFC) {
     if (control) {
-      // control.managers.value._syncParentValue();
       control.cleanup();
     }
   }

@@ -129,6 +129,7 @@ export interface MargaritaFormConfig {
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
   transformUndefinedToNull?: boolean;
   allowEmptyString?: boolean;
+  localizationOutput?: 'object' | 'array';
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
