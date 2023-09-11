@@ -5,7 +5,6 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
   addMetadata: false,
   allowUnresolvedArrayChildNames: false,
-  detectAndRemoveMetadataForArrays: false,
   allowConcurrentSubmits: false,
   asyncFunctionWarningTimeout: 2000,
   clearStorageOnSuccessfullSubmit: true,

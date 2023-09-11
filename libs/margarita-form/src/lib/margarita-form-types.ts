@@ -113,7 +113,6 @@ export interface MargaritaFormConfig {
   addDefaultValidators?: boolean;
   addMetadata?: boolean;
   allowUnresolvedArrayChildNames?: boolean;
-  detectAndRemoveMetadataForArrays?: boolean;
   allowConcurrentSubmits?: boolean;
   asyncFunctionWarningTimeout?: number;
   clearStorageOnSuccessfullSubmit?: boolean;
