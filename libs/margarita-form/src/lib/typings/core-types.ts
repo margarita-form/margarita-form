@@ -47,7 +47,7 @@ export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 export type MargaritaFormHandleLocalizeParentFn<FIELD> = (params: {
   field: FIELD;
   parent: MFC<MFF>;
-  locales: string[];
+  locales: readonly string[];
 }) => Partial<FIELD> | CommonRecord;
 
 export type MargaritaFormHandleLocalizeChildFn<FIELD> = (params: {

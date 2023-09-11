@@ -114,7 +114,7 @@ export function App() {
   const form = useMargaritaForm<RootField>({
     ...currentFields,
     localize: true,
-    locales: ['en', 'fi'],
+    locales,
     useStorage: 'localStorage',
     useSyncronization: 'broadcastChannel',
     handleLocalize: {

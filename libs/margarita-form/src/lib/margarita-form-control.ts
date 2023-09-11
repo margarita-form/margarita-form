@@ -144,8 +144,9 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   };
 
   public get locales(): ControlLike<FIELD>['locales'] {
-    if (this.isRoot) return this.field.locales;
-    return this.field.locales || this.parent.locales;
+    type ReturnType = ControlLike<FIELD>['locales'];
+    if (this.isRoot) return this.field.locales as ReturnType;
+    return (this.field.locales || this.parent.locales) as ReturnType;
   }
 
   public get currentLocale(): ControlLike<FIELD>['currentLocale'] {
