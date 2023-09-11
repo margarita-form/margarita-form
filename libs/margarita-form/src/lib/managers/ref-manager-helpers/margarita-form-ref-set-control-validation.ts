@@ -7,26 +7,39 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   node: MargaritaFormBaseElement<CONTROL>;
   control: CONTROL;
 }) => {
-  if (!control.config.detectInputElementValidations) return;
+  const { appendNodeValidationsToControl, appendControlValidationsToNode, resolveNodeTypeValidationsToControl } = control.config;
+  if (!appendNodeValidationsToControl && !appendControlValidationsToNode) return;
   if (!control.field.validation) control.field.validation = {};
 
   const validation = control.field.validation;
 
-  const setValidation = (key: string, params: any) => (validation[key] = params);
+  const setControlValidation = (key: string, params: any) => {
+    if (appendNodeValidationsToControl) validation[key] = params;
+  };
+  const setNodeValidation = (key: keyof typeof node, params: any) => {
+    if (appendControlValidationsToNode) (node as any)[key] = params;
+  };
 
   /* Required */
   if (!validation['required'] && node.required) {
-    setValidation('required', true);
+    setControlValidation('required', true);
+  } else if (validation['required'] && !node.required) {
+    setNodeValidation('required', true);
   }
 
   /* Pattern */
   if (!validation['pattern'] && node.pattern) {
-    setValidation('pattern', node.pattern);
+    setControlValidation('pattern', node.pattern);
+  } else if (validation['pattern'] && !node.pattern) {
+    const value = new RegExp(validation['pattern']).toString();
+    setNodeValidation('pattern', value);
   }
 
   /* By node type */
-  const inputTypes = ['email', 'tel', 'color', 'date', 'number', 'url', 'password'];
-  if (node.type && inputTypes.includes(node.type)) {
-    if (!validation[node.type]) setValidation(node.type, true);
+  if (resolveNodeTypeValidationsToControl) {
+    const inputTypes = ['email', 'tel', 'color', 'date', 'number', 'url', 'password'];
+    if (node.type && inputTypes.includes(node.type)) {
+      if (!validation[node.type]) setControlValidation(node.type, true);
+    }
   }
 };

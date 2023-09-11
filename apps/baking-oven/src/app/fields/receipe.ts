@@ -14,6 +14,7 @@ const recipeFields: CustomField[] = [
     type: 'textarea',
     name: 'description',
     title: 'Description',
+    initialValue: 'This is a recipe for a delicious meal',
     validation: {
       required: true,
     },

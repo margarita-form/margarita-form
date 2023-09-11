@@ -117,7 +117,9 @@ export interface MargaritaFormConfig {
   allowConcurrentSubmits?: boolean;
   asyncFunctionWarningTimeout?: number;
   clearStorageOnSuccessfullSubmit?: boolean;
-  detectInputElementValidations?: boolean;
+  appendNodeValidationsToControl?: boolean;
+  appendControlValidationsToNode?: boolean;
+  resolveNodeTypeValidationsToControl?: boolean;
   disableFormWhileSubmitting?: boolean;
   allowInvalidSubmit?: boolean;
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
