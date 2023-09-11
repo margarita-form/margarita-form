@@ -1,6 +1,9 @@
 # Simple workflow for testing current branch
 name: Test current branch
-on: [push, pull_request]
+on:
+  push
+  pull_request:
+    types: [opened]
 
 jobs:
   deploy:
