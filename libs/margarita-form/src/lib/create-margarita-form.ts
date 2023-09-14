@@ -15,7 +15,7 @@ export const addFormToCache = (form: MargaritaForm<any>) => {
 };
 
 export const removeFormFromCache = (name: string) => {
-  formsCache.delete(name);
+  if (formsCache.has(name)) formsCache.delete(name);
 };
 
 /**
