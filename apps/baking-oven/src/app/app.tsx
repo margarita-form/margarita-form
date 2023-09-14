@@ -6,6 +6,7 @@ import { websiteConfig } from './fields/website';
 import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
 import { ControlError } from './components/error';
+import { lifecycleConfig } from './fields/lifecycle';
 
 registerManager('custom', CustomManager);
 
@@ -108,7 +109,7 @@ type RootField = MargaritaFormField<FormValue, CustomField, Locales>;
 
 export function App() {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(websiteConfig);
+  const [currentFields, setCurrentFields] = useState(recipeConfig);
   const [shouldReset, setShouldReset] = useState(true);
 
   const form = useMargaritaForm<RootField>({
@@ -192,6 +193,14 @@ export function App() {
               }}
             >
               Website fields
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(lifecycleConfig);
+              }}
+            >
+              Lifecycle testing fields
             </button>
           </div>
 

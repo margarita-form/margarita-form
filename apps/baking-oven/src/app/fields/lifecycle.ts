@@ -1,6 +1,6 @@
 import { CustomField } from '../app';
 
-export const lifecycleFields: CustomField[] = [
+const lifecycleFields: CustomField[] = [
   {
     type: 'text',
     name: 'level-1-text',
@@ -61,3 +61,8 @@ export const lifecycleFields: CustomField[] = [
     ],
   },
 ];
+
+export const lifecycleConfig = {
+  name: 'Website',
+  fields: lifecycleFields,
+};
