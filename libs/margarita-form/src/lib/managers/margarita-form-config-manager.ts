@@ -15,7 +15,6 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   handleSuccesfullSubmit: 'disable',
   resetFormOnFieldChanges: false,
   showDebugMessages: false,
-  useCacheForForms: true,
   storageKey: 'key',
   syncronizationKey: 'key',
   allowInvalidSubmit: false,

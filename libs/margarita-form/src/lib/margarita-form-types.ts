@@ -124,7 +124,6 @@ export interface MargaritaFormConfig {
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
-  useCacheForForms?: boolean;
   storageKey?: 'key' | 'name' | GenerateKeyFunction;
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
   transformUndefinedToNull?: boolean;
