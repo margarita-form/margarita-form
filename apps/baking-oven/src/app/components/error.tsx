@@ -20,8 +20,8 @@ export const ControlError = ({ control }: ControlErrorProps) => {
 
   return (
     <ErrorWrapper>
-      {Object.values(errors).map((error) => {
-        return <span>{error as string}</span>;
+      {Object.values(errors).map((error, i) => {
+        return <span key={i}>{error as string}</span>;
       })}
     </ErrorWrapper>
   );
