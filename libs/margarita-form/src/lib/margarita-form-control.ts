@@ -19,6 +19,7 @@ import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
 import { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
+import { removeFormFromCache } from './create-margarita-form';
 
 export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
   public key: string;
@@ -71,6 +72,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     Object.values(this.managers).forEach((manager) => manager.cleanup());
     this._listeningToChanges = false;
     this.context.idStore.delete(this.uid);
+    if (this.isRoot) removeFormFromCache(this.name);
   };
 
   /**
