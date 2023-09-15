@@ -7,6 +7,7 @@ import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
 import { ControlError } from './components/error';
 import { lifecycleConfig } from './fields/lifecycle';
+import { conditionalsConfig } from './fields/conditionals';
 
 registerManager('custom', CustomManager);
 
@@ -87,7 +88,7 @@ interface I18NContent {
 }
 
 export interface CustomFieldBase {
-  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized' | 'localized-array';
+  type: 'text' | 'number' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized' | 'localized-array';
   title: string;
   options?: { label: string; value: string }[];
 }
@@ -95,11 +96,13 @@ export interface CustomFieldBase {
 const locales = ['en', 'fi'] as const;
 type Locales = (typeof locales)[number];
 
+export interface ConditionalsField extends CustomFieldBase, MargaritaFormField<unknown, GroupField, Locales, I18NContent> {}
+
+export interface GroupField extends CustomFieldBase, MargaritaFormField<unknown, CustomField, Locales, I18NContent> {}
+
 export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField, Locales, I18NContent> {}
 
-export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, Locales, I18NContent> {
-  // name: string ;
-}
+export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, Locales, I18NContent> {}
 
 export type CustomField = StepsField | OtherField;
 
@@ -202,13 +205,21 @@ export function App() {
             >
               Lifecycle testing fields
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(conditionalsConfig);
+              }}
+            >
+              Conditionals fields
+            </button>
           </div>
 
           <hr />
 
           <h2>Fields</h2>
 
-          {form.controls.map((control) => (
+          {form.activeControls.map((control) => (
             <FormField key={control.key} control={control} />
           ))}
 
@@ -238,16 +249,6 @@ const FormField = ({ control }: FormFieldProps) => {
   const uid = control.name + '-' + control.key;
 
   switch (control.field.type) {
-    case 'text':
-      return (
-        <div className="field-wrapper">
-          <label htmlFor={uid}>{control.field.title}</label>
-          {control.i18n?.description && <p>{control.i18n.description}</p>}
-          <input id={uid} name={uid} type="text" ref={control.setRef} />
-          <ControlError control={control} />
-        </div>
-      );
-
     case 'textarea':
       return (
         <div className="field-wrapper">
@@ -304,7 +305,7 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>
           <div className="locales-fields">
-            {control.controls.map((localeControl) => {
+            {control.activeControls.map((localeControl) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
@@ -317,7 +318,7 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>
           <div className="locales-fields">
-            {control.controls.map((localeControl) => {
+            {control.activeControls.map((localeControl) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
@@ -330,21 +331,11 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>
           <div className="locales-fields">
-            {control.controls.map((localeControl) => {
+            {control.activeControls.map((localeControl) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
           <ControlError control={control} />
-
-          <button
-            type="button"
-            onClick={() => {
-              const random = Math.ceil(Math.random() * 5 + 1);
-              control.setValue({ 'level-2-text': 'Random title / ' + random });
-            }}
-          >
-            Randomize value
-          </button>
         </div>
       );
 
@@ -353,7 +344,7 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper repeatable">
           <h3>{control.field.title}</h3>
 
-          {control.controls.map((childGroup) => {
+          {control.activeControls.map((childGroup) => {
             return (
               <div className="step-container" key={childGroup.uid}>
                 <h3>
@@ -371,7 +362,7 @@ const FormField = ({ control }: FormFieldProps) => {
 
                 <div className="step-fields">
                   {childGroup.expectChildControls ? (
-                    childGroup.controls.map((control) => <FormField key={control.key} control={control} />)
+                    childGroup.activeControls.map((control) => <FormField key={control.key} control={control} />)
                   ) : (
                     <FormField control={childGroup} />
                   )}
@@ -394,21 +385,20 @@ const FormField = ({ control }: FormFieldProps) => {
             );
           })}
           <ControlError control={control} />
-
-          <button
-            type="button"
-            onClick={() => {
-              const random = Math.ceil(Math.random() * 5 + 1);
-              const value = Array.from({ length: random }, (val, i: number) => ({ 'level-3-text': 'Random title / ' + (i + 1) }));
-              control.setValue(value);
-            }}
-          >
-            Randomize
-          </button>
         </div>
       );
 
     default:
+      if (['text', 'number'].includes(control.field.type)) {
+        return (
+          <div className="field-wrapper">
+            <label htmlFor={uid}>{control.field.title}</label>
+            {control.i18n?.description && <p>{control.i18n.description}</p>}
+            <input id={uid} name={uid} type={control.field.type} ref={control.setRef} />
+            <ControlError control={control} />
+          </div>
+        );
+      }
       return <p>Unknown field type: {control.field.type}</p>;
   }
 };
