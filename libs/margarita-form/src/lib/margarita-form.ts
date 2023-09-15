@@ -1,5 +1,6 @@
-import type { MFF } from './margarita-form-types';
+import type { MFC, MFF } from './margarita-form-types';
 import { MargaritaFormControl } from './margarita-form-control';
+import { startAfterInitialize } from './managers/margarita-form-create-managers';
 
 export class MargaritaForm<FIELD extends MFF = MFF> extends MargaritaFormControl<FIELD> {
   constructor(public override field: FIELD) {
@@ -13,5 +14,6 @@ export class MargaritaForm<FIELD extends MFF = MFF> extends MargaritaFormControl
     this.managers.value.refreshSync();
     // console.debug('Loopediloop done');
     // console.debug('----------');
+    startAfterInitialize(this as MFC);
   }
 }

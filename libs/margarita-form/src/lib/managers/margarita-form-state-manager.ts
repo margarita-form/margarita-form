@@ -206,7 +206,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
     });
   }
 
-  public override _init(): void {
+  public override afterInitialize(): void {
     const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
       switchMap((value) => {
         const state = fieldStateKeys.reduce((acc, key) => {

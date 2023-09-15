@@ -32,7 +32,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     }
   }
 
-  public override _init() {
+  public override onInitialize() {
     this.createSubscription(this.control.managers.field.changes.pipe(filter((field) => field !== this._buildWith)), () =>
       this.rebuild(this.control.managers.field.shouldResetControl)
     );

@@ -15,7 +15,11 @@ export class BaseManager {
   public onCleanup?: () => void;
   public onResubscribe?: () => void;
 
-  public _init() {
+  public onInitialize() {
+    this.status = 'subscribed';
+  }
+
+  public afterInitialize() {
     this.status = 'subscribed';
   }
 

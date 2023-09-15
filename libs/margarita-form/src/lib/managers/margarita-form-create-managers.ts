@@ -18,6 +18,11 @@ export const createManagers = <CONTROL extends MargaritaFormControl<MFF>>(contro
     });
     return [key, manager];
   });
-  Object.values(control.managers).forEach((manager) => manager._init());
+  Object.values(control.managers).forEach((manager) => manager.onInitialize());
   return control.managers;
+};
+
+export const startAfterInitialize = <CONTROL extends MargaritaFormControl<MFF>>(control: CONTROL) => {
+  Object.values(control.managers).forEach((manager) => manager.afterInitialize());
+  control.controls.forEach((control) => startAfterInitialize(control));
 };

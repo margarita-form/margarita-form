@@ -31,7 +31,7 @@ class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {
     this.updateConfig(control.field.config || {});
   }
 
-  public override _init(): void {
+  public override onInitialize(): void {
     this.createSubscription(this.control.managers.field.changes, (field) => {
       if (field?.config) this.updateConfig(field.config);
     });
