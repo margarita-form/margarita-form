@@ -273,7 +273,9 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
       const hasErrors = Object.keys(errors).length > 0;
       const currentPathAsString = this.control.getPath().join('.');
-      const initialAllErrors = hasErrors ? ([{ path: currentPathAsString, errors }] as MargaritaFormStateAllErrors) : [];
+      const initialAllErrors = hasErrors
+        ? ([{ path: currentPathAsString, errors, control: this.control }] as MargaritaFormStateAllErrors)
+        : [];
 
       const childErrors = children.map((child) => child.allErrors);
 

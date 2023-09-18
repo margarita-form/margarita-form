@@ -63,7 +63,7 @@ export interface MargaritaFormHandleLocalize<FIELD> {
 }
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
-export type MargaritaFormStateAllErrors = { path: string; errors: MargaritaFormStateErrors }[];
+export type MargaritaFormStateAllErrors = { path: string; errors: MargaritaFormStateErrors; control: MFC }[];
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
 export type MargaritaFormFieldState = MargaritaFormResolverOutput<boolean> | MargaritaFormResolver<boolean>;
