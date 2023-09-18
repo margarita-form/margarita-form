@@ -37,8 +37,9 @@ export type MargaritaFormValidator<PARAMS = unknown> = MargaritaFormResolver<Mar
 
 export type MargaritaFormFieldValidationsState = CommonRecord<MargaritaFormValidatorResult>;
 
-export type MargaritaFormFieldValidation = Partial<DefaultValidation> &
-  CommonRecord<NotFunction | MargaritaFormResolver<MargaritaFormValidatorResult>>;
+export type MargaritaFormFieldValidation = {
+  [key in keyof DefaultValidation]?: DefaultValidation[key] | MargaritaFormValidator;
+} & Record<string, MargaritaFormValidator | NotFunction>;
 
 export type MargaritaFormValidators = Partial<DefaultValidators> & CommonRecord<MargaritaFormValidator<any>>;
 
