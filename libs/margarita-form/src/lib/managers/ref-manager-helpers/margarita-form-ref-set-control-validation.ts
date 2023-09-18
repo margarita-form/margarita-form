@@ -24,15 +24,19 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   if (!validation['required'] && node.required) {
     setControlValidation('required', true);
   } else if (validation['required'] && !node.required) {
-    setNodeValidation('required', true);
+    if (typeof validation['required'] !== 'function') {
+      setNodeValidation('required', true);
+    }
   }
 
   /* Pattern */
   if (!validation['pattern'] && node.pattern) {
     setControlValidation('pattern', node.pattern);
   } else if (validation['pattern'] && !node.pattern) {
-    const value = new RegExp(validation['pattern']).toString();
-    setNodeValidation('pattern', value);
+    if (typeof validation['pattern'] !== 'function') {
+      const value = new RegExp(validation['pattern']).toString();
+      setNodeValidation('pattern', value);
+    }
   }
 
   /* By node type */
