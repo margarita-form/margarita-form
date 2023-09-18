@@ -296,12 +296,12 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
     const activeChangesSubscriptionObservable = this.changes.pipe(
       map((state) => state.active),
       distinctUntilChanged(),
-      skip(1)
+      skip(this.control.field.active ? 0 : 1)
     );
 
     this.createSubscription(activeChangesSubscriptionObservable, () => {
       if (!this.control.isRoot) {
-        this.control.parent.managers.value._syncValue(false, true, false);
+        this.control.parent.managers.value.refreshSync();
       }
     });
   }
@@ -342,7 +342,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
     // Validate self
     const changes = this.changes.pipe(debounceTime(5));
-    this.control.setValue(this.control.value, false, true);
+    this.control.managers.value.refreshSync(false, false);
     await firstValueFrom(changes);
 
     if (setAsTouched) this.updateState('touched', true);
