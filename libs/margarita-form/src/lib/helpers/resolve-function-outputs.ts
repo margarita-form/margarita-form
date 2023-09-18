@@ -1,15 +1,15 @@
 import { combineLatest, firstValueFrom, map, Observable, ObservableInput } from 'rxjs';
-import { MargaritaFormFieldContext, MargaritaFormResolverOutput, MargaritaFormResolvers, MFC } from '../margarita-form-types';
+import {
+  MargaritaFormFieldContext,
+  MargaritaFormResolverOutput,
+  MargaritaFormResolvers,
+  MFC,
+  ResolverParams,
+} from '../margarita-form-types';
 
 type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
 
-interface ResolverParams {
-  resolverName: string;
-  params: unknown;
-  errorMessage?: string;
-}
-
-const ResolverParamKeys = ['resolverName', 'params', 'errorMessage'];
+const ResolverParamKeys: (keyof ResolverParams)[] = ['name', 'params'];
 
 export const mapResolverEntries = <OUTPUT = unknown>({
   title,
@@ -34,10 +34,10 @@ export const mapResolverEntries = <OUTPUT = unknown>({
       return acc;
     }
 
-    const getResolver = ({ resolverName, params, errorMessage }: ResolverParams) => {
-      const resolverFn = resolvers[resolverName];
+    const getResolver = ({ name, params, ...rest }: ResolverParams) => {
+      const resolverFn = resolvers[name];
       if (typeof resolverFn === 'function') {
-        const result = resolverFn({ ...context, params, errorMessage });
+        const result = resolverFn({ ...context, params, ...rest });
         acc.push([key, result]);
         return acc;
       }
@@ -47,15 +47,16 @@ export const mapResolverEntries = <OUTPUT = unknown>({
 
     const stringConfig = typeof value === 'string' && /\$\$([^:]+):?([^:]+)?:?([^:]+)/gi.exec(value);
     if (stringConfig) {
-      const [resolverName, params, errorMessage] = stringConfig.splice(1, 3);
-      return getResolver({ resolverName: resolverName, params, errorMessage });
+      const [fullMatch, name, params, ...data] = stringConfig;
+      const rest = Object.fromEntries(data.map((item) => item.split(':')));
+      return getResolver({ name, params, ...rest });
     }
 
     const isResolverConfigObject = () => {
       const isObject = typeof value === 'object';
       if (!isObject) return null;
       const keys = Object.keys(value);
-      const hasResolverName = keys.includes('resolverName');
+      const hasResolverName = keys.includes('name');
       if (!hasResolverName) return null;
       const keysAreValid = keys.every((key) => ResolverParamKeys.includes(key));
       if (!keysAreValid) return null;
@@ -67,7 +68,7 @@ export const mapResolverEntries = <OUTPUT = unknown>({
       return getResolver(objectConfig);
     }
 
-    return getResolver({ resolverName: key, params: value });
+    return getResolver({ name: key, params: value });
   }, [] as [string, MargaritaFormResolverOutput<OUTPUT>][]);
 
   return resolveFunctionOutputs(title, context, entries);
