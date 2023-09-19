@@ -58,7 +58,7 @@ export const mapResolverEntries = <OUTPUT = unknown>({
       const keys = Object.keys(value);
       const hasResolverName = keys.includes('name');
       if (!hasResolverName) return null;
-      const keysAreValid = keys.every((key) => ResolverParamKeys.includes(key));
+      const keysAreValid = ResolverParamKeys.every((key) => keys.includes(key as string));
       if (!keysAreValid) return null;
       return value as ResolverParams;
     };
