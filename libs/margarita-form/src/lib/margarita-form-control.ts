@@ -26,6 +26,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public uid: string;
   public syncId: string = nanoid(4);
   public managers: ManagerInstances;
+  public initialized = false;
   private _listeningToChanges = true;
   private cache = new Map<string, unknown>();
 
@@ -40,6 +41,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     this.managers = createManagers<typeof this>(this);
     if (field.onCreate) field.onCreate({ control: this });
     this.uid = this._resolveUid();
+    this.initialized = true;
   }
 
   private _resolveUid = (forceNew = false): string => {

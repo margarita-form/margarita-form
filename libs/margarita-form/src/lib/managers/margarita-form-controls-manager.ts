@@ -3,6 +3,7 @@ import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFC, MFCA, MFCG, MFF } from '../margarita-form-types';
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
+import { startAfterInitialize } from './margarita-form-create-managers';
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   public changes = new BehaviorSubject<MFC[]>([]);
@@ -96,6 +97,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   private _emitChanges(syncValue = true) {
     this.changes.next(this._controls);
     if (syncValue) this.control.managers.value.refreshSync(true, false);
+    if (this.control.initialized) startAfterInitialize(this.control);
   }
 
   public get hasControls(): boolean {
