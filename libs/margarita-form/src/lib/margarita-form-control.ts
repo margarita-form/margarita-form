@@ -43,14 +43,12 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   }
 
   private _resolveUid = (forceNew = false): string => {
-    if (!forceNew && typeof this.value === 'object') {
-      if ('_uid' in this.value) {
-        const uid = this.value._uid as string;
-        if (this.uid === uid) return uid;
-        if (this.context.idStore.has(uid)) return this._resolveUid(true);
-        this.context.idStore.add(uid);
-        return uid;
-      }
+    if (!forceNew && this.value && typeof this.value === 'object' && '_uid' in this.value) {
+      const uid = this.value._uid as string;
+      if (this.uid === uid) return uid;
+      if (this.context.idStore.has(uid)) return this._resolveUid(true);
+      this.context.idStore.add(uid);
+      return uid;
     }
     if (!forceNew && this.uid) return this.uid;
     const uid = nanoid(4);
