@@ -33,7 +33,7 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   if (!validation['pattern'] && node.pattern) {
     setControlValidation('pattern', node.pattern);
   } else if (validation['pattern'] && !node.pattern) {
-    if (typeof validation['pattern'] !== 'function') {
+    if (typeof validation['pattern'] === 'string' || validation['pattern'] instanceof RegExp) {
       const value = new RegExp(validation['pattern']).toString();
       setNodeValidation('pattern', value);
     }
