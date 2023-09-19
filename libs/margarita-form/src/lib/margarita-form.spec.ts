@@ -20,16 +20,37 @@ const invalidField: MargaritaFormField<any, MFF> = {
   validation: {
     required: true,
     min: 5,
+    pattern: /\d\d/g,
+    customValidator: true,
     customMax: {
       name: 'max',
       params: 20,
       errorMessage: 'Value is way way way too high!',
+    },
+    max: async ({ value }: MargaritaFormFieldContext) => {
+      if (!value) return { valid: true };
+      if (value > 42) return { valid: false, error: 'Value must be under 42!' };
+      return { valid: true };
     },
     divisible: async ({ value }: MargaritaFormFieldContext) => {
       if (!value) return { valid: true };
       const remainderIsZero = value % 5 === 0;
       if (remainderIsZero) return { valid: true };
       return { valid: false, error: 'Value is not divisible by 5!' };
+    },
+  },
+  validators: {
+    pattern: ({ value }: MargaritaFormFieldContext) => {
+      if (!value) return { valid: true };
+      const isPattern = /\d\d/gi.test(String(value));
+      if (isPattern) return { valid: true };
+      return { valid: false, error: 'Value must have two digits!' };
+    },
+    customValidator: ({ value }: MargaritaFormFieldContext) => {
+      if (!value) return { valid: true };
+      const isPattern = /\d5/gi.test(String(value));
+      if (isPattern) return { valid: true };
+      return { valid: false, error: 'Value must end with number 5!' };
     },
   },
 };
@@ -518,25 +539,34 @@ describe('margaritaForm', () => {
 
     invalidControl.setValue(10);
     await firstValueFrom(observable);
-    expect(state.valid).toBe(true);
+    expect(state.valid).toBe(false);
 
     invalidControl.setValue(1);
     await firstValueFrom(observable);
     expect(state.valid).toBe(false);
     expect(state.errors['min']).toBe('Value is too low!');
+    expect(state.errors['pattern']).toBe('Value must have two digits!');
     expect(state.errors['divisible']).toBe('Value is not divisible by 5!');
+    expect(state.errors['customValidator']).toBe('Value must end with number 5!');
 
     invalidControl.setValue(25);
     await firstValueFrom(observable);
     expect(state.valid).toBe(false);
     expect(state.errors['customMax']).toBe('Value is way way way too high!');
+    expect(state.errors['max']).toBe(undefined);
+
+    invalidControl.setValue(55);
+    await firstValueFrom(observable);
+    expect(state.valid).toBe(false);
+    expect(state.errors['max']).toBe('Value must be under 42!');
 
     invalidControl.setValue(19);
     await firstValueFrom(observable);
-    expect(state.errors['divisible']).toBe('Value is not divisible by 5!');
     expect(state.valid).toBe(false);
+    expect(state.errors['divisible']).toBe('Value is not divisible by 5!');
+    expect(state.errors['customValidator']).toBe('Value must end with number 5!');
 
-    invalidControl.setValue(20);
+    invalidControl.setValue(15);
     await firstValueFrom(observable);
     expect(state.valid).toBe(true);
 
