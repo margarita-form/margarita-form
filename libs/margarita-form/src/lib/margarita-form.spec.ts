@@ -21,9 +21,9 @@ const invalidField: MargaritaFormField<any, MFF> = {
     required: true,
     min: 5,
     customMax: {
-      resolverName: 'max',
-      errorMessage: 'Value is way way way too high!',
+      name: 'max',
       params: 20,
+      errorMessage: 'Value is way way way too high!',
     },
     divisible: async ({ value }: MargaritaFormFieldContext) => {
       if (!value) return { valid: true };
