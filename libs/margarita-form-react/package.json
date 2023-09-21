@@ -12,7 +12,7 @@
     "url": "https://github.com/margarita-form/margarita-form/issues"
   },
   "peerDependencies": {
-    "nanoid": "^3.2.0 || 4.x",
+    "nanoid": "^3.2.0 || 4.x || 5.x",
     "react": ">=18.x",
     "rxjs": ">=7.x"
   },
