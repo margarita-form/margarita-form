@@ -15,7 +15,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
     this.enabled = !!this.source;
   }
 
-  private get storageKey(): string {
+  public get storageKey(): string {
     if (typeof this.control.config.storageKey === 'function') return this.control.config.storageKey(this.control);
     const storageKey = this.control[this.control.config.storageKey || 'key'];
     if (!storageKey) throw new Error(`Could not get storage key from control!`);

@@ -4,6 +4,7 @@ import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
+import { SearchParamsStorage } from '../extensions/storages/search-params-storage';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
   private initialized = false;
@@ -100,6 +101,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   private _getInitialValue() {
     const storageValue = this._getStorageValue();
     if (storageValue !== undefined) return storageValue;
+
+    if (this.control.config.resolveInitialValuesFromSearchParams) {
+      const { storage } = this.control.extensions;
+      const searchParamsValue = SearchParamsStorage.getItem(storage.storageKey);
+      if (searchParamsValue !== undefined) return searchParamsValue;
+    }
 
     const inheritedValue = this._getInheritedValue();
     if (inheritedValue !== undefined) return inheritedValue;
