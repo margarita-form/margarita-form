@@ -1,5 +1,6 @@
 export * from './and-or-validators';
 export * from './any-of-validator';
+export * from './case-validator';
 export * from './color-validator';
 export * from './date-validator';
 export * from './email-validator';

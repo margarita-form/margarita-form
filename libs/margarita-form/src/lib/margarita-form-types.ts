@@ -129,6 +129,7 @@ export interface MargaritaFormConfig {
   transformUndefinedToNull?: boolean;
   allowEmptyString?: boolean;
   localizationOutput?: 'object' | 'array';
+  requiredNameCase?: false | 'camel' | 'snake' | 'kebab';
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {

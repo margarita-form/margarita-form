@@ -236,9 +236,13 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
       switchMap((value) => {
         if (!this.value.validating) this.updateState('validating', true);
         const validators = this.control.validators;
+        const validation = this.control.field.validation || {};
+        if (this.control.config.requiredNameCase) {
+          validation['controlNameCase'] = this.control.config.requiredNameCase;
+        }
         return mapResolverEntries<MargaritaFormValidatorResult>({
           title: 'State',
-          from: this.control.field.validation || {},
+          from: validation,
           resolveStaticValues: false,
           resolvers: validators,
           context: {

@@ -1,7 +1,9 @@
 import {
   andValidator,
   anyOfValidator,
+  caseValidator,
   colorValidator,
+  controlNameCaseValidator,
   dateValidator,
   emailValidator,
   maxValidator,
@@ -22,11 +24,13 @@ import {
 export const defaultValidators = {
   and: andValidator(),
   anyOf: anyOfValidator(),
+  case: caseValidator(),
   color: colorValidator(),
   date: dateValidator(),
   email: emailValidator(),
   max: maxValidator(),
   min: minValidator(),
+  controlNameCase: controlNameCaseValidator(),
   number: numberValidator(),
   or: orValidator(),
   password: passwordValidator(),
