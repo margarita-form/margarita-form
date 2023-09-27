@@ -270,8 +270,8 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
 
       const valid = currentIsValid && childrenAreValid;
 
-      const errors = Object.entries(validationStates).reduce((acc, [key, { error }]) => {
-        if (error) acc[key] = error;
+      const errors = Object.entries(validationStates).reduce((acc, [key, { valid, error }]) => {
+        if (!valid && error) acc[key] = error;
         return acc;
       }, {} as MargaritaFormStateErrors);
 
