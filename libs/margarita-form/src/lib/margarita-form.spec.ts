@@ -282,7 +282,7 @@ describe('margaritaForm', () => {
 
   it('#16 Create new controls programatically', async () => {
     const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [] });
-    const changes = form.changes.pipe(debounceTime(10));
+    const changes = form.changes.pipe(debounceTime(100));
 
     form.addControl(commonField);
     form.addControl(undefinedField);
@@ -306,8 +306,6 @@ describe('margaritaForm', () => {
     if (!newAndInvalidControl) throw 'No control found!';
     newAndInvalidControl.setValue('valid-value');
     await firstValueFrom(changes);
-    console.log(form.state.allErrors);
-
     expect(form.state.valid).toBe(true);
 
     const arrayControl = form.getControl(arrayField.name);
