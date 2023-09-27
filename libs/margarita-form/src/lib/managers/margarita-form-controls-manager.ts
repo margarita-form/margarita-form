@@ -98,6 +98,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     this.changes.next(this._controls);
     if (syncValue) this.control.managers.value.refreshSync(true, false);
     if (this.control.initialized) startAfterInitialize(this.control);
+    if (syncValue && this.control.initialized) this.control.updateStateValue('dirty', true);
   }
 
   public get hasControls(): boolean {
