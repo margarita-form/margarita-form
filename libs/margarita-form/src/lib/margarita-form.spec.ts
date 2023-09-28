@@ -868,6 +868,32 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
+  it('#29 Test config overrides', () => {
+    const form = createMargaritaForm<MFF<any, MFF>>({
+      name: nanoid(),
+      fields: [
+        {
+          name: 'configTest',
+          config: {
+            addMetadata: false,
+          },
+        },
+      ],
+      config: {
+        addMetadata: true,
+        allowEmptyString: true,
+      },
+    });
+
+    const configTestControl = form.getControl(['configTest']);
+    if (!configTestControl) throw 'No control found!';
+
+    expect(form.config.addMetadata).toBe(true);
+    expect(configTestControl.config.addMetadata).toBe(false);
+    expect(configTestControl.config.allowEmptyString).toBe(true);
+    form.cleanup();
+  });
+
   /**
    * TODO: Add tests for:
    * - Arrays of controls where controls are created with "start with" parameter
