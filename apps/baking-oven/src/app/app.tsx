@@ -150,7 +150,7 @@ export function App() {
     config: {
       resetFormOnFieldChanges: shouldReset,
       handleSuccesfullSubmit: 'enable',
-      requireNameCase: 'camel',
+      requiredNameCase: 'camel',
     },
   });
 
