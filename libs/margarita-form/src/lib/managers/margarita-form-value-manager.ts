@@ -28,7 +28,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   public override onInitialize() {
     const { storage, syncronization } = this.control.extensions;
     const changes = this.changes.pipe(debounceTime(500), skip(1));
-    const { useStorage, useSyncronization } = this.control.field;
+    const { useStorage } = this.control;
+    const { useSyncronization } = this.control.field;
     const shouldListen = useStorage || useSyncronization;
     if (shouldListen) {
       this.createSubscription(changes, () => {

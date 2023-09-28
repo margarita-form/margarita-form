@@ -16,6 +16,7 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   resetFormOnFieldChanges: false,
   showDebugMessages: false,
   storageKey: 'key',
+  storageStrategy: 'start',
   syncronizationKey: 'key',
   allowInvalidSubmit: false,
   transformUndefinedToNull: false,
@@ -30,12 +31,12 @@ class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   constructor(public control: CONTROL) {
     super();
-    this.updateConfig(control.field.config || {});
+    this.updateConfig();
   }
 
   public override onInitialize(): void {
-    this.createSubscription(this.control.managers.field.changes, (field) => {
-      if (field?.config) this.updateConfig(field.config);
+    this.createSubscription(this.control.managers.field.changes, () => {
+      this.updateConfig();
     });
   }
 
@@ -43,17 +44,16 @@ class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {
     return this._config;
   }
 
-  public updateConfig(config: Partial<MargaritaFormConfig>) {
-    const _config = { ...this._config, ...config };
-    this._config = _config;
+  public updateConfig() {
+    const parentConfig = this.control.isRoot ? {} : this.control.parent.config;
+    const config = ConfigManager.joinConfigs(parentConfig, this.control.config);
+    this._config = config;
   }
 
-  public static generateConfig(field: MFF): MargaritaFormConfig {
+  public static joinConfigs(...configs: (undefined | Partial<MargaritaFormConfig>)[]): MargaritaFormConfig {
     const defaultConfig = getDefaultConfig();
-    if (field.config) {
-      return { ...defaultConfig, ...field.config };
-    }
-    return defaultConfig;
+    const config = configs.reduce((acc, config) => (config ? { ...acc, ...config } : acc), defaultConfig) as MargaritaFormConfig;
+    return config;
   }
 }
 

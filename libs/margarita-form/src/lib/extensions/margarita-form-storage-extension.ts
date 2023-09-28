@@ -23,7 +23,13 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
   }
 
   private _getStorage(): StorageLike | undefined {
-    const { useStorage } = this.control.field;
+    const { useStorage, config } = this.control;
+    const { storageStrategy } = config;
+
+    if (storageStrategy === 'end' && this.control.expectChildControls) {
+      return undefined;
+    }
+
     if (useStorage) {
       switch (useStorage) {
         case 'localStorage':
@@ -36,6 +42,7 @@ export class MargaritaFormStorageExtension<CONTROL extends MFC> {
           return useStorage;
       }
     }
+
     return undefined;
   }
 

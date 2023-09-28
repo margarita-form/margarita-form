@@ -125,6 +125,7 @@ export interface MargaritaFormConfig {
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
   storageKey?: 'key' | 'name' | GenerateKeyFunction;
+  storageStrategy?: 'start' | 'end';
   syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
   transformUndefinedToNull?: boolean;
   allowEmptyString?: boolean;
@@ -163,6 +164,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get locales(): Exclude<FIELD['locales'], undefined>;
   get currentLocale(): FIELD['locales'] extends string[] ? FIELD['locales'][number] : undefined;
   get i18n(): FIELD['__i18n'];
+  get useStorage(): FIELD['useStorage'];
   get name(): FIELD['name'];
   get index(): number;
   get valueHash(): string;

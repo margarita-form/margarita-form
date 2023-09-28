@@ -126,7 +126,8 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   }
 
   public get config(): ControlLike<FIELD>['config'] {
-    if (!this.managers.config) return ConfigManager.generateConfig(this.field);
+    const parentConfig = this.isRoot ? {} : this.parent.config;
+    if (!this.managers.config) return ConfigManager.joinConfigs(parentConfig, this.field.config);
     if (!this.field.config) return this.isRoot ? this.managers.config.current : this.parent.config;
     return this.managers.config.current;
   }
@@ -163,6 +164,12 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
     if (!i18n) return undefined;
     const { localization } = extensions;
     return localization.getLocalizedValue(i18n, this.currentLocale);
+  }
+
+  public get useStorage(): ControlLike<FIELD>['useStorage'] {
+    if (this.isRoot) return this.field.useStorage;
+    if (this.config.storageStrategy === 'end') return this.field.useStorage || this.parent.useStorage;
+    return this.field.useStorage;
   }
 
   // Field and metadata getters
