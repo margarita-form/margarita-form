@@ -262,9 +262,9 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get onSubmit(): Observable<MFC<FIELD>>;
   submit<OUTPUT, PARAMS = any>(params?: PARAMS): Promise<OUTPUT>;
 
-  resetValue(): void;
-  resetState(respectField?: boolean): void;
-  reset(): void;
+  resetValue(setDirtyAs?: boolean | undefined, resetChildren?: boolean): void;
+  resetState(respectField?: boolean, resetChildren?: boolean): void;
+  reset(resetChildren?: boolean): void;
 
   getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;
 }

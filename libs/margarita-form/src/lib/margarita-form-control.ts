@@ -761,17 +761,21 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   // Misc
 
-  public resetValue: ControlLike<FIELD>['resetValue'] = () => {
-    this.setValue(undefined);
+  public resetValue: ControlLike<FIELD>['resetValue'] = (setDirtyAs: boolean | undefined = false, resetChildren = true) => {
+    this.setValue(undefined, false);
+    if (setDirtyAs !== undefined) this.updateStateValue('dirty', setDirtyAs);
+    if (resetChildren) this.controls.forEach((control) => control.resetValue(setDirtyAs));
   };
 
-  public resetState: ControlLike<FIELD>['resetState'] = (respectField = false) => {
+  public resetState: ControlLike<FIELD>['resetState'] = (respectField = false, resetChildren = true) => {
     this.managers.state.resetState(respectField);
+    if (resetChildren) this.controls.forEach((control) => control.resetState());
   };
 
-  public reset: ControlLike<FIELD>['reset'] = () => {
+  public reset: ControlLike<FIELD>['reset'] = (resetChildren = true) => {
     this.resetValue();
-    this.resetState();
+    this.resetState(false, false);
+    if (resetChildren) this.controls.forEach((control) => control.reset());
   };
 
   /**
