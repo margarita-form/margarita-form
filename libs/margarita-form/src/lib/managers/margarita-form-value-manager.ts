@@ -99,7 +99,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     this.changes.next(this._value);
   }
 
-  private _getInitialValue() {
+  public _getInitialValue() {
     const storageValue = this._getStorageValue();
     if (storageValue !== undefined) return storageValue;
 
@@ -169,7 +169,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const { expectArray } = this.control;
     const valueIsArray = Array.isArray(this._value);
     if (initial && expectArray && valueIsArray) {
-      this._syncUpstreamValue(false);
+      this._syncUpstreamValue(false, false, true);
     }
 
     this.control.controls.forEach((control) => {
@@ -205,7 +205,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     // Step 1, create or delete changed array children
     if (this.control.expectChildControls && updateChildren) {
-      this._syncUpstreamValue(patch);
+      this._syncUpstreamValue(patch, setAsDirty, emitEvent);
     }
 
     // Step 2, update key
@@ -226,7 +226,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     // console.debug('Done:', this.control.name);
   }
 
-  public _syncUpstreamValue(patch: boolean) {
+  public _syncUpstreamValue(patch: boolean, setAsDirty = true, emitEvent = true) {
     const currentValue = this._value;
     const { hasControls, expectArray, controls } = this.control;
 
@@ -239,7 +239,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         if (expectArray) {
           control.parent.managers.controls.removeControl(control.key, false);
         } else {
-          control.managers.value.updateValue(undefined, true, true, false, false, true);
+          control.managers.value.updateValue(undefined, setAsDirty, emitEvent, false, false, true);
         }
       });
     } else if (typeof currentValue === 'object') {
@@ -259,7 +259,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           const value = (currentValue as CommonRecord)[control.name];
           const exists = valueExists(value);
           if (!exists && !patch) {
-            control.managers.value.updateValue(undefined, true, true, false, false, true);
+            control.managers.value.updateValue(undefined, setAsDirty, emitEvent, false, false, true);
           }
         }
       });
@@ -268,11 +268,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         if (['_key', '_name', '_uid'].includes(key)) return;
         const control = this.control.getControl(key);
         if (control) {
-          const dirty = false;
-          const emit = true;
-          const patch = false;
-
-          return control.managers.value.updateValue(value, dirty, emit, patch, false, true);
+          return control.managers.value.updateValue(value, setAsDirty, emitEvent, false, false, true);
         }
 
         const childIsFlat = this.control.controls.some((child) => child.expectFlat);
@@ -281,11 +277,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
           const childControl = this.control.controls.flatMap((control) => control.controls).find((child) => child.name === key);
 
           if (childControl) {
-            const dirty = false;
-            const emit = true;
-            const patch = false;
-
-            return childControl.managers.value.updateValue(value, dirty, emit, patch, false, true);
+            return childControl.managers.value.updateValue(value, setAsDirty, emitEvent, false, false, true);
           }
         }
 
