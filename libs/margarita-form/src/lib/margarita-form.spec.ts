@@ -630,6 +630,19 @@ describe('margaritaForm', () => {
 
     expect(form.state.dirty).toBe(true);
     expect(form.state.pristine).toBe(false);
+    expect(arrayFieldControl.value).toHaveLength(2);
+    expect(arrayFieldCommonFieldFirstControl.index).toBe(0);
+
+    form.resetState();
+    await firstValueFrom(observable);
+
+    arrayFieldCommonFieldFirstControl.moveToIndex(1);
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+    expect(arrayFieldControl.value).toHaveLength(2);
+    expect(arrayFieldCommonFieldFirstControl.index).toBe(1);
 
     form.resetState();
     await firstValueFrom(observable);
