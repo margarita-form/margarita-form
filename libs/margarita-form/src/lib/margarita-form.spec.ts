@@ -531,6 +531,180 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
+  it('#21-C Check that dirty state gets updated correctly', async () => {
+    const form = createMargaritaForm<MFF>({
+      name: nanoid(),
+      fields: [commonField, groupField, arrayField],
+    });
+    const observable = form.changes.pipe(debounceTime(50));
+    const commonFieldControl = form.getControl([commonField.name]);
+    const groupFieldControl = form.getControl([groupField.name]);
+    const arrayFieldControl = form.getControl([arrayField.name]);
+
+    if (!commonFieldControl) throw 'No control found!';
+    if (!groupFieldControl) throw 'No control found!';
+    if (!arrayFieldControl) throw 'No control found!';
+
+    const groupFieldCommonFieldControl = form.getControl([groupField.name, commonField.name]);
+    if (!groupFieldCommonFieldControl) throw 'No control found!';
+
+    const arrayFieldCommonFieldFirstControl = form.getControl([arrayField.name, 0]);
+    if (!arrayFieldCommonFieldFirstControl) throw 'No control found!';
+
+    expect(form.state.dirty).toBe(false);
+    expect(form.state.pristine).toBe(true);
+    expect(commonFieldControl.state.dirty).toBe(false);
+    expect(commonFieldControl.state.pristine).toBe(true);
+    expect(groupFieldControl.state.dirty).toBe(false);
+    expect(groupFieldControl.state.pristine).toBe(true);
+    expect(arrayFieldControl.state.dirty).toBe(false);
+    expect(arrayFieldControl.state.pristine).toBe(true);
+    expect(groupFieldCommonFieldControl.state.dirty).toBe(false);
+    expect(groupFieldCommonFieldControl.state.pristine).toBe(true);
+    expect(arrayFieldCommonFieldFirstControl.state.dirty).toBe(false);
+    expect(arrayFieldCommonFieldFirstControl.state.pristine).toBe(true);
+
+    // Update common field control
+    commonFieldControl.setValue('Hello world!!!');
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+    expect(commonFieldControl.state.dirty).toBe(true);
+    expect(commonFieldControl.state.pristine).toBe(false);
+    expect(groupFieldControl.state.dirty).toBe(false);
+    expect(groupFieldControl.state.pristine).toBe(true);
+    expect(arrayFieldControl.state.dirty).toBe(false);
+    expect(arrayFieldControl.state.pristine).toBe(true);
+
+    // Update group field's common field control
+    groupFieldCommonFieldControl.setValue('Hello world!!!');
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+    expect(groupFieldControl.state.dirty).toBe(true);
+    expect(groupFieldControl.state.pristine).toBe(false);
+    expect(groupFieldCommonFieldControl.state.dirty).toBe(true);
+    expect(groupFieldCommonFieldControl.state.pristine).toBe(false);
+
+    // Update array field's common field control
+    arrayFieldCommonFieldFirstControl.setValue({ [commonField.name]: 'Hello world!!!' });
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+    expect(arrayFieldControl.state.dirty).toBe(true);
+    expect(arrayFieldControl.state.pristine).toBe(false);
+    expect(arrayFieldCommonFieldFirstControl.state.dirty).toBe(true);
+    expect(arrayFieldCommonFieldFirstControl.state.pristine).toBe(false);
+
+    form.resetState();
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(false);
+    expect(form.state.pristine).toBe(true);
+    expect(commonFieldControl.state.dirty).toBe(false);
+    expect(commonFieldControl.state.pristine).toBe(true);
+    expect(groupFieldControl.state.dirty).toBe(false);
+    expect(groupFieldControl.state.pristine).toBe(true);
+    expect(arrayFieldControl.state.dirty).toBe(false);
+    expect(arrayFieldControl.state.pristine).toBe(true);
+    expect(groupFieldCommonFieldControl.state.dirty).toBe(false);
+    expect(groupFieldCommonFieldControl.state.pristine).toBe(true);
+    expect(arrayFieldCommonFieldFirstControl.state.dirty).toBe(false);
+    expect(arrayFieldCommonFieldFirstControl.state.pristine).toBe(true);
+
+    groupFieldCommonFieldControl.setValue('Hello world!!!!!', false);
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(false);
+    expect(form.state.pristine).toBe(true);
+    expect(groupFieldControl.state.dirty).toBe(false);
+    expect(groupFieldControl.state.pristine).toBe(true);
+    expect(groupFieldCommonFieldControl.state.dirty).toBe(false);
+    expect(groupFieldCommonFieldControl.state.pristine).toBe(true);
+
+    arrayFieldControl.appendControl('groupName');
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+
+    form.resetState();
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(false);
+    expect(form.state.pristine).toBe(true);
+
+    arrayFieldControl.removeControl(0);
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+
+    form.resetState();
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(false);
+    expect(form.state.pristine).toBe(true);
+    expect(arrayFieldCommonFieldFirstControl.state.dirty).toBe(false);
+    expect(arrayFieldCommonFieldFirstControl.state.pristine).toBe(true);
+
+    form.patchValue({
+      [commonField.name]: 'Hello world?',
+    });
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+    expect(commonFieldControl.state.dirty).toBe(true);
+    expect(commonFieldControl.state.pristine).toBe(false);
+    expect(groupFieldControl.state.dirty).toBe(false);
+    expect(groupFieldControl.state.pristine).toBe(true);
+
+    form.patchValue({
+      [groupField.name]: {
+        [commonField.name]: 'Hello world?',
+      },
+    });
+    await firstValueFrom(observable);
+
+    expect(groupFieldControl.state.dirty).toBe(true);
+    expect(groupFieldControl.state.pristine).toBe(false);
+    expect(groupFieldCommonFieldControl.state.dirty).toBe(true);
+    expect(groupFieldCommonFieldControl.state.pristine).toBe(false);
+
+    expect(arrayFieldControl.state.dirty).toBe(false);
+    expect(arrayFieldControl.state.pristine).toBe(true);
+    expect(arrayFieldCommonFieldFirstControl.state.dirty).toBe(false);
+    expect(arrayFieldCommonFieldFirstControl.state.pristine).toBe(true);
+
+    form.resetState();
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(false);
+    expect(form.state.pristine).toBe(true);
+
+    form.setValue({
+      [commonField.name]: 'Hello world???',
+    });
+    await firstValueFrom(observable);
+
+    expect(form.state.dirty).toBe(true);
+    expect(form.state.pristine).toBe(false);
+    expect(commonFieldControl.state.dirty).toBe(true);
+    expect(commonFieldControl.state.pristine).toBe(false);
+    expect(groupFieldControl.state.dirty).toBe(true);
+    expect(groupFieldControl.state.pristine).toBe(false);
+    expect(arrayFieldControl.state.dirty).toBe(true);
+    expect(arrayFieldControl.state.pristine).toBe(false);
+    expect(form.value.arrayName).toBe(undefined);
+    expect(arrayFieldControl.value).toHaveLength(0);
+
+    form.cleanup();
+  });
+
   it('#22 Check basic validators', async () => {
     const form = createMargaritaForm<MFF>({
       name: nanoid(),
