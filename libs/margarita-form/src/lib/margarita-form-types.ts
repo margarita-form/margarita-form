@@ -40,7 +40,7 @@ import { OrString } from './typings/util-types';
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
 export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES extends string = never, I18N extends object = never>
-  extends Partial<UserDefinedStates> {
+  extends UserDefinedStatesField {
   name: string;
   fields?: EXTENDS[];
   grouping?: MargaritaFormGroupings;
@@ -76,16 +76,18 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES exte
   __i18n?: I18N;
 }
 
-export interface UserDefinedStates<TYPE = MargaritaFormFieldState> {
-  enabled: TYPE;
-  disabled: TYPE;
-  editable: TYPE;
-  readOnly: TYPE;
-  active: TYPE;
-  inactive: TYPE;
-  hidden: TYPE;
-  visible: TYPE;
+export interface UserDefinedStates<TYPE = MargaritaFormFieldState, ALLOW_RESOLVER = false> {
+  enabled: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  disabled: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  editable: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  readOnly: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  active: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  inactive: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  hidden: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+  visible: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
 }
+
+export type UserDefinedStatesField = Partial<UserDefinedStates<MargaritaFormFieldState, true>>;
 
 export interface MargaritaFormState extends UserDefinedStates<boolean> {
   pristine: boolean;

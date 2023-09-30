@@ -211,7 +211,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
       switchMap((value) => {
         const state = fieldStateKeys.reduce((acc, key) => {
           const value = this.control.field[key];
-          if (typeof value === 'function') acc[key] = value;
+          if (valueExists(value)) acc[key] = value;
           return acc;
         }, {} as CommonRecord);
 
