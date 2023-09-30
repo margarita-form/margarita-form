@@ -3,11 +3,11 @@ import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC } from '../margarita-form-types';
 import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 
-export type Params = CommonRecord | null;
+export type Params = CommonRecord;
 
 class ParamsManager<CONTROL extends MFC> extends BaseManager {
-  private _params: Params = null;
-  public changes = new BehaviorSubject<Params>(null);
+  private _params: Params = {};
+  public changes = new BehaviorSubject<Params>({});
 
   constructor(public control: CONTROL) {
     super();
