@@ -1081,11 +1081,88 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  /**
-   * TODO: Add tests for:
-   * - Arrays of controls where controls are created with "start with" parameter
-   * - Array of non-groups where initial value is set from root and does not match arrays "start with"
-   * - Array of groups where initial value is set from root and does not match arrays "start with"
-   * - GetControl related type tests
-   */
+  it('#29 Check that CMS like forms work', async () => {
+    const cmsData: MFF<any, MFF> = {
+      name: nanoid(),
+      handleSubmit: '$$handleSubmitResolver',
+      fields: [
+        {
+          name: 'cmsField1',
+          active: '$$activeResolver',
+          validation: {
+            required: true,
+            customValidator: true,
+          },
+          params: {
+            customParam: '$$customParamResolver',
+          },
+          i18n: {
+            title: {
+              en: 'CMS Field 1',
+              fi: 'CMS Kenttä 1',
+            },
+          },
+        },
+      ],
+    };
+
+    const form = createMargaritaForm<MFF<any, MFF>>({
+      ...cmsData,
+      currentLocale: 'fi',
+      locales: ['en', 'fi'],
+      validators: {
+        customValidator: ({ value }) => {
+          // console.log('Custom validator called!');
+          if (value === 'invalid') return { valid: false, error: 'Invalid value!' };
+          return { valid: true };
+        },
+      },
+      resolvers: {
+        activeResolver: () => {
+          // console.log('Active resolver called!');
+          return false;
+        },
+        customParamResolver: () => {
+          // console.log('Custom param resolver called!');
+          return 'custom-param-value';
+        },
+        handleSubmitResolver: async (form) => {
+          // console.log('Handle submit resolver called!');
+          if (form.value.cmsField1 === 'invalid') throw 'form-submit-error';
+          return 'works';
+        },
+      },
+    });
+
+    const cmsField1Control = form.getControl(['cmsField1']);
+    if (!cmsField1Control) throw 'No control found!';
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(cmsField1Control.i18n.title).toBe('CMS Kenttä 1');
+    expect(cmsField1Control.state.active).toBe(false);
+    expect(cmsField1Control.params['customParam']).toBe('custom-param-value');
+    expect(cmsField1Control.state.valid).toBe(false);
+    expect(cmsField1Control.state.errors['required']).toBe('This field is required!');
+    expect(cmsField1Control.state.errors['customValidator']).toBe(undefined);
+
+    cmsField1Control.setValue('invalid');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(cmsField1Control.state.valid).toBe(false);
+    expect(cmsField1Control.state.errors['required']).toBe(undefined);
+    expect(cmsField1Control.state.errors['customValidator']).toBe('Invalid value!');
+
+    cmsField1Control.setValue('valid');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(cmsField1Control.state.valid).toBe(true);
+    expect(cmsField1Control.state.errors['required']).toBe(undefined);
+    expect(cmsField1Control.state.errors['customValidator']).toBe(undefined);
+
+    const submitResult = await form.submit();
+    expect(submitResult).toBe('works');
+
+    form.cleanup();
+  });
 });
