@@ -17,7 +17,7 @@ import { isEqual, isIncluded } from './helpers/check-value';
 import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
-import { resolveFunctionOutputPromises, createResolverContext } from './helpers/resolve-function-outputs';
+import { resolveFunctionOutputPromises, createResolverContext, getResolver } from './helpers/resolve-function-outputs';
 import { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
 import { removeFormFromCache } from './create-margarita-form';
 
@@ -730,7 +730,23 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
 
   private async _resolveValidSubmitHandler(params: any): Promise<any> {
     const { handleSubmit } = this.field;
-    if (typeof handleSubmit === 'string') return await this._resolveValidSubmitPostHandler(handleSubmit);
+    if (typeof handleSubmit === 'string') {
+      if (handleSubmit.startsWith('$$')) {
+        const resolver = getResolver({
+          key: '__submitResolver',
+          value: handleSubmit,
+          resolvers: this.resolvers,
+          context: createResolverContext(this),
+          resolveStaticValues: true,
+        });
+        if (!resolver) throw `Could not find resolver "${handleSubmit}"!`;
+        if (typeof resolver === 'function') return await resolver(params);
+        if (resolver instanceof Promise) return await resolver;
+        if (resolver instanceof Observable) return await firstValueFrom(resolver);
+        return resolver;
+      }
+      return await this._resolveValidSubmitPostHandler(handleSubmit);
+    }
     if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this, params));
     if (handleSubmit?.valid) return await Promise.resolve(handleSubmit.valid(this, params));
 
