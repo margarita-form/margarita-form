@@ -4,8 +4,13 @@ export const valueExists = (value: unknown) => {
   try {
     if (invalidValues.includes(value)) return false;
     if (value instanceof Promise) return true;
+    if (value instanceof RegExp) return true;
     if (value && typeof value === 'object') {
-      return Object.values(value).length > 0;
+      try {
+        return Object.values(value).length > 0;
+      } catch (error) {
+        return true;
+      }
     }
     return true;
   } catch (error) {
