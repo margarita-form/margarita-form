@@ -1,11 +1,13 @@
 import { combineLatest, firstValueFrom, map, Observable, ObservableInput } from 'rxjs';
 import {
+  CommonRecord,
   MargaritaFormFieldContext,
   MargaritaFormResolverOutput,
   MargaritaFormResolvers,
   MFC,
   ResolverParams,
 } from '../margarita-form-types';
+import { valueExists } from './check-value';
 
 interface ResolverGetterParams {
   context: MargaritaFormFieldContext;
@@ -27,7 +29,7 @@ export const getResolver = <OUTPUT = unknown>({
   key: string;
   value: unknown;
 }): null | MargaritaFormResolverOutput<OUTPUT> => {
-  if (!value) return null;
+  if (!valueExists(value)) return null;
 
   if (typeof value === 'function') {
     const result = value(context);
@@ -55,7 +57,7 @@ export const getResolver = <OUTPUT = unknown>({
   const isResolverConfigObject = () => {
     const isObject = typeof value === 'object';
     if (!isObject) return null;
-    const keys = Object.keys(value);
+    const keys = Object.keys(value as CommonRecord);
     const hasResolverName = keys.includes('name');
     if (!hasResolverName) return null;
     const keysAreValid = ResolverParamKeys.every((key) => keys.includes(key as string));
@@ -83,7 +85,7 @@ export const mapResolverEntries = <OUTPUT = unknown>({
 }) => {
   if (!from) return Promise.resolve({});
   const entries = Object.entries(from).reduce((acc, [key, value]) => {
-    if (!value) return acc;
+    if (!valueExists(value)) return acc;
 
     const resolver = getResolver<OUTPUT>({
       key,
@@ -93,8 +95,8 @@ export const mapResolverEntries = <OUTPUT = unknown>({
       resolvers,
     });
 
-    if (resolver) {
-      acc.push([key, resolver]);
+    if (valueExists(resolver)) {
+      acc.push([key, resolver as MargaritaFormResolverOutput<OUTPUT>]);
     }
     return acc;
   }, [] as [string, MargaritaFormResolverOutput<OUTPUT>][]);
@@ -139,7 +141,7 @@ export const resolveFunctionOutputs = <OUTPUT = unknown>(
   type ObservableEntry = MargaritaFormResolverEntry<OUTPUT>;
   const observableEntries = entries.reduce((acc, [key, output]) => {
     const entry = resolverOutputAsObservableEntry<OUTPUT>(key, output, context, title);
-    if (entry) acc.push(entry);
+    if (valueExists(entry)) acc.push(entry);
     return acc;
   }, [] as ObservableInput<ObservableEntry>[]);
 
