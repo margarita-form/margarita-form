@@ -20,3 +20,5 @@ export * from './lib/extensions/margarita-form-extensions';
 export * from './lib/extensions/margarita-form-i18n-extension';
 export * from './lib/extensions/margarita-form-storage-extension';
 export * from './lib/extensions/margarita-form-syncronization-extension';
+
+export * from './lib/classes/submit-error';

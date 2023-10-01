@@ -20,6 +20,7 @@ import { MargaritaFormExtensions, initializeExtensions } from './extensions/marg
 import { resolveFunctionOutputPromises, createResolverContext, getResolver } from './helpers/resolve-function-outputs';
 import { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
 import { removeFormFromCache } from './create-margarita-form';
+import { SubmitError } from './classes/submit-error';
 
 export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
   public key: string;
@@ -682,20 +683,25 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
           try {
             await this._handleBeforeSubmit();
             const submitResponse = await this._resolveValidSubmitHandler(params);
-            this.updateStateValue('submitResult', 'success');
-            switch (this.config.handleSuccesfullSubmit) {
-              case 'disable':
-                this.updateStateValue('disabled', true);
-                break;
-              case 'reset':
-                this.reset();
-                break;
-              default:
-                this.updateStateValue('disabled', false);
-                break;
+            if (submitResponse instanceof SubmitError) {
+              this.updateState({ submitResult: 'error', disabled: false });
+              return submitResponse.value;
+            } else {
+              this.updateStateValue('submitResult', 'success');
+              switch (this.config.handleSuccesfullSubmit) {
+                case 'disable':
+                  this.updateStateValue('disabled', true);
+                  break;
+                case 'reset':
+                  this.reset();
+                  break;
+                default:
+                  this.updateStateValue('disabled', false);
+                  break;
+              }
+              await this._handleAfterSubmit();
+              return submitResponse;
             }
-            await this._handleAfterSubmit();
-            return submitResponse;
           } catch (error) {
             console.error('Could not handle valid submit!', { formName: this.name, error });
             this.updateState({ submitResult: 'error', disabled: false });
@@ -756,13 +762,15 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   }
 
   private async _resolveValidSubmitPostHandler(url: string) {
-    return await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(this.value),
       headers: {
         'Content-Type': 'application/json',
       },
     });
+    if (!response.ok) return new SubmitError('error-on-submit', response);
+    return response;
   }
 
   private async _resolveInvalidSubmitHandler(params: any): Promise<any> {
