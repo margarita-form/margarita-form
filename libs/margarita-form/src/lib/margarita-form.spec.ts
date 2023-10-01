@@ -2,6 +2,21 @@ import { Observable, debounceTime, firstValueFrom, map } from 'rxjs';
 import { createMargaritaForm } from './create-margarita-form';
 import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormFieldContext, StorageLike } from './margarita-form-types';
 import { nanoid } from 'nanoid';
+import { SubmitError } from './classes/submit-error';
+import { createServer } from 'http';
+
+let responseCode = 200;
+let responseText = 'success';
+
+const server = createServer((req, res) => {
+  res.statusCode = responseCode;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end(responseText);
+});
+
+server.listen(4321, () => {
+  console.log('Server running on port 3000');
+});
 
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';
@@ -827,12 +842,13 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#25 Check that form submit works correctly', async () => {
+  it('#25-A Check that form submit works correctly', async () => {
     const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [{ ...commonField, initialValue: undefined, validation: { required: true } }],
       handleSubmit: {
         valid: async (form) => {
+          if (form.value[commonField.name] === 'submit-error') return new SubmitError('test-error', 'test-error-data');
           if (form.value[commonField.name] === commonField.initialValue) return 'valid';
           throw 'error';
         },
@@ -869,16 +885,74 @@ describe('margaritaForm', () => {
     expect(form.state.submitted).toBe(true);
     expect(form.state.disabled).toBe(false);
 
-    commonControl.setValue(commonField.initialValue);
+    commonControl.setValue('submit-error');
 
     const submitResult3 = await form.submit();
-    expect(submitResult3).toBe('valid');
+    expect(submitResult3).toBe('test-error-data');
 
     expect(form.state.submitting).toBe(false);
     expect(form.state.submits).toBe(3);
+    expect(form.state.submitResult).toBe('error');
+    expect(form.state.submitted).toBe(true);
+    expect(form.state.disabled).toBe(false);
+
+    commonControl.setValue(commonField.initialValue);
+
+    const submitResult4 = await form.submit();
+    expect(submitResult4).toBe('valid');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(4);
     expect(form.state.submitResult).toBe('success');
     expect(form.state.submitted).toBe(true);
     expect(form.state.disabled).toBe(true);
+
+    form.cleanup();
+  });
+
+  it('#25-B Check that form submit with post url works', async () => {
+    const form = createMargaritaForm<MFF>({
+      name: nanoid(),
+      fields: [commonField],
+      handleSubmit: 'http://localhost:4321/api/submit',
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(0);
+    expect(form.state.submitResult).toBe('not-submitted');
+    expect(form.state.submitted).toBe(false);
+    expect(form.state.disabled).toBe(false);
+
+    const successResponse: Response = await form.submit();
+    const successResponseCode = successResponse.status;
+    const successResponseText = await successResponse.text();
+
+    expect(successResponseCode).toBe(200);
+    expect(successResponseText).toBe('success');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(1);
+    expect(form.state.submitResult).toBe('success');
+    expect(form.state.submitted).toBe(true);
+    expect(form.state.disabled).toBe(true);
+
+    responseCode = 500;
+    responseText = 'error';
+
+    const errorResponse: Response = await form.submit();
+    const errorResponseCode = errorResponse.status;
+    const errorResponseText = await errorResponse.text();
+
+    expect(errorResponseCode).toBe(500);
+    expect(errorResponseText).toBe('error');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(2);
+    expect(form.state.submitResult).toBe('error');
+    expect(form.state.submitted).toBe(true);
 
     form.cleanup();
   });
