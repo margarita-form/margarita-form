@@ -22,7 +22,8 @@ class FieldManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public async setField<FIELD extends MFF = MFF | CONTROL['field']>(field: FIELD | Promise<FIELD>, resetControl = false) {
-    const fieldIsSame = isEqual(this._field, field);
+    if (!field) return;
+    const fieldIsSame = this._field && isEqual(this._field, field, false);
     if (fieldIsSame) return;
     this._field = await field;
     this.shouldResetControl = resetControl;
