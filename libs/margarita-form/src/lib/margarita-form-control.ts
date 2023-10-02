@@ -22,7 +22,7 @@ import { MargaritaFormControlManagers } from './managers/margarita-form-default-
 import { removeFormFromCache } from './create-margarita-form';
 import { SubmitError } from './classes/submit-error';
 
-export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements ControlLike<FIELD> {
+export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIELD> {
   public key: string;
   public uid: string;
   public syncId: string = nanoid(4);
@@ -378,7 +378,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
   public removeValue: ControlLike<FIELD>['removeValue'] = (value, setAsDirty, emitEvent) => {
     if (!Array.isArray(this.value)) throw 'Control value must be an array to remove a value!';
     this.managers.value.updateValue(
-      this.value.filter((item) => !isEqual(value, item)),
+      this.value.filter((item: unknown) => !isEqual(value, item)),
       setAsDirty,
       emitEvent
     );
@@ -539,7 +539,7 @@ export class MargaritaFormControl<FIELD extends MFF<unknown, FIELD>> implements 
    */
   public getControl: ControlLike<FIELD>['getControl'] = (identifier) => {
     if (Array.isArray(identifier)) {
-      const [first, ...rest] = identifier;
+      const [first, ...rest] = identifier as string[];
       const control = this.managers.controls.getControl(first);
       if (!control) return undefined;
       if (rest.length === 0) return control;
