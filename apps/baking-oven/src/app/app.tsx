@@ -230,7 +230,7 @@ export function App() {
 
           <hr />
 
-          <button type="button" onClick={form.reset}>
+          <button type="button" onClick={() => form.reset()}>
             Reset
           </button>
 
