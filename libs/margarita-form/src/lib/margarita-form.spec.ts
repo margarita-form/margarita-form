@@ -15,7 +15,7 @@ const server = createServer((req, res) => {
 });
 
 server.listen(4321, () => {
-  console.log('Server running on port 3000');
+  console.log('Testing server running on port 4321');
 });
 
 const fieldNameInitialValue = 'Hello world';
