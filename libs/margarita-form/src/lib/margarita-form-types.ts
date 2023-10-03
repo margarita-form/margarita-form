@@ -35,7 +35,7 @@ import {
   ChildControl,
   I18NField,
 } from './typings/helper-types';
-import { OrString } from './typings/util-types';
+import { NotFunction, OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -46,7 +46,7 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES exte
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: VALUE;
-  valueResolver?: MargaritaFormResolver<VALUE>;
+  valueResolver?: MargaritaFormResolver<VALUE> | NotFunction;
   params?: MargaritaFormFieldParams;
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
