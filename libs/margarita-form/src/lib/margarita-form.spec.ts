@@ -1177,6 +1177,10 @@ describe('margaritaForm', () => {
             },
           },
         },
+        {
+          name: 'cmsField2',
+          valueResolver: '$$cmsField2Value',
+        },
       ],
     };
 
@@ -1205,12 +1209,19 @@ describe('margaritaForm', () => {
           if (form.value.cmsField1 === 'invalid') throw 'form-submit-error';
           return 'works';
         },
+        cmsField2Value: async () => {
+          // console.log('CMS field 2 value resolver called!');
+          await new Promise((resolve) => setTimeout(resolve, 125));
+          return 'cms-field-2-value';
+        },
       },
     });
 
     const cmsField1Control = form.getControl(['cmsField1']);
-    if (!cmsField1Control) throw 'No control found!';
+    const cmsField2Control = form.getControl(['cmsField2']);
+    if (!cmsField1Control || !cmsField2Control) throw 'No control found!';
 
+    expect(cmsField2Control.value).toBe(undefined); // Value resolver takes 125ms to resolve
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(cmsField1Control.i18n.title).toBe('CMS Kenttä 1');
@@ -1219,6 +1230,7 @@ describe('margaritaForm', () => {
     expect(cmsField1Control.state.valid).toBe(false);
     expect(cmsField1Control.state.errors['required']).toBe('This field is required!');
     expect(cmsField1Control.state.errors['customValidator']).toBe(undefined);
+    expect(cmsField2Control.value).toBe(undefined);
 
     cmsField1Control.setValue('invalid');
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -1233,6 +1245,7 @@ describe('margaritaForm', () => {
     expect(cmsField1Control.state.valid).toBe(true);
     expect(cmsField1Control.state.errors['required']).toBe(undefined);
     expect(cmsField1Control.state.errors['customValidator']).toBe(undefined);
+    expect(cmsField2Control.value).toBe('cms-field-2-value');
 
     const submitResult = await form.submit();
     expect(submitResult).toBe('works');
