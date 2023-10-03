@@ -46,6 +46,7 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES exte
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: VALUE;
+  valueResolver?: MargaritaFormResolver<VALUE>;
   params?: MargaritaFormFieldParams;
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;

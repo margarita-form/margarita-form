@@ -1,10 +1,11 @@
 import { BehaviorSubject, debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
-import { CommonRecord, MFC } from '../margarita-form-types';
+import { CommonRecord, MFC, MargaritaFormFieldContext } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { SearchParamsStorage } from '../extensions/storages/search-params-storage';
+import { getResolver, resolverOutputAsObservableEntry } from '../helpers/resolve-function-outputs';
 
 class ValueManager<CONTROL extends MFC> extends BaseManager {
   private initialized = false;
@@ -62,6 +63,41 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         }
       } catch (error) {
         console.error(`Could not subscribe to storage changes!`, { control: this.control, error });
+      }
+    }
+  }
+
+  public override afterInitialize() {
+    this._handleValueResolver();
+  }
+
+  private async _handleValueResolver() {
+    const { valueResolver } = this.control.field;
+
+    if (valueResolver) {
+      const context: MargaritaFormFieldContext = {
+        control: this.control,
+        value: this._value,
+      };
+
+      const _valueResolver = getResolver({
+        key: 'valueResolver',
+        value: valueResolver,
+        context,
+      });
+
+      if (_valueResolver) {
+        const _valueResolverObservable = resolverOutputAsObservableEntry('valueResolver', _valueResolver, context, 'Value Resolver');
+
+        if (_valueResolverObservable instanceof Promise) {
+          const _value = await _valueResolverObservable;
+          const __value = _value[1];
+          this.updateValue(__value, true, true, false);
+        } else {
+          this.createSubscription(_valueResolverObservable, ([key, value]) => {
+            this.updateValue(value, true, true, false);
+          });
+        }
       }
     }
   }
