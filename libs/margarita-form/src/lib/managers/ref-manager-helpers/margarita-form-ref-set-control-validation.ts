@@ -17,7 +17,9 @@ export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
     if (appendNodeValidationsToControl) validation[key] = params;
   };
   const setNodeValidation = (key: keyof typeof node, params: any) => {
-    if (appendControlValidationsToNode) (node as any)[key] = params;
+    const { tagName, type, multiple } = node;
+    const disallowAddition = tagName !== 'SELECT' && type !== 'file' && type !== 'email' && multiple;
+    if (appendControlValidationsToNode && !disallowAddition) (node as any)[key] = params;
   };
 
   /* Required */
