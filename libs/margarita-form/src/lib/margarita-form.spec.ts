@@ -1252,4 +1252,27 @@ describe('margaritaForm', () => {
 
     form.cleanup();
   });
+
+  it('#30 Check that CMS like forms work', async () => {
+    try {
+      createMargaritaForm({
+        name: '',
+      });
+    } catch (error) {
+      expect(error).toBe('Missing name in fields at path: root');
+    }
+
+    try {
+      createMargaritaForm({
+        name: 'root',
+        fields: [
+          {
+            name: '',
+          },
+        ],
+      });
+    } catch (error) {
+      expect(error).toBe('Missing name in fields at path: root > *');
+    }
+  });
 });

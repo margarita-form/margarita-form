@@ -37,6 +37,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
       idStore: new Set<string>(),
     }
   ) {
+    if (!field.name) throw 'Missing name in field path: ' + (this.isRoot ? 'root' : this.getPath('default').join(' > ') + '*');
     // console.debug('Creating control:', field.name, { field });
     this.key = this._generateKey();
     this.managers = createManagers<typeof this>(this);
