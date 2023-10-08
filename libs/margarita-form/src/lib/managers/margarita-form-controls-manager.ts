@@ -228,6 +228,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   public getControl(identifier: DeepControlIdentifier<CONTROL['field']>): MFC | undefined {
     if (typeof identifier === 'number') {
+      if (identifier < 0) return this._controls[this._controls.length + identifier];
       return this._controls[identifier];
     }
     if (typeof identifier === 'string') {
