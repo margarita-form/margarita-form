@@ -1253,13 +1253,13 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#30 Check that CMS like forms work', async () => {
+  it('#30 Check that name and fields are valid', async () => {
     try {
       createMargaritaForm({
         name: '',
       });
     } catch (error) {
-      expect(error).toBe('Missing name in fields at path: root');
+      expect(error).toBe('Missing name in field: root');
     }
 
     try {
@@ -1272,7 +1272,16 @@ describe('margaritaForm', () => {
         ],
       });
     } catch (error) {
-      expect(error).toBe('Missing name in fields at path: root > *');
+      expect(error).toBe('Missing name in field: root > *');
+    }
+
+    try {
+      createMargaritaForm({
+        name: 'root',
+        fields: {} as any,
+      });
+    } catch (error) {
+      expect(error).toBe('Invalid fields provided for field at: root');
     }
   });
 });

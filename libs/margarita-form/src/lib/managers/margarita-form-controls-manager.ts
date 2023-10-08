@@ -13,6 +13,11 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   constructor(public control: CONTROL) {
     super();
+    const { fields } = this.control.field;
+    const fieldsAreValid = !fields || Array.isArray(fields);
+    if (!fieldsAreValid) {
+      throw 'Invalid fields provided for field at: ' + (this.control.isRoot ? 'root' : this.control.getPath().join(' > '));
+    }
 
     this._requireUniqueNames = !this.control.expectArray;
 
