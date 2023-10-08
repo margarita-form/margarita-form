@@ -367,8 +367,10 @@ describe('margaritaForm', () => {
     const firstArrayGroup = form.getControl([arrayField.name, 0]);
     const firstArrayControl = form.getControl([arrayField.name, 0, commonField.name]);
     const thirdArrayControl = form.getControl([arrayField.name, 2, commonField.name]);
+    const initiallyLastArrayControl = form.getControl([arrayField.name, 2, commonField.name]);
 
     if (!arrayControl || !firstArrayGroup || !firstArrayControl || !thirdArrayControl) throw 'No control found!';
+    expect(thirdArrayControl).toBe(initiallyLastArrayControl);
 
     const value = 'first!';
     firstArrayControl.setValue(value);
@@ -380,6 +382,10 @@ describe('margaritaForm', () => {
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
     expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fromParentValue);
     expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], value);
+
+    const finallyLastArrayControl = form.getControl([arrayField.name, 2, commonField.name]);
+    expect(thirdArrayControl).not.toBe(finallyLastArrayControl);
+    expect(firstArrayControl).toBe(finallyLastArrayControl);
 
     form.cleanup();
   });
