@@ -1290,4 +1290,128 @@ describe('margaritaForm', () => {
       expect(error).toBe('Invalid fields provided for field at: root');
     }
   });
+
+  it('#31-a Check that resets and clears work as should', async () => {
+    const form = createMargaritaForm<MFF<any, MFF<any>>>({
+      name: nanoid(),
+      fields: [
+        {
+          name: 'text',
+          initialValue: 'text',
+        },
+        {
+          name: 'object',
+          initialValue: {
+            childValue: 'childValue',
+          },
+        },
+      ],
+    });
+
+    const objectControl = form.getControl(['object']);
+    if (!objectControl) throw 'No control found!';
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+
+    form.clearValue();
+
+    expect(form.value).not.toHaveProperty(['text']);
+    expect(form.value).not.toHaveProperty(['object']);
+
+    form.resetValue(true);
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+
+    expect(form.state.dirty).toBe(true);
+    expect(objectControl.state.dirty).toBe(true);
+
+    form.resetValue(undefined);
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+
+    expect(form.state.dirty).toBe(true);
+    expect(objectControl.state.dirty).toBe(true);
+
+    form.resetValue(false);
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+
+    expect(form.state.dirty).toBe(false);
+    expect(objectControl.state.dirty).toBe(false);
+
+    form.resetValue(true);
+    expect(form.state.dirty).toBe(true);
+    expect(objectControl.state.dirty).toBe(true);
+
+    form.resetState();
+    expect(form.state.dirty).toBe(false);
+    expect(objectControl.state.dirty).toBe(false);
+
+    form.setValue({});
+    expect(form.state.dirty).toBe(true);
+    expect(form.value).not.toHaveProperty(['text']);
+    expect(form.value).not.toHaveProperty(['object']);
+
+    form.clear();
+    expect(form.state.dirty).toBe(false);
+    expect(form.value).not.toHaveProperty(['text']);
+    expect(form.value).not.toHaveProperty(['object']);
+
+    form.setValue({});
+    expect(form.state.dirty).toBe(true);
+    expect(form.value).not.toHaveProperty(['text']);
+    expect(form.value).not.toHaveProperty(['object']);
+
+    form.reset();
+    expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+
+    expect(form.state.dirty).toBe(false);
+    expect(objectControl.state.dirty).toBe(false);
+
+    form.cleanup();
+  });
+
+  it('#31-b Check that resets and clears work as should', async () => {
+    const form = createMargaritaForm<MFF<any, MFF<any>>>({
+      name: nanoid(),
+      initialValue: {
+        text: 'text',
+        object: {
+          childValue: 'childValue',
+        },
+      },
+      fields: [
+        {
+          name: 'text',
+          initialValue: 'wrong-text',
+        },
+      ],
+    });
+
+    const textControl = form.getControl(['text']);
+    if (!textControl) throw 'No control found!';
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+    form.resetValue(true);
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.state.dirty).toBe(true);
+    expect(textControl.state.dirty).toBe(true);
+
+    textControl.resetValue();
+
+    expect(textControl.value).toBe('text');
+    expect(textControl.state.dirty).toBe(true);
+
+    form.resetValue(false);
+
+    expect(form.value).toHaveProperty(['text'], 'text');
+
+    form.cleanup();
+  });
 });
