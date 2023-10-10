@@ -19,7 +19,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     // console.debug('Initial Value for ', this.control.name, ':', initialValue);
 
     if (initialValue) {
-      this._setValue(initialValue);
+      this._setValue(initialValue, false);
     }
 
     this.changes = new BehaviorSubject<CONTROL['value']>(this._value);
@@ -102,7 +102,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     }
   }
 
-  private _setValue(value: unknown) {
+  private _setValue(value: unknown, _useTransformer = true) {
     // Add metadata to value
     const _addMetadata = () => {
       const { addMetadata } = this.control.config;
@@ -123,7 +123,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     // Transform value with custom transformer script
     const { transformer } = this.control.field;
-    const _value = transformer ? transformer({ value: _valueWithMetadata, control: this.control }) : _valueWithMetadata;
+    const _value = _useTransformer && transformer ? transformer({ value: _valueWithMetadata, control: this.control }) : _valueWithMetadata;
 
     // Set value
     this._value = _value;
