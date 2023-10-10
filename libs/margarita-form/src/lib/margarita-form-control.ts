@@ -786,8 +786,12 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   // Misc
 
-  public resetValue: ControlLike<FIELD>['resetValue'] = (setDirtyAs: boolean | undefined = false, resetChildren = true, origin = true) => {
-    const initialValue = this.managers.value._getInitialValue();
+  public resetValue: ControlLike<FIELD>['resetValue'] = (
+    setDirtyAs: boolean | undefined = undefined,
+    resetChildren = true,
+    origin = true
+  ) => {
+    const initialValue = this.managers.value._getInitialValue(false);
     this.setValue(initialValue, false, false);
     if (setDirtyAs !== undefined) this.updateStateValue('dirty', setDirtyAs);
     if (resetChildren) this.controls.forEach((control) => control.resetValue(setDirtyAs, true, false));
@@ -797,7 +801,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public clearValue: ControlLike<FIELD>['clearValue'] = (setDirtyAs: boolean | undefined = false, resetChildren = true, origin = true) => {
     this.setValue(undefined, false, false);
     if (setDirtyAs !== undefined) this.updateStateValue('dirty', setDirtyAs);
-    if (resetChildren) this.controls.forEach((control) => control.resetValue(setDirtyAs, true, false));
+    if (resetChildren) this.controls.forEach((control) => control.resetState());
     if (origin) this.managers.value.refreshSync();
   };
 
@@ -806,16 +810,14 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     if (resetChildren) this.controls.forEach((control) => control.resetState());
   };
 
-  public reset: ControlLike<FIELD>['reset'] = (resetChildren = true) => {
-    this.resetValue(undefined, true);
-    this.resetState(false, false);
-    if (resetChildren) this.controls.forEach((control) => control.reset());
+  public reset: ControlLike<FIELD>['reset'] = (resetChildren = true, origin = true) => {
+    this.resetState(false, resetChildren);
+    this.resetValue(undefined, resetChildren, origin);
   };
 
-  public clear: ControlLike<FIELD>['clear'] = () => {
-    this.clearValue(undefined, false);
-    this.resetState(false, false);
-    this.controls.forEach((control) => control.clear());
+  public clear: ControlLike<FIELD>['clear'] = (resetChildren = true) => {
+    this.resetState(false, resetChildren);
+    this.clearValue(undefined, resetChildren);
   };
 
   /**

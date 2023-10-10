@@ -268,7 +268,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   resetValue(setDirtyAs?: boolean | undefined, resetChildren?: boolean, origin?: boolean): void;
   clearValue(setDirtyAs?: boolean | undefined, resetChildren?: boolean, origin?: boolean): void;
   resetState(respectField?: boolean, resetChildren?: boolean): void;
-  reset(resetChildren?: boolean): void;
+  reset(resetChildren?: boolean, origin?: boolean): void;
   clear(resetChildren?: boolean): void;
 
   getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;

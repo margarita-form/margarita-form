@@ -135,9 +135,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     this.changes.next(this._value);
   }
 
-  public _getInitialValue() {
-    const storageValue = this._getStorageValue();
-    if (storageValue !== undefined) return storageValue;
+  public _getInitialValue(allowStorage = true) {
+    if (allowStorage) {
+      const storageValue = this._getStorageValue();
+      if (storageValue !== undefined) return storageValue;
+    }
 
     if (this.control.config.resolveInitialValuesFromSearchParams) {
       const { storage } = this.control.extensions;
