@@ -59,7 +59,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
         const observable = storage.getStorageValueListener<CONTROL['value']>();
 
         if (observable) {
-          this.createSubscription(observable.pipe(debounceTime(500), skip(1)), (value) => this.updateValue(value, false, true, false));
+          this.createSubscription(observable.pipe(skip(1)), (value) => this.updateValue(value, false, true, false));
         }
       } catch (error) {
         console.error(`Could not subscribe to storage changes!`, { control: this.control, error });
