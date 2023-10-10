@@ -4,9 +4,9 @@ const DEFAULT_TIMEOUT = 2000; // 2 seconds
 
 const validateRegex = (regex: RegExp, value: string, timeout: number = DEFAULT_TIMEOUT): boolean => {
   const start = Date.now();
-  let match = false;
-  while (!match && Date.now() - start < timeout) match = regex.test(value);
-  if (!match) throw new Error('Regex is too complex and may cause ReDoS!');
+  let match = null;
+  while (match == null && Date.now() - start < timeout) match = regex.test(value);
+  if (match == null) throw new Error('Regex is too complex and may cause ReDoS!');
   return true;
 };
 
