@@ -256,7 +256,10 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
     index: number
   ) => void;
   appendControls<CHILD_FIELD extends MFF = FIELD>(fieldTemplates: string[] | CHILD_FIELD[]): MFC<CHILD_FIELD>[];
-  appendControl<CHILD_FIELD extends MFF = FIELD>(fieldTemplate?: string | CHILD_FIELD, overrides?: Partial<CHILD_FIELD>): MFC<CHILD_FIELD>;
+  appendControl<CHILD_FIELD extends MFF = FIELD>(
+    fieldTemplate?: string | CHILD_FIELD,
+    overrides?: Partial<CHILD_FIELD>
+  ): null | MFC<CHILD_FIELD>;
   remove(): void;
   moveToIndex(index: number): void;
 

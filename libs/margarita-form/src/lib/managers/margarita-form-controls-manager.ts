@@ -130,12 +130,15 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     return this._controls;
   }
 
-  public appendRepeatingControls<FIELD extends MFF = MFF>(fieldTemplates?: string[] | FIELD[]) {
+  public appendRepeatingControls<FIELD extends MFF = MFF>(fieldTemplates?: string[] | FIELD[]): MFC<FIELD>[] {
     if (!fieldTemplates) throw 'No fields provided for "appendRepeatingControls" controls!';
-    return fieldTemplates.map((field) => this.appendRepeatingControl(field));
+    return fieldTemplates.map((field) => this.appendRepeatingControl(field)).filter((control) => !!control) as MFC<FIELD>[];
   }
 
-  public appendRepeatingControl<FIELD extends MFF = MFF>(fieldTemplate?: string | number | FIELD, overrides: Partial<FIELD> = {}) {
+  public appendRepeatingControl<FIELD extends MFF = MFF>(
+    fieldTemplate?: string | number | FIELD,
+    overrides: Partial<FIELD> = {}
+  ): null | MFC<FIELD> {
     const { fields } = this.control.field;
 
     const getField = () => {
@@ -148,7 +151,10 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     };
 
     const field = getField();
-    if (!field) throw 'Invalid field provided for "appendRepeatingControl" controls!';
+    if (!field) {
+      if (this.control.expectArray) throw 'Invalid field provided for "appendRepeatingControl" controls!';
+      return null;
+    }
     return this.addControl({ ...field, ...overrides });
   }
 
