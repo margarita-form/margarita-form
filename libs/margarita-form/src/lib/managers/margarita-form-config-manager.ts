@@ -1,5 +1,5 @@
 import { BaseManager } from './margarita-form-base-manager';
-import { MFC, MFF, MargaritaFormConfig } from '../margarita-form-types';
+import { MFC, MargaritaFormConfig } from '../margarita-form-types';
 
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
