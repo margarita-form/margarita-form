@@ -1305,24 +1305,33 @@ describe('margaritaForm', () => {
             childValue: 'childValue',
           },
         },
+        {
+          name: 'inactive',
+          initialValue: 'not-active',
+          active: false,
+        },
       ],
     });
 
+    const inactiveControl = form.getControl(['inactive']);
     const objectControl = form.getControl(['object']);
-    if (!objectControl) throw 'No control found!';
+    if (!objectControl || !inactiveControl) throw 'No control found!';
 
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.clearValue();
 
     expect(form.value).not.toHaveProperty(['text']);
     expect(form.value).not.toHaveProperty(['object']);
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.resetValue(true);
 
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     expect(form.state.dirty).toBe(true);
     expect(objectControl.state.dirty).toBe(true);
@@ -1331,6 +1340,7 @@ describe('margaritaForm', () => {
 
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     expect(form.state.dirty).toBe(true);
     expect(objectControl.state.dirty).toBe(true);
@@ -1339,6 +1349,7 @@ describe('margaritaForm', () => {
 
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     expect(form.state.dirty).toBe(false);
     expect(objectControl.state.dirty).toBe(false);
@@ -1346,29 +1357,35 @@ describe('margaritaForm', () => {
     form.resetValue(true);
     expect(form.state.dirty).toBe(true);
     expect(objectControl.state.dirty).toBe(true);
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.resetState();
     expect(form.state.dirty).toBe(false);
     expect(objectControl.state.dirty).toBe(false);
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.setValue({});
     expect(form.state.dirty).toBe(true);
     expect(form.value).not.toHaveProperty(['text']);
     expect(form.value).not.toHaveProperty(['object']);
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.clear();
     expect(form.state.dirty).toBe(false);
     expect(form.value).not.toHaveProperty(['text']);
     expect(form.value).not.toHaveProperty(['object']);
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.setValue({});
     expect(form.state.dirty).toBe(true);
     expect(form.value).not.toHaveProperty(['text']);
     expect(form.value).not.toHaveProperty(['object']);
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     form.reset();
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
+    expect(form.value).not.toHaveProperty(['inactive']);
 
     expect(form.state.dirty).toBe(false);
     expect(objectControl.state.dirty).toBe(false);
@@ -1390,27 +1407,38 @@ describe('margaritaForm', () => {
           name: 'text',
           initialValue: 'wrong-text',
         },
+        {
+          name: 'inactive',
+          initialValue: 'not-active',
+          active: false,
+        },
       ],
     });
 
     const textControl = form.getControl(['text']);
-    if (!textControl) throw 'No control found!';
+    const inactiveControl = form.getControl(['inactive']);
+    if (!textControl || !inactiveControl) throw 'No control found!';
 
     expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).not.toHaveProperty(['inactive']);
     form.resetValue(true);
 
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.state.dirty).toBe(true);
     expect(textControl.state.dirty).toBe(true);
+    expect(inactiveControl.state.dirty).toBe(true);
 
     textControl.resetValue();
 
     expect(textControl.value).toBe('text');
     expect(textControl.state.dirty).toBe(true);
+    expect(inactiveControl.state.dirty).toBe(true);
 
     form.resetValue(false);
 
     expect(form.value).toHaveProperty(['text'], 'text');
+    expect(form.value).not.toHaveProperty(['inactive']);
+    expect(inactiveControl.state.dirty).toBe(false);
 
     form.cleanup();
   });
