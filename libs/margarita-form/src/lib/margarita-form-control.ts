@@ -793,6 +793,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   ) => {
     const initialValue = this.managers.value._getInitialValue(false);
     this.setValue(initialValue, false, false);
+    this.managers.controls.rebuild();
     if (setDirtyAs !== undefined) this.updateStateValue('dirty', setDirtyAs);
     if (resetChildren) this.controls.forEach((control) => control.resetValue(setDirtyAs, true, false));
     if (origin) this.managers.value.refreshSync();

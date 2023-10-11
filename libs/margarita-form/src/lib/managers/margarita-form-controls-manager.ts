@@ -44,7 +44,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     );
   }
 
-  private rebuild(resetControls = false) {
+  public rebuild(resetControls = false) {
     const { field } = this.control;
     if (!field) throw 'No field provided for control!';
     this._buildWith = field;

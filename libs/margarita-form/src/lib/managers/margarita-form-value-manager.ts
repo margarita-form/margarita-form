@@ -369,10 +369,13 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    * @Internal
    */
   private _resolveValue(): CONTROL['value'] {
-    const { expectChildControls, expectArray } = this.control;
+    const { expectChildControls, expectArray, activeControls } = this.control;
     if (!expectChildControls) return this._value;
 
-    const entries = this.control.activeControls.reduce((acc, child) => {
+    const hasActiveControls = activeControls.length > 0;
+    if (!hasActiveControls) return undefined;
+
+    const entries = activeControls.reduce((acc, child) => {
       const exists = valueExists(child.value);
       const key = expectArray ? child.index : child.name;
       if (!exists) {
