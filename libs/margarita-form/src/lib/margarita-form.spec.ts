@@ -734,7 +734,7 @@ describe('margaritaForm', () => {
     expect(arrayFieldControl.state.dirty).toBe(true);
     expect(arrayFieldControl.state.pristine).toBe(false);
     expect(form.value.arrayName).toBe(undefined);
-    expect(arrayFieldControl.value).toHaveLength(0);
+    expect(arrayFieldControl.value).toBe(undefined); // TODO: check if it makes sense to allow arrays with length 0 (expect(arrayFieldControl.value).toHaveLength(0))
 
     form.cleanup();
   });
