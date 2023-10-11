@@ -24,6 +24,7 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   localizationOutput: 'object',
   requiredNameCase: false,
   resolveInitialValuesFromSearchParams: false,
+  runTransformersForInitialValues: true,
 });
 
 class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {

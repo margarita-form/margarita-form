@@ -135,6 +135,7 @@ export interface MargaritaFormConfig {
   localizationOutput?: 'object' | 'array';
   requiredNameCase?: false | 'camel' | 'snake' | 'kebab';
   resolveInitialValuesFromSearchParams?: boolean;
+  runTransformersForInitialValues?: boolean;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
