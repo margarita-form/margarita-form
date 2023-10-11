@@ -122,8 +122,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const _valueWithMetadata = _addMetadata();
 
     // Transform value with custom transformer script
-    if (this.control.name === 'title') console.trace(this.control.name, _useTransformer);
-
     const { transformer } = this.control.field;
     const _value = _useTransformer && transformer ? transformer({ value: _valueWithMetadata, control: this.control }) : _valueWithMetadata;
 
