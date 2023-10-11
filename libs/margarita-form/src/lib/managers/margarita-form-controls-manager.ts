@@ -242,6 +242,15 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       if (!isNaN(actuallyNumber)) {
         return this.getControl(actuallyNumber);
       }
+      if (identifier === '..') this.control.parent;
+      if (identifier === '.') return this.control.root;
+      if (identifier.includes('.')) {
+        const [first, ...rest] = identifier.split('.');
+        if (!first) return this.control.getControl(rest);
+        const control = this.getControl(first);
+        if (!control) return;
+        return control.getControl(rest);
+      }
     }
     return this._controls.find((control) => [control.name, control.key].includes(identifier));
   }
