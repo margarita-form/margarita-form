@@ -22,3 +22,7 @@ export * from './lib/extensions/margarita-form-storage-extension';
 export * from './lib/extensions/margarita-form-syncronization-extension';
 
 export * from './lib/classes/submit-error';
+
+export * from './lib/helpers/check-value';
+export * from './lib/helpers/resolve-function-outputs';
+export * from './lib/helpers/to-hash';
