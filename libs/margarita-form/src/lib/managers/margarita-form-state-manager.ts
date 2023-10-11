@@ -241,7 +241,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
           validation['controlNameCase'] = this.control.config.requiredNameCase;
         }
         return mapResolverEntries<MargaritaFormValidatorResult>({
-          title: 'State',
+          title: 'Validations',
           from: validation,
           resolveStaticValues: false,
           resolvers: validators,
