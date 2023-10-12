@@ -245,6 +245,10 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     return (this.field.fields as any) || [];
   }
 
+  public setField: ControlLike<FIELD>['setField'] = async (changes, resetControl = false) => {
+    await this.managers.field.setField(changes as any, resetControl);
+  };
+
   public updateField: ControlLike<FIELD>['updateField'] = async (changes, resetControl = false) => {
     await this.managers.field.updateField(changes as any, resetControl);
   };
