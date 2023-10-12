@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { DependencyList, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { createFormStore } from '../misc/margarita-form-store';
-import { MFF, createMargaritaForm, isEqual } from '@margarita-form/core';
+import { MFF, createMargaritaForm } from '@margarita-form/core';
 
-export const useMargaritaForm = <FIELD extends MFF>(field: FIELD, useCache = true) => {
+export const useMargaritaForm = <FIELD extends MFF>(field: FIELD, dependencies: DependencyList = [], useCache = true) => {
   const fieldRef = useRef<null | FIELD>(null);
   const form = useMemo(() => {
     return createMargaritaForm<FIELD>(field, useCache);
@@ -21,12 +21,12 @@ export const useMargaritaForm = <FIELD extends MFF>(field: FIELD, useCache = tru
 
   useEffect(() => {
     const { current } = fieldRef;
-    const changed = current && !isEqual(current, field, false);
+    const changed = current && field && current !== field;
     if (changed) {
       fieldRef.current = field;
-      form.updateField(field);
+      form.setField(field);
     }
-  }, [field]);
+  }, dependencies);
 
   const store = createFormStore(form);
 
