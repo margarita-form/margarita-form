@@ -28,6 +28,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public syncId: string = nanoid(4);
   public managers: ManagerInstances;
   public initialized = false;
+  public ready = false;
   private _listeningToChanges = true;
   private cache = new Map<string, unknown>();
 

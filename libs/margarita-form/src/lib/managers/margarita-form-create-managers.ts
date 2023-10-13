@@ -23,6 +23,11 @@ export const createManagers = <CONTROL extends MargaritaFormControl<MFF>>(contro
 };
 
 export const startAfterInitialize = <CONTROL extends MargaritaFormControl<MFF>>(control: CONTROL) => {
-  Object.values(control.managers).forEach((manager) => manager.afterInitialize());
-  control.controls.forEach((control) => startAfterInitialize(control));
+  if (!control.ready) {
+    Object.values(control.managers).forEach((manager) => manager.afterInitialize());
+    control.ready = true;
+  }
+  control.controls.forEach((control) => {
+    startAfterInitialize(control);
+  });
 };
