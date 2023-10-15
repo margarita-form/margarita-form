@@ -1,4 +1,4 @@
-import { combineLatest, debounceTime, distinctUntilChanged, fromEvent, map, switchMap } from 'rxjs';
+import { Observable, combineLatest, debounceTime, distinctUntilChanged, fromEvent, map, switchMap } from 'rxjs';
 import type { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
 import { mapResolverEntries } from '../../helpers/resolve-function-outputs';
 
@@ -67,6 +67,32 @@ export const handleControlAttributeChanges = <CONTROL extends MFC = MFC>({
   node: MargaritaFormBaseElement<CONTROL>;
   control: CONTROL;
 }) => {
+  const setAttributes = (attributes: Record<string, unknown>) => {
+    try {
+      const el = node as HTMLElement;
+      Object.entries(attributes).forEach(([key, value]) => {
+        el.setAttribute(key, String(value));
+      });
+    } catch (error) {
+      // Could not set attributes!
+      console.error('Could not set attributes!', {
+        attributes,
+        control,
+        error,
+      });
+    }
+  };
+
+  const syncronousAttributes = Object.entries(control.field.attributes || {}).reduce((acc, [key, value]) => {
+    if (typeof value === 'function') return acc;
+    if (value instanceof Promise) return acc;
+    if (value instanceof Observable) return acc;
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, unknown>);
+
+  setAttributes(syncronousAttributes);
+
   return combineLatest([control.valueChanges, control.stateChanges])
     .pipe(
       debounceTime(1),
@@ -82,19 +108,5 @@ export const handleControlAttributeChanges = <CONTROL extends MFC = MFC>({
         });
       })
     )
-    .subscribe((attributes) => {
-      try {
-        const el = node as HTMLElement;
-        Object.entries(attributes).forEach(([key, value]) => {
-          el.setAttribute(key, String(value));
-        });
-      } catch (error) {
-        // Could not set attributes!
-        console.error('Could not set attributes!', {
-          attributes,
-          control,
-          error,
-        });
-      }
-    });
+    .subscribe(setAttributes);
 };
