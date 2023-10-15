@@ -251,6 +251,13 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   >(
     identifier: IDENTIFIER
   ): ControlValue<FIELD> extends Array<any> ? undefined | _T : _T;
+  findControl<
+    FIELD_TYPE,
+    IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>,
+    _T = ChildControl<FIELD_TYPE, IDENTIFIER, FIELD>
+  >(
+    identifier: IDENTIFIER
+  ): undefined | _T;
 
   removeControl: <IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>>(identifier: IDENTIFIER) => void;
   moveControl: <IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>>(

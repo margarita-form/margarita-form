@@ -555,6 +555,18 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   };
 
   /**
+   * Find control with identifier. Searches all child controls recursively and returns the first match.
+   * @param identifier name, index or key of the control. Provide an array of identifiers to get nested control.
+   * @returns The control that was found or added or null if control doesn't exist.
+   */
+  public findControl: ControlLike<FIELD>['findControl'] = (identifier) => {
+    const control = this.getControl<any>(identifier);
+    if (control) return control;
+    if (!this.expectChildControls) return undefined;
+    return this.controls.find((control) => control.findControl(identifier));
+  };
+
+  /**
    * Check if control exists
    * @param identifier name, index or key of the control
    * @returns boolean
