@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "paths": {
+      "@margarita-form/angular": ["libs/margarita-form-angular/src/index.ts"],
       "@margarita-form/core": ["libs/margarita-form/src/index.ts"],
       "@margarita-form/react": ["libs/margarita-form-react/src/index.ts"]
     }
