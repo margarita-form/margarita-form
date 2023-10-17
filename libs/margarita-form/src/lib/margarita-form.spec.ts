@@ -1309,6 +1309,9 @@ describe('margaritaForm', () => {
           name: 'inactive',
           initialValue: 'not-active',
           active: false,
+          validation: {
+            justInvalid: () => ({ valid: false, error: 'Always be invalid' }),
+          },
         },
       ],
     });
@@ -1320,6 +1323,11 @@ describe('margaritaForm', () => {
     expect(form.value).toHaveProperty(['text'], 'text');
     expect(form.value).toHaveProperty(['object', 'childValue'], 'childValue');
     expect(form.value).not.toHaveProperty(['inactive']);
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(form.state.valid).toBe(true);
+    expect(inactiveControl.state.valid).toBe(false);
 
     form.clearValue();
 
@@ -1389,6 +1397,11 @@ describe('margaritaForm', () => {
 
     expect(form.state.dirty).toBe(false);
     expect(objectControl.state.dirty).toBe(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(form.state.valid).toBe(true);
+    expect(inactiveControl.state.valid).toBe(false);
 
     form.cleanup();
   });
