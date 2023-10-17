@@ -1,6 +1,15 @@
 {
   "name": "@margarita-form/angular",
-  "version": "0.6.0-alpha.64",
+  "version": "0.6.0-alpha.65",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/margarita-form/margarita-form",
+  "bugs": {
+    "url": "https://github.com/margarita-form/margarita-form/issues"
+  },
   "peerDependencies": {
     "@angular/common": "^16.2.0",
     "@angular/core": "^16.2.0",
