@@ -24,6 +24,7 @@ For now you can check [reference documentation](https://margarita-form.github.io
 
 - [Core](https://www.npmjs.com/package/@margarita-form/core)
 - [React](https://www.npmjs.com/package/@margarita-form/react)
+- [Angular](https://www.npmjs.com/package/@margarita-form/angular)
 
 ### React
 
