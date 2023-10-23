@@ -95,3 +95,8 @@ export type I18NField<LOCALES extends string, I18NType extends object> = {
     [L in LOCALES]: I18NType[K];
   };
 };
+
+/**
+ * Type of a change event
+ */
+export type ControlChange<FIELD extends MFF = MFF, CHANGE = unknown> = { name: string; change: CHANGE; control: MFC<FIELD> };

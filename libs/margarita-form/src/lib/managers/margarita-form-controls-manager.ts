@@ -1,18 +1,16 @@
-import { BehaviorSubject, filter } from 'rxjs';
+import { filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFC, MFCA, MFCG, MFF } from '../margarita-form-types';
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
 import { startAfterInitialize } from './margarita-form-create-managers';
 
-class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
-  public changes = new BehaviorSubject<MFC[]>([]);
+class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   private _buildWith: CONTROL['field'] | null = null;
-  private _controls: MFC[] = [];
   private _requireUniqueNames: boolean;
 
-  constructor(public control: CONTROL) {
-    super();
+  constructor(public override control: CONTROL) {
+    super('controls', control, []);
     const { fields } = this.control.field;
     const fieldsAreValid = !fields || Array.isArray(fields);
     if (!fieldsAreValid) {
@@ -20,18 +18,6 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     }
 
     this._requireUniqueNames = !this.control.expectArray;
-
-    this.onCleanup = () => {
-      this._controls.forEach((control) => {
-        control.cleanup();
-      });
-    };
-
-    this.onResubscribe = () => {
-      this._controls.forEach((control) => {
-        control.resubscribe();
-      });
-    };
 
     if (this.control.field) {
       this.rebuild();
@@ -44,6 +30,12 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     );
   }
 
+  public override onCleanup() {
+    this.value.forEach((control) => {
+      control.cleanup();
+    });
+  }
+
   public rebuild(resetControls = false) {
     const { field } = this.control;
     if (!field) throw 'No field provided for control!';
@@ -51,7 +43,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const { startWith = 1, fields } = field;
 
     if (this._buildWith && fields && this.control.expectGroup) {
-      const controlsToRemove = this._controls.filter((control) => {
+      const controlsToRemove = this.value.filter((control) => {
         return !fields.some((field: MFF) => field.name === control.name);
       });
 
@@ -79,7 +71,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
         }
       }
 
-      const startFrom = this._controls.length;
+      const startFrom = this.value.length;
       const shouldBuildArray = resetControls || startFrom <= 0;
       if (shouldBuildArray && !Array.isArray(this.control.value)) {
         // Skip if value is already set as it determines the length of the array
@@ -105,7 +97,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   }
 
   private _emitChanges(syncValue = true) {
-    this.changes.next(this._controls);
+    this.emitChange(this.value);
     if (syncValue) this.control.managers.value.refreshSync(true, false);
     if (this.control.initialized) startAfterInitialize(this.control);
     if (syncValue && this.control.initialized) this.control.updateStateValue('dirty', true);
@@ -113,7 +105,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   public get hasControls(): boolean {
     try {
-      return this._controls.length > 0;
+      return this.value.length > 0;
     } catch (error) {
       console.trace(error);
       return false;
@@ -121,13 +113,13 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
   }
 
   get group(): MFCG {
-    const entries = this._controls.map((control) => [control.name, control]);
+    const entries = this.value.map((control) => [control.name, control]);
     const obj = Object.fromEntries(entries);
     return obj;
   }
 
   get array(): MFCA {
-    return this._controls;
+    return this.value;
   }
 
   public appendRepeatingControls<FIELD extends MFF = MFF>(fieldTemplates?: string[] | FIELD[]): MFC<FIELD>[] {
@@ -186,7 +178,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
     const control = new MargaritaFormControl<FIELD>(field, {
       parent: this.control,
       root: this.control.root,
-      initialIndex: this._controls.length,
+      initialIndex: this.value.length,
       idStore: this.control.context.idStore,
     });
 
@@ -205,7 +197,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
       }
     }
 
-    this._controls.push(control);
+    this.value.push(control);
     if (emit) this._emitChanges();
     return control;
   }
@@ -218,12 +210,12 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   public removeControl(identifier: string | number, emit = true) {
     if (typeof identifier === 'number') {
-      const [removed] = this._controls.splice(identifier, 1);
+      const [removed] = this.value.splice(identifier, 1);
       this._removeCleanup(removed);
     } else {
-      const index = this._controls.findIndex((control) => [control.name, control.key, control.uid].includes(identifier));
+      const index = this.value.findIndex((control) => [control.name, control.key, control.uid].includes(identifier));
       if (index > -1) {
-        const [control] = this._controls.splice(index, 1);
+        const [control] = this.value.splice(index, 1);
         this._removeCleanup(control);
         const { onRemove } = control.field;
         if (onRemove) onRemove({ control });
@@ -234,8 +226,8 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   public getControl(identifier: DeepControlIdentifier<CONTROL['field']>): MFC | undefined {
     if (typeof identifier === 'number') {
-      if (identifier < 0) return this._controls[this._controls.length + identifier];
-      return this._controls[identifier];
+      if (identifier < 0) return this.value[this.value.length + identifier];
+      return this.value[identifier];
     }
     if (typeof identifier === 'string') {
       const actuallyNumber = Number(identifier);
@@ -252,20 +244,20 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager {
         return control.getControl(rest);
       }
     }
-    return this._controls.find((control) => [control.name, control.key].includes(identifier));
+    return this.value.find((control) => [control.name, control.key].includes(identifier));
   }
 
   public getControlIndex(identifier: string | MFC) {
     if (identifier instanceof MargaritaFormControl) {
-      return this._controls.findIndex((control) => control === identifier);
+      return this.value.findIndex((control) => control === identifier);
     }
-    return this._controls.findIndex((control) => [control.name, control.key].includes(identifier));
+    return this.value.findIndex((control) => [control.name, control.key].includes(identifier));
   }
 
   public moveControl(identifier: string, toIndex: number, emit = true) {
     const currentIndex = this.getControlIndex(identifier);
-    const [item] = this._controls.splice(currentIndex, 1);
-    this._controls.splice(toIndex, 0, item);
+    const [item] = this.value.splice(currentIndex, 1);
+    this.value.splice(toIndex, 0, item);
     if (emit) this._emitChanges(true);
   }
 }

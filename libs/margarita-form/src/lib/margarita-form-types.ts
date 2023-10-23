@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Observable } from 'rxjs';
+import type { BehaviorSubject, Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
 import type { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
@@ -34,6 +34,7 @@ import {
   DeepControlIdentifier,
   ChildControl,
   I18NField,
+  ControlChange,
 } from './typings/helper-types';
 import { NotFunction, OrString } from './typings/util-types';
 
@@ -156,10 +157,11 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get<VALUE>(key: keyof MFC | OrString): VALUE;
 
   cleanup(): void;
-  resubscribe(): void;
+  reInitialize(): void;
   updateSyncId(): void;
   updateUid(): void;
   updateKey(): void;
+  emitChange(name: string, change: unknown): void;
   get root(): MFC;
   get isRoot(): boolean;
   get parent(): MFC;
@@ -187,7 +189,8 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 
   // Events
 
-  get changes(): Observable<{ name: keyof MargaritaFormControlManagers; change: unknown; control: MFC<FIELD> }>;
+  get changes(): BehaviorSubject<ControlChange>;
+  get afterChanges(): Observable<ControlChange>;
 
   // Value
 

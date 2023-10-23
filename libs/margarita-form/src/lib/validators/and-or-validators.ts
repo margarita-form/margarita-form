@@ -1,6 +1,6 @@
 import { map } from 'rxjs';
-import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { MargaritaFormValidator, MargaritaFormValidatorResult } from '../margarita-form-types';
+import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
 
 const _validatorBase: (requireAll: boolean, defaultErrorMessage: string) => MargaritaFormValidator<Record<string, any>> =
   (requireAll: boolean, defaultErrorMessage: string) =>
@@ -8,17 +8,7 @@ const _validatorBase: (requireAll: boolean, defaultErrorMessage: string) => Marg
     if (!params || !value) return { valid: true };
     const validators = control.validators;
 
-    const validations = mapResolverEntries<MargaritaFormValidatorResult>({
-      title: 'State',
-      from: params,
-      resolveStaticValues: false,
-      resolvers: validators,
-      context: {
-        control,
-        value,
-        params: null,
-      },
-    });
+    const validations = getResolverOutputMapObservable(params, control, validators);
 
     const fnName: 'every' | 'some' = requireAll ? 'every' : 'some';
 

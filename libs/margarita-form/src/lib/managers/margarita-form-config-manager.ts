@@ -6,7 +6,7 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addMetadata: false,
   allowUnresolvedArrayChildNames: false,
   allowConcurrentSubmits: false,
-  asyncFunctionWarningTimeout: 2000,
+  asyncFunctionWarningTimeout: 5000,
   clearStorageOnSuccessfullSubmit: true,
   appendNodeValidationsToControl: true,
   appendControlValidationsToNode: true,
@@ -27,11 +27,10 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   runTransformersForInitialValues: true,
 });
 
-class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {
-  private _config: MargaritaFormConfig = getDefaultConfig();
-
-  constructor(public control: CONTROL) {
-    super();
+class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager<MargaritaFormConfig> {
+  constructor(public override control: CONTROL) {
+    const defaultConfig = getDefaultConfig();
+    super('config', control, defaultConfig);
     this.updateConfig();
   }
 
@@ -41,14 +40,10 @@ class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager {
     });
   }
 
-  public get current(): MargaritaFormConfig {
-    return this._config;
-  }
-
   public updateConfig() {
     const parentConfig = this.control.isRoot ? {} : this.control.parent.config;
     const config = ConfigManager.joinConfigs(parentConfig, this.control.config);
-    this._config = config;
+    this.value = config;
   }
 
   public static joinConfigs(...configs: (undefined | Partial<MargaritaFormConfig>)[]): MargaritaFormConfig {

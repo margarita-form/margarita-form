@@ -15,7 +15,7 @@ export const useMargaritaForm = <FIELD extends MFF>(field: FIELD, dependencies: 
       return () => {};
     }
     const currentForm = form;
-    currentForm.resubscribe();
+    currentForm.reInitialize();
     return () => currentForm.cleanup();
   }, [field.name]);
 
