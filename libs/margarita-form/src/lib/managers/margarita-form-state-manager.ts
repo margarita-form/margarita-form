@@ -130,10 +130,6 @@ export class MargaritaFormStateValue implements MargaritaFormState {
 
   // Root states
 
-  private _checkRoot(name: string) {
-    if (!this.control.isRoot) throw `State "${name}" is only available in root!`;
-  }
-
   get parentIsActive() {
     if (this.control.isRoot) return this.active;
     return this.control.parent.state.active;
@@ -141,41 +137,33 @@ export class MargaritaFormStateValue implements MargaritaFormState {
 
   private _submitted = false;
   get submitted() {
-    this._checkRoot('submitted');
     return this._submitted;
   }
   set submitted(value: boolean) {
-    this._checkRoot('submitted');
     this._submitted = value;
   }
 
   private _submitting = false;
   get submitting() {
-    this._checkRoot('submitting');
     return this._submitting;
   }
   set submitting(value: boolean) {
-    this._checkRoot('submitting');
     this._submitting = value;
   }
 
   private _submitResult: MargaritaFormState['submitResult'] = 'not-submitted';
   get submitResult() {
-    this._checkRoot('submitResult');
     return this._submitResult;
   }
   set submitResult(value: MargaritaFormState['submitResult']) {
-    this._checkRoot('submitResult');
     this._submitResult = value;
   }
 
   private _submits = 0;
   get submits() {
-    this._checkRoot('submits');
     return this._submits;
   }
   set submits(value: number) {
-    this._checkRoot('submits');
     this._submits = value;
   }
 }
