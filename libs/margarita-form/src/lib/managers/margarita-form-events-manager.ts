@@ -2,8 +2,8 @@ import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
 
 class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
-  constructor(public control: CONTROL) {
-    super();
+  constructor(public override control: CONTROL) {
+    super('events', control);
   }
 
   public override onInitialize(): void {

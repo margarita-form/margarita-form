@@ -1,28 +1,22 @@
-import { BehaviorSubject, debounceTime, skip } from 'rxjs';
+import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
-import { CommonRecord, MFC, MargaritaFormFieldContext } from '../margarita-form-types';
+import { CommonRecord, MFC } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { SearchParamsStorage } from '../extensions/storages/search-params-storage';
-import { getResolver, resolverOutputAsObservableEntry } from '../helpers/resolve-function-outputs';
+import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
+import { checkAsync } from '../helpers/async-checks';
 
-class ValueManager<CONTROL extends MFC> extends BaseManager {
+class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   private initialized = false;
-  private _value: CONTROL['value'] = undefined;
-  public changes: BehaviorSubject<CONTROL['value']>;
 
-  constructor(public control: CONTROL) {
-    super();
-
+  constructor(public override control: CONTROL) {
+    super('value', control);
     const initialValue = this._getInitialValue();
-    // console.debug('Initial Value for ', this.control.name, ':', initialValue);
-
     if (initialValue) {
       this._setValue(initialValue, control.config.runTransformersForInitialValues);
     }
-
-    this.changes = new BehaviorSubject<CONTROL['value']>(this._value);
     this.initialized = true;
   }
 
@@ -34,8 +28,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const shouldListen = useStorage || useSyncronization;
     if (shouldListen) {
       this.createSubscription(changes, () => {
-        if (useStorage) storage.saveStorageValue(this._value);
-        if (useSyncronization) syncronization.broadcastChange(this._value);
+        if (useStorage) storage.saveStorageValue(this.value);
+        if (useSyncronization) syncronization.broadcastChange(this.value);
       });
     }
 
@@ -43,7 +37,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       try {
         const subscription = syncronization.subscribeToMessages<CONTROL['value']>(
           (value) => this.updateValue(value, true, false),
-          () => this._value
+          () => this.value
         );
 
         if (subscription && subscription.observable) {
@@ -75,29 +69,24 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const { valueResolver } = this.control.field;
 
     if (valueResolver) {
-      const context: MargaritaFormFieldContext = {
+      const resolver = getResolverOutput({
+        getter: valueResolver,
         control: this.control,
-        value: this._value,
-      };
-
-      const _valueResolver = getResolver({
-        key: 'valueResolver',
-        value: valueResolver,
-        context,
       });
 
-      if (_valueResolver) {
-        const _valueResolverObservable = resolverOutputAsObservableEntry('valueResolver', _valueResolver, context, 'Value Resolver');
-
-        if (_valueResolverObservable instanceof Promise) {
-          const _value = await _valueResolverObservable;
-          const __value = _value[1];
-          this.updateValue(__value, true, true, false);
+      const isAsync = checkAsync(resolver);
+      if (isAsync) {
+        if (resolver instanceof Promise) {
+          const value = await resolver;
+          this.updateValue(value, true, true, false);
         } else {
-          this.createSubscription(_valueResolverObservable, ([key, value]) => {
+          const resolverObservable = getResolverOutputObservable('valueResolver', resolver, this.control);
+          this.createSubscription(resolverObservable, (value) => {
             this.updateValue(value, true, true, false);
           });
         }
+      } else {
+        this.updateValue(resolver, true, true, false);
       }
     }
   }
@@ -108,7 +97,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
       const { addMetadata } = this.control.config;
       if (addMetadata && typeof value === 'object' && !Array.isArray(value)) {
         const { key, name, uid } = this.control;
-        const { _uid = uid || nanoid(4) } = (this._value || {}) as CommonRecord;
+        const { _uid = uid || nanoid(4) } = (this.value || {}) as CommonRecord;
         return {
           _key: key,
           _name: name,
@@ -126,13 +115,13 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const _value = _useTransformer && transformer ? transformer({ value: _valueWithMetadata, control: this.control }) : _valueWithMetadata;
 
     // Set value
-    this._value = _value;
+    this.value = _value;
     if (this.initialized) this.control.updateUid();
   }
 
   private _emitChanges() {
     this.control.updateSyncId();
-    this.changes.next(this._value);
+    this.emitChange(this.value);
   }
 
   public _getInitialValue(allowStorage = true) {
@@ -194,10 +183,9 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    */
   public get current(): CONTROL['value'] {
     if (!this.control.isRoot && this.control.parent.expectArray) {
-      // return this._value?.value;
-      return this._value;
+      return this.value;
     }
-    return this._value;
+    return this.value;
   }
 
   public refreshSync(origin = true, initial = true) {
@@ -205,7 +193,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
 
     // Sync children
     const { expectArray } = this.control;
-    const valueIsArray = Array.isArray(this._value);
+    const valueIsArray = Array.isArray(this.value);
     if (initial && expectArray && valueIsArray) {
       this._syncUpstreamValue(false, false, true);
     }
@@ -266,7 +254,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
   }
 
   public _syncUpstreamValue(patch: boolean, setAsDirty = true, emitEvent = true) {
-    const currentValue = this._value;
+    const currentValue = this.value;
     const { hasControls, expectArray, controls } = this.control;
 
     // console.debug('Sync upstream value:', currentValue);
@@ -354,11 +342,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
     const value = exists ? childControl.value : this.getUndefinedValue(childControl);
     const key = expectArray ? childControl.index : childControl.name;
 
-    if (this._value && expectFlat) this._value = { ...this._value, ...value };
-    else if (this._value) this._value[key] = value;
-    else if (expectGroup) this._value = { [key]: value };
-    else if (expectArray) this._value = [value];
-    else if (expectFlat) this._value = { ...value };
+    if (this.value && expectFlat) this.value = { ...this.value, ...value };
+    else if (this.value) this.value[key] = value;
+    else if (expectGroup) this.value = { [key]: value };
+    else if (expectArray) this.value = [value];
+    else if (expectFlat) this.value = { ...value };
 
     if (setAsDirty) this.control.updateStateValue('dirty', true);
     if (emitEvent) this._emitChanges();
@@ -370,7 +358,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager {
    */
   private _resolveValue(): CONTROL['value'] {
     const { expectChildControls, expectArray, activeControls } = this.control;
-    if (!expectChildControls) return this._value;
+    if (!expectChildControls) return this.value;
 
     const hasActiveControls = activeControls.length > 0;
     if (!hasActiveControls) return undefined;

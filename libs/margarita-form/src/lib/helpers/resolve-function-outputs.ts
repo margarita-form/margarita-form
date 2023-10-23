@@ -1,173 +1,172 @@
-import { combineLatest, firstValueFrom, map, Observable, ObservableInput } from 'rxjs';
-import {
-  CommonRecord,
-  MargaritaFormFieldContext,
-  MargaritaFormResolverOutput,
-  MargaritaFormResolvers,
-  MFC,
-  ResolverParams,
-} from '../margarita-form-types';
-import { valueExists } from './check-value';
+import { combineLatest, firstValueFrom, from, map, Observable, of } from 'rxjs';
+import { CommonRecord, MargaritaFormResolver, MargaritaFormResolverOutput, MFC, ResolverParams } from '../margarita-form-types';
+import { checkAsync } from './async-checks';
 
-interface ResolverGetterParams {
-  context: MargaritaFormFieldContext;
-  resolveStaticValues?: boolean;
-  resolvers?: MargaritaFormResolvers;
+const stringMatcher = /\$\$([^:]+):?([^:]*)?:?([^:]*)/gi;
+
+type ResolverEntry<O = unknown> = [string, O];
+type ResolverOutputMap<O> = Record<PropertyKey, MargaritaFormResolverOutput<O>>;
+type ResolverOutputResultMap<O> = Record<PropertyKey, O>;
+type Resolvers<O> = Record<string, MargaritaFormResolver<O>>;
+
+interface GetResolverOutputParams<O> {
+  getter: unknown;
+  control: MFC;
+  resolvers?: Resolvers<O>;
+  contextData?: CommonRecord;
+  strict?: boolean;
 }
 
-type MargaritaFormResolverEntry<OUTPUT = unknown> = [string, OUTPUT];
+export const getResolverOutput = <OUTPUT>({
+  getter,
+  control,
+  resolvers = control.resolvers,
+  contextData = {},
+  strict = false,
+}: GetResolverOutputParams<OUTPUT>): undefined | MargaritaFormResolverOutput<OUTPUT> => {
+  const context = control._generateContext(contextData);
 
-const ResolverParamKeys: (keyof ResolverParams)[] = ['name', 'params'];
-
-export const getResolver = <OUTPUT = unknown>({
-  key,
-  value,
-  context,
-  resolveStaticValues = true,
-  resolvers = context.control.resolvers,
-}: ResolverGetterParams & {
-  key: string;
-  value: unknown;
-}): null | MargaritaFormResolverOutput<OUTPUT> => {
-  if (!valueExists(value)) return null;
-
-  if (typeof value === 'function') {
-    const result = value(context);
+  if (typeof getter === 'function') {
+    const result = getter(context);
     return result;
   }
 
-  const _findResolver = ({ name, params, ...rest }: ResolverParams) => {
-    const resolverFn = resolvers[name];
-    if (typeof resolverFn === 'function') {
-      const result = resolverFn({ ...context, params, ...rest });
-
-      return result;
+  if (typeof getter === 'string') {
+    const stringConfig = stringMatcher.test(getter);
+    if (stringConfig) {
+      const [name, ...rest] = getter.split(':');
+      const getterName = name.slice(2);
+      const data = Object.fromEntries(rest.map((item) => item.split(':')));
+      const combinedData = { ...contextData, ...data };
+      return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData });
     }
-    if (resolveStaticValues) return params as OUTPUT;
-    return null;
-  };
-
-  const stringConfig = typeof value === 'string' && /\$\$([^:]+):?([^:]*)?:?([^:]*)/gi.exec(value);
-  if (stringConfig) {
-    const [fullMatch, name, params, ...data] = stringConfig;
-    const rest = Object.fromEntries(data.map((item) => item.split(':')));
-    return _findResolver({ name, params, ...rest });
+    if (resolvers[getter]) {
+      return resolvers[getter](context);
+    }
   }
 
-  const isResolverConfigObject = () => {
-    const isObject = typeof value === 'object';
-    if (!isObject) return null;
-    const keys = Object.keys(value as CommonRecord);
-    const hasResolverName = keys.includes('name');
-    if (!hasResolverName) return null;
-    const keysAreValid = ResolverParamKeys.every((key) => keys.includes(key as string));
-    if (!keysAreValid) return null;
-    return value as ResolverParams;
-  };
-
-  const objectConfig = isResolverConfigObject();
-  if (objectConfig) {
-    return _findResolver(objectConfig);
+  if (typeof getter === 'object' && getter) {
+    if (Array.isArray(getter)) return getter as OUTPUT;
+    try {
+      if ('name' in getter && (getter.name as string).startsWith('$$')) {
+        const { name, ...rest } = getter as ResolverParams;
+        const getterName = name.slice(2);
+        const combinedData = { ...contextData, ...rest };
+        return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData });
+      }
+    } catch (error) {
+      //
+    }
   }
-
-  return _findResolver({ name: key, params: value });
+  if (strict) return undefined;
+  return getter as OUTPUT;
 };
 
-export const mapResolverEntries = <OUTPUT = unknown>({
-  from,
-  title,
-  context,
-  resolveStaticValues = true,
-  resolvers = context.control.resolvers,
-}: ResolverGetterParams & {
-  title: string;
-  from: Record<string, unknown>;
-}) => {
-  if (!from) return Promise.resolve({});
-  const entries = Object.entries(from).reduce((acc, [key, value]) => {
-    if (!valueExists(value)) return acc;
-
-    const resolver = getResolver<OUTPUT>({
-      key,
-      value,
-      context,
-      resolveStaticValues,
-      resolvers,
-    });
-
-    if (valueExists(resolver)) {
-      acc.push([key, resolver as MargaritaFormResolverOutput<OUTPUT>]);
+export const getResolverOutputMap = <OUTPUT = unknown>(
+  obj: CommonRecord,
+  control: MFC,
+  resolvers: Resolvers<OUTPUT> = control.resolvers,
+  contextData: CommonRecord = {}
+): ResolverOutputMap<OUTPUT> => {
+  return Object.entries(obj).reduce((acc, [key, params]) => {
+    const valueOutput = getResolverOutput<OUTPUT>({ getter: params, control, resolvers, contextData, strict: true });
+    if (valueOutput !== undefined) {
+      acc[key] = valueOutput;
+      return acc;
     }
+    const combinedParams = { ...contextData, params };
+    const keyOutput = getResolverOutput<OUTPUT>({ getter: key, control, resolvers, contextData: combinedParams, strict: true });
+    if (keyOutput !== undefined) {
+      acc[key] = keyOutput;
+      return acc;
+    }
+    acc[key] = params as OUTPUT;
     return acc;
-  }, [] as [string, MargaritaFormResolverOutput<OUTPUT>][]);
-
-  return resolveFunctionOutputs(title, context, entries);
+  }, {} as ResolverOutputMap<OUTPUT>);
 };
 
-export const resolverOutputAsObservableEntry = <OUTPUT = unknown>(
-  key: string,
-  output: MargaritaFormResolverOutput<OUTPUT>,
-  context: MargaritaFormFieldContext<MFC>,
-  title = 'Resolver'
+export const getResolverOutputObservable = <OUTPUT = unknown>(
+  name: string,
+  resolver: MargaritaFormResolverOutput<undefined | OUTPUT>,
+  control: MFC
 ) => {
-  type ObservableEntry = MargaritaFormResolverEntry<OUTPUT>;
   const longTime = setTimeout(() => {
-    console.warn(`${title} is taking long time to finish!`, { context });
-  }, context.control.config.asyncFunctionWarningTimeout || 2000);
+    console.warn(`Resolver is taking long time to finish!`, { name, resolver, control });
+  }, control.config.asyncFunctionWarningTimeout || 5000);
 
-  if (output instanceof Observable) {
-    const observable = output.pipe(
+  if (resolver instanceof Observable) {
+    const observable = resolver.pipe(
       map((result) => {
         clearTimeout(longTime);
-        return [key, result];
+        return result;
       })
-    ) as Observable<ObservableEntry>;
+    );
     return observable;
   }
 
-  const promise = Promise.resolve(output).then((result) => {
+  const promise = Promise.resolve(resolver).then((result) => {
     clearTimeout(longTime);
-    return [key, result];
-  }) as Promise<ObservableEntry>;
-  return promise;
+    return result;
+  });
+
+  return from(promise) as Observable<undefined | OUTPUT>;
 };
 
-export const resolveFunctionOutputs = <OUTPUT = unknown>(
-  title: string,
-  context: MargaritaFormFieldContext<MFC>,
-  entries: [string, MargaritaFormResolverOutput<OUTPUT>][]
+export const getResolverOutputPromise = <OUTPUT = unknown>(
+  name: string,
+  resolver: MargaritaFormResolverOutput<undefined | OUTPUT>,
+  control: MFC
 ) => {
-  if (!entries.length) return Promise.resolve({});
-  type ObservableEntry = MargaritaFormResolverEntry<OUTPUT>;
-  const observableEntries = entries.reduce((acc, [key, output]) => {
-    const entry = resolverOutputAsObservableEntry<OUTPUT>(key, output, context, title);
-    if (valueExists(entry)) acc.push(entry);
+  const observable = getResolverOutputObservable<OUTPUT>(name, resolver, control);
+  return firstValueFrom(observable);
+};
+
+export const getResolverOutputSyncronous = <OUTPUT = unknown>(resolver: MargaritaFormResolverOutput<undefined | OUTPUT>) => {
+  const isAsync = checkAsync(resolver);
+  if (isAsync) return undefined;
+  return resolver;
+};
+
+export const getResolverOutputMapObservable = <OUTPUT = unknown>(
+  obj: CommonRecord,
+  control: MFC,
+  resolvers: Resolvers<OUTPUT> = control.resolvers,
+  contextData: CommonRecord = {}
+): Observable<ResolverOutputResultMap<OUTPUT>> => {
+  const empty = !obj || Object.keys(obj).length === 0;
+  if (empty) return of({}) as Observable<ResolverOutputResultMap<OUTPUT>>;
+  const mapped = getResolverOutputMap<OUTPUT>(obj, control, resolvers, contextData);
+  const observables = Object.entries(mapped).reduce((acc, [key, output]) => {
+    const observable = getResolverOutputObservable<OUTPUT>(key, output, control);
+    const withKey = observable.pipe(map((result) => [key, result] as ResolverEntry<OUTPUT>));
+    acc.push(withKey);
     return acc;
-  }, [] as ObservableInput<ObservableEntry>[]);
+  }, [] as Observable<ResolverEntry<OUTPUT>>[]);
 
-  return combineLatest(observableEntries).pipe(
-    map((values: ObservableEntry[]) => {
-      return Object.fromEntries(values);
-    })
-  );
+  return combineLatest(observables).pipe(map((values) => Object.fromEntries(values)));
 };
 
-export const resolveFunctionOutputPromises = async <OUTPUT = unknown>(
-  title: string,
-  context: MargaritaFormFieldContext<MFC>,
-  entries: MargaritaFormResolverOutput<OUTPUT> | Record<string, MargaritaFormResolverOutput<OUTPUT>>
-): Promise<OUTPUT> => {
-  if (typeof entries === 'function') return resolveFunctionOutputPromises(title, context, { [title]: entries });
-  const observables = mapResolverEntries({ title, context, from: entries as Record<string, MargaritaFormResolverOutput<OUTPUT>> });
-  if (observables instanceof Promise) return observables as Promise<OUTPUT>;
-  const promises = await firstValueFrom(observables);
-  return promises as OUTPUT;
+export const getResolverOutputMapPromise = async <OUTPUT = unknown>(
+  obj: CommonRecord,
+  control: MFC,
+  resolvers: Resolvers<OUTPUT> = control.resolvers,
+  contextData: CommonRecord = {}
+): Promise<ResolverOutputResultMap<OUTPUT>> => {
+  const observable = getResolverOutputMapObservable<OUTPUT>(obj, control, resolvers, contextData);
+  const result = await firstValueFrom(observable);
+  return result;
 };
 
-export const createResolverContext = <CONTROL extends MFC>(control: CONTROL): MargaritaFormFieldContext<CONTROL> => {
-  return {
-    control,
-    value: control.value,
-    params: undefined,
-  };
+export const getResolverOutputMapSyncronous = <OUTPUT = unknown>(
+  obj: CommonRecord,
+  control: MFC,
+  resolvers: Resolvers<OUTPUT> = control.resolvers,
+  contextData: CommonRecord = {}
+): ResolverOutputResultMap<OUTPUT> => {
+  return Object.entries(obj).reduce((acc, [key, getter]) => {
+    const resolver = getResolverOutput<OUTPUT>({ getter, control, resolvers, contextData });
+    const result = getResolverOutputSyncronous(resolver);
+    if (result !== undefined) acc[key] = resolver as OUTPUT;
+    return acc;
+  }, {} as ResolverOutputResultMap<OUTPUT>);
 };

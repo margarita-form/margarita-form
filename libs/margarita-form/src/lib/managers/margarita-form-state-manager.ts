@@ -1,29 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  BehaviorSubject,
-  Observable,
-  combineLatest,
-  combineLatestWith,
-  debounceTime,
-  distinctUntilChanged,
-  firstValueFrom,
-  map,
-  skip,
-  switchMap,
-} from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay, skip, switchMap } from 'rxjs';
 import {
   MargaritaFormState,
   MargaritaFormStateErrors,
   CommonRecord,
   MFC,
   MargaritaFormStateChildren,
-  MargaritaFormValidatorResult,
   UserDefinedStates,
   MargaritaFormStateAllErrors,
+  MargaritaFormValidatorResult,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
-import { mapResolverEntries } from '../helpers/resolve-function-outputs';
 import { valueExists } from '../helpers/check-value';
+import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 
 // States which can be modfiied in the field
 export const fieldStateKeys: (keyof UserDefinedStates)[] = [
@@ -187,43 +175,27 @@ export class MargaritaFormStateValue implements MargaritaFormState {
   }
 }
 
-class StateManager<CONTROL extends MFC> extends BaseManager {
-  public value: MargaritaFormStateValue;
-  public changes: BehaviorSubject<MargaritaFormStateValue>;
+class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateValue> {
+  public override value: MargaritaFormStateValue;
 
-  constructor(public control: CONTROL) {
-    super();
-
+  constructor(public override control: CONTROL) {
+    super('state', control);
     this.value = new MargaritaFormStateValue(control);
-    this.changes = new BehaviorSubject(this.value);
+  }
 
-    fieldStateKeys.forEach((key) => {
-      const value = control.field[key];
-      if (typeof value === 'boolean') this.updateStates({ [key]: value });
-      if (typeof value === 'function') this.updateStates({ [key]: false });
-      if (value instanceof Promise) console.debug('Handling promise states is currently not implemented'); // Todo: handle promise
-      if (value instanceof Observable) console.debug('Handling observable states is currently not implemented'); // Todo: handle observable
-    });
+  public override onInitialize(): void {
+    this._setInitialState();
   }
 
   public override afterInitialize(): void {
     const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
-      switchMap((value) => {
+      switchMap(() => {
         const state = fieldStateKeys.reduce((acc, key) => {
           const value = this.control.field[key];
           if (valueExists(value)) acc[key] = value;
           return acc;
         }, {} as CommonRecord);
-
-        return mapResolverEntries({
-          title: 'State',
-          from: state,
-          context: {
-            control: this.control,
-            value,
-            params: null,
-          },
-        });
+        return getResolverOutputMapObservable(state, this.control);
       })
     );
 
@@ -233,71 +205,34 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
     });
 
     const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
-      switchMap((value) => {
+      switchMap(() => {
         if (!this.value.validating) this.updateState('validating', true);
         const validators = this.control.validators;
         const validation = this.control.field.validation || {};
         if (this.control.config.requiredNameCase) {
           validation['controlNameCase'] = this.control.config.requiredNameCase;
         }
-        return mapResolverEntries<MargaritaFormValidatorResult>({
-          title: 'Validations',
-          from: validation,
-          resolveStaticValues: false,
-          resolvers: validators,
-          context: {
-            control: this.control,
-            value,
-            params: null,
-          },
-        });
+        return getResolverOutputMapObservable<MargaritaFormValidatorResult>(validation, this.control, validators);
       }),
-      combineLatestWith(
-        this.control.managers.controls.changes.pipe(
-          switchMap((controls) => {
-            if (!controls.length) return Promise.resolve([]);
-            const stateChanges = controls.map((control) => control.stateChanges);
-            return combineLatest(stateChanges) as Observable<MargaritaFormStateChildren>;
-          })
-        )
-      ),
-      debounceTime(1)
+      shareReplay(1)
     );
 
-    this.createSubscription(validationStateSubscriptionObservable, ([validationStates, children]) => {
-      const childrenAreValid = children.every((child) => child.valid || child.inactive);
-      const currentIsValid = Object.values(validationStates).every((state) => state.valid);
+    const childStateSubscriptionObservable = this.control.managers.controls.changes.pipe(
+      debounceTime(1),
+      switchMap((controls) => {
+        if (!controls.length) return Promise.resolve([]);
+        const stateChanges = controls.map((control) => control.stateChanges);
 
-      const valid = currentIsValid && childrenAreValid;
+        return combineLatest(stateChanges);
+      })
+    );
 
-      const errors = Object.entries(validationStates).reduce((acc, [key, { valid, error }]) => {
-        if (!valid && error) acc[key] = error;
-        return acc;
-      }, {} as MargaritaFormStateErrors);
-
-      const hasErrors = Object.keys(errors).length > 0;
-      const currentPathAsString = this.control.getPath().join('.');
-      const initialAllErrors = hasErrors
-        ? ([{ path: currentPathAsString, errors, control: this.control }] as MargaritaFormStateAllErrors)
-        : [];
-
-      const childErrors = children.map((child) => child.allErrors);
-
-      const allErrors = childErrors.reduce((acc, allErrors) => {
-        acc.push(...allErrors);
-        return acc;
-      }, initialAllErrors);
-
-      const changes = {
-        valid,
-        errors,
-        children,
-        allErrors,
-        validating: false,
-        validated: true,
-      };
-      this.updateStates(changes);
-    });
+    this.createSubscription(
+      combineLatest([validationStateSubscriptionObservable, childStateSubscriptionObservable]),
+      ([validationResult, childStates]) => {
+        this._updateValidationState(validationResult, childStates);
+      }
+    );
 
     const activeChangesSubscriptionObservable = this.changes.pipe(
       map((state) => state.active),
@@ -313,8 +248,70 @@ class StateManager<CONTROL extends MFC> extends BaseManager {
   }
 
   private _emitChanges() {
-    this.changes.next(this.value);
     this.control.updateSyncId();
+    this.emitChange(this.value);
+  }
+
+  private _updateValidationState(validationResult: Record<string, MargaritaFormValidatorResult>, childStates: MargaritaFormStateChildren) {
+    const childrenAreValid = childStates.every((child) => child.valid || child.inactive);
+    const currentIsValid = Object.values(validationResult).every((state) => state && state.valid);
+
+    const valid = currentIsValid && childrenAreValid;
+
+    const errors = Object.entries(validationResult).reduce((acc, [key, { valid, error }]) => {
+      if (!valid && error) acc[key] = error;
+      return acc;
+    }, {} as MargaritaFormStateErrors);
+
+    const hasErrors = Object.keys(errors).length > 0;
+    const currentPathAsString = this.control.getPath().join('.');
+    const initialAllErrors = hasErrors
+      ? ([{ path: currentPathAsString, errors, control: this.control }] as MargaritaFormStateAllErrors)
+      : [];
+
+    const childErrors = childStates.map((child) => child.allErrors);
+
+    const allErrors = childErrors.reduce((acc, allErrors) => {
+      acc.push(...allErrors);
+      return acc;
+    }, initialAllErrors);
+
+    const changes = {
+      valid,
+      errors,
+      children: childStates,
+      allErrors,
+      validating: false,
+      validated: true,
+    };
+    this.updateStates(changes);
+  }
+
+  private get _mappedFieldState() {
+    const stateEntries: ([] | [string, unknown])[] = fieldStateKeys.map((key) => {
+      const value = this.control.field[key];
+      if (!valueExists(value)) return [];
+      return [key, value];
+    });
+    const state = Object.fromEntries(stateEntries);
+    return state;
+  }
+
+  private _setInitialState() {
+    const state = getResolverOutputMapSyncronous(this._mappedFieldState, this.control);
+    this.updateStates(state);
+    this._setInitialValidationState();
+  }
+
+  private _setInitialValidationState() {
+    const validators = this.control.validators;
+    const validation = this.control.field.validation || {};
+    if (this.control.config.requiredNameCase) {
+      validation['controlNameCase'] = this.control.config.requiredNameCase;
+    }
+    const syncronousValidationResults = getResolverOutputMapSyncronous<MargaritaFormValidatorResult>(validation, this.control, validators);
+    const currentChildStateResults = this.control.activeControls.map((control) => control.state);
+    this._updateValidationState(syncronousValidationResults, currentChildStateResults);
   }
 
   // Methods

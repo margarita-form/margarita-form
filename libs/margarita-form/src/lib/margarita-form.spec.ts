@@ -38,7 +38,7 @@ const invalidField: MargaritaFormField<any, MFF> = {
     pattern: /\d\d/g,
     customValidator: true,
     customMax: {
-      name: 'max',
+      name: '$$max',
       params: 20,
       errorMessage: 'Value is way way way too high!',
     },
@@ -747,9 +747,8 @@ describe('margaritaForm', () => {
 
     const invalidControl = form.getControl([invalidField.name]);
     if (!invalidControl) throw 'No control found!';
-    expect(invalidControl.state.valid).toBe(true);
     const { state, stateChanges } = invalidControl;
-    expect(state.valid).toBe(true);
+    expect(state.valid).toBe(false);
 
     const observable = stateChanges.pipe(debounceTime(10));
 
@@ -801,9 +800,8 @@ describe('margaritaForm', () => {
 
     const uncommonControl = form.getControl([asyncGroupField.name, uncommonField.name]);
     if (!uncommonControl) throw 'No control found!';
-    expect(uncommonControl.state.valid).toBe(true);
     const { state, stateChanges } = uncommonControl;
-    expect(state.valid).toBe(true);
+    expect(state.valid).toBe(false);
 
     const observable = stateChanges.pipe(debounceTime(10));
 
@@ -833,9 +831,9 @@ describe('margaritaForm', () => {
     const commonControl = form.getControl([commonField.name]);
     if (!commonControl) throw 'No control found!';
 
-    expect(commonControl.state.valid).toBe(true);
+    expect(commonControl.state.valid).toBe(false);
     commonControl.setValue(undefined, false, false);
-    expect(commonControl.state.valid).toBe(true);
+    expect(commonControl.state.valid).toBe(false);
     const response1 = await commonControl.validate();
     expect(response1).toBe(false);
     expect(commonControl.state.valid).toBe(false);

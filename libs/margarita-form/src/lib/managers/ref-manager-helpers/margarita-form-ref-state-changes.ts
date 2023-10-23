@@ -1,6 +1,6 @@
-import { Observable, combineLatest, debounceTime, distinctUntilChanged, fromEvent, map, switchMap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, fromEvent, map, switchMap } from 'rxjs';
 import type { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
-import { mapResolverEntries } from '../../helpers/resolve-function-outputs';
+import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../../helpers/resolve-function-outputs';
 
 export const handleElementBlur = <CONTROL extends MFC = MFC>({
   node,
@@ -67,6 +67,9 @@ export const handleControlAttributeChanges = <CONTROL extends MFC = MFC>({
   node: MargaritaFormBaseElement<CONTROL>;
   control: CONTROL;
 }) => {
+  const { attributes } = control.field;
+  if (!attributes) return;
+
   const setAttributes = (attributes: Record<string, unknown>) => {
     try {
       const el = node as HTMLElement;
@@ -83,30 +86,11 @@ export const handleControlAttributeChanges = <CONTROL extends MFC = MFC>({
     }
   };
 
-  const syncronousAttributes = Object.entries(control.field.attributes || {}).reduce((acc, [key, value]) => {
-    if (typeof value === 'function') return acc;
-    if (value instanceof Promise) return acc;
-    if (value instanceof Observable) return acc;
-    acc[key] = value;
-    return acc;
-  }, {} as Record<string, unknown>);
+  const syncronousAttributes = getResolverOutputMapSyncronous(attributes, control);
 
   setAttributes(syncronousAttributes);
 
   return combineLatest([control.valueChanges, control.stateChanges])
-    .pipe(
-      debounceTime(1),
-      switchMap(([value]) => {
-        return mapResolverEntries({
-          title: 'Attributes',
-          from: control.field.attributes || {},
-          context: {
-            control,
-            value,
-            params: null,
-          },
-        });
-      })
-    )
+    .pipe(switchMap(() => getResolverOutputMapObservable(attributes, control)))
     .subscribe(setAttributes);
 };
