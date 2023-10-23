@@ -134,6 +134,11 @@ export class MargaritaFormStateValue implements MargaritaFormState {
     if (!this.control.isRoot) throw `State "${name}" is only available in root!`;
   }
 
+  get parentIsActive() {
+    if (this.control.isRoot) return this.active;
+    return this.control.parent.state.active;
+  }
+
   private _submitted = false;
   get submitted() {
     this._checkRoot('submitted');
