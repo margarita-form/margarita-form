@@ -110,6 +110,17 @@ const uncommonGroupField: MargaritaFormField = {
   },
 };
 
+const doubleValueField: MargaritaFormField = {
+  name: 'doubleValue',
+  initialValue: 'initialValue',
+  defaultValue: 'defaultValue',
+};
+
+const onlyDefaultValueField: MargaritaFormField = {
+  name: 'onlyDefaultValue',
+  defaultValue: 'defaultValue',
+};
+
 const arrayField: MargaritaFormField = {
   name: 'arrayName',
   grouping: 'array',
@@ -121,11 +132,17 @@ type ArrayField = { arrayName: unknown[] };
 describe('margaritaForm', () => {
   it('#0 Common getters', () => {
     const locales = ['en', 'fi'];
-    const form = createMargaritaForm<MFF>({ name: nanoid(), fields: [groupField, arrayField], locales });
+    const form = createMargaritaForm<MFF>({
+      name: nanoid(),
+      fields: [groupField, arrayField, doubleValueField, onlyDefaultValueField],
+      locales,
+    });
     const groupControl = form.getControl([groupField.name]);
     const arrayControl = form.getControl([arrayField.name]);
     const commonControl = form.getControl([groupField.name, commonField.name]);
-    if (!groupControl || !arrayControl || !commonControl) throw 'No control found!';
+    const doubleValueControl = form.getControl([doubleValueField.name]);
+    const onlyDefaultValueControl = form.getControl([onlyDefaultValueField.name]);
+    if (!groupControl || !arrayControl || !commonControl || !doubleValueControl || !onlyDefaultValueControl) throw 'No control found!';
     expect(commonControl.root).toBe(form);
     expect(commonControl.parent).toBe(groupControl);
     expect(commonControl.config).toBe(form.config);
@@ -155,6 +172,9 @@ describe('margaritaForm', () => {
     expect(arrayControl.hasActiveControls).toBe(true);
     expect(arrayControl.controls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
     expect(arrayControl.activeControls).toHaveProperty(['0', 'controls', '0', 'name'], commonControl.name);
+    // Double value and only default value
+    expect(doubleValueControl.value).toBe(doubleValueField.initialValue);
+    expect(onlyDefaultValueControl.value).toBe(onlyDefaultValueField.defaultValue);
 
     form.cleanup();
   });
