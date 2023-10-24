@@ -127,14 +127,36 @@ const arrayField: MargaritaFormField = {
   fields: [groupField],
 };
 
+const flatField: MargaritaFormField = {
+  name: 'flatName',
+  grouping: 'flat',
+  fields: [commonField],
+};
+
+const withFlatField: MargaritaFormField = {
+  name: 'withFlatName',
+  fields: [flatField],
+};
+
+const doubleFlatField: MargaritaFormField = {
+  name: 'doubleFlatName',
+  grouping: 'flat',
+  fields: [flatField],
+};
+
+const withDoubleFlatField: MargaritaFormField = {
+  name: 'withDoubleFlatName',
+  fields: [doubleFlatField],
+};
+
 type ArrayField = { arrayName: unknown[] };
 
 describe('margaritaForm', () => {
-  it('#0 Common getters', () => {
+  it('#0-a Common getters', () => {
     const locales = ['en', 'fi'];
     const form = createMargaritaForm<MFF>({
       name: nanoid(),
-      fields: [groupField, arrayField, doubleValueField, onlyDefaultValueField],
+      fields: [groupField, arrayField, doubleValueField, onlyDefaultValueField, withFlatField, withDoubleFlatField],
       locales,
     });
     const groupControl = form.getControl([groupField.name]);
@@ -142,7 +164,18 @@ describe('margaritaForm', () => {
     const commonControl = form.getControl([groupField.name, commonField.name]);
     const doubleValueControl = form.getControl([doubleValueField.name]);
     const onlyDefaultValueControl = form.getControl([onlyDefaultValueField.name]);
-    if (!groupControl || !arrayControl || !commonControl || !doubleValueControl || !onlyDefaultValueControl) throw 'No control found!';
+    const withFlatControl = form.getControl([withFlatField.name]);
+    const withDoubleFlatControl = form.getControl([withDoubleFlatField.name]);
+    if (
+      !groupControl ||
+      !arrayControl ||
+      !commonControl ||
+      !doubleValueControl ||
+      !onlyDefaultValueControl ||
+      !withFlatControl ||
+      !withDoubleFlatControl
+    )
+      throw 'No control found!';
     expect(commonControl.root).toBe(form);
     expect(commonControl.parent).toBe(groupControl);
     expect(commonControl.config).toBe(form.config);
@@ -175,8 +208,38 @@ describe('margaritaForm', () => {
     // Double value and only default value
     expect(doubleValueControl.value).toBe(doubleValueField.initialValue);
     expect(onlyDefaultValueControl.value).toBe(onlyDefaultValueField.defaultValue);
+    // Flat testing
+    expect(withFlatControl.value).toHaveProperty([commonControl.name], fieldNameInitialValue);
+    expect(withDoubleFlatControl.value).toHaveProperty([commonControl.name], fieldNameInitialValue);
 
     form.cleanup();
+  });
+
+  it('#0-b Create single level schema with one field and check initial value', () => {
+    const form = createMargaritaForm<MFF>({
+      name: nanoid(),
+      fields: [withFlatField, withDoubleFlatField],
+      initialValue: {
+        withFlatName: {
+          fieldName: fromRootValue,
+        },
+        withDoubleFlatName: {
+          fieldName: fromRootValue,
+        },
+      },
+    });
+
+    const withFlatControl = form.getControl([withFlatField.name]);
+    const withFlatCommonControl = form.getControl([withFlatField.name, flatField.name, commonField.name]);
+    const withDoubleFlatControl = form.getControl([withDoubleFlatField.name]);
+    const withDoubleFlatCommonControl = form.getControl([withDoubleFlatField.name, doubleFlatField.name, flatField.name, commonField.name]);
+
+    if (!withFlatControl || !withFlatCommonControl || !withDoubleFlatControl || !withDoubleFlatCommonControl) throw 'No control found!';
+
+    expect(withFlatControl.value).toHaveProperty([commonField.name], fromRootValue);
+    expect(withFlatCommonControl.value).toBe(fromRootValue);
+    expect(withDoubleFlatControl.value).toHaveProperty([commonField.name], fromRootValue);
+    expect(withDoubleFlatCommonControl.value).toBe(fromRootValue);
   });
 
   it('#1 Create single level schema with one field and check initial value', () => {
