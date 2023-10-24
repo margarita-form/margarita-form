@@ -868,10 +868,12 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
    * @internal
    */
   public _generateContext = <PARAMS = any>(params: CommonRecord = {}): MargaritaFormFieldContext<typeof this, PARAMS> => {
+    const fieldContext = this.field.context || {};
     return {
       control: this,
       value: this.value,
       ...params,
+      ...fieldContext,
     };
   };
 }

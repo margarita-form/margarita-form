@@ -36,7 +36,7 @@ import {
   I18NField,
   ControlChange,
 } from './typings/helper-types';
-import { NotFunction, OrString } from './typings/util-types';
+import { CommonRecord, NotFunction, OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -79,6 +79,7 @@ export interface MargaritaFormField<
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
+  context?: CommonRecord;
   __value?: VALUE;
   __i18n?: I18N;
 }
