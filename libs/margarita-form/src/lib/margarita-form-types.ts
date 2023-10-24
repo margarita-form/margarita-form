@@ -40,14 +40,18 @@ import { CommonRecord, NotFunction, OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
+interface MargaritaFormChildField extends MFF {
+  name: string;
+}
+
 export interface MargaritaFormField<
   VALUE = unknown,
-  CHILD_FIELD extends Partial<MFF> = object,
+  CHILD_FIELD extends MFF = MargaritaFormChildField,
   LOCALES extends string = never,
   I18N extends object = never
 > extends UserDefinedStatesField {
   name: string;
-  fields?: (MFF<any> & CHILD_FIELD)[];
+  fields?: CHILD_FIELD[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: VALUE;
@@ -300,7 +304,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 /** Shorthand for {@link MargaritaFormField}  */
 export type MFF<
   VALUE = any,
-  EXTENDS extends Partial<MFF> = object,
+  EXTENDS extends MFF = MargaritaFormChildField,
   LOCALES extends string = string,
   I18N extends object = any
 > = MargaritaFormField<VALUE, EXTENDS, LOCALES, I18N>;
