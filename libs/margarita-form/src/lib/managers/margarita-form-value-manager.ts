@@ -125,6 +125,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   }
 
   public _getInitialValue(allowStorage = true) {
+    const inheritedValue = this._getInheritedValue();
+    if (inheritedValue !== undefined) return inheritedValue;
+
+    if (this.control.field.initialValue) return this.control.field.initialValue;
+
     if (allowStorage) {
       const storageValue = this._getStorageValue();
       if (storageValue !== undefined) return storageValue;
@@ -136,10 +141,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       if (searchParamsValue !== undefined) return searchParamsValue;
     }
 
-    const inheritedValue = this._getInheritedValue();
-    if (inheritedValue !== undefined) return inheritedValue;
-
-    return this.control.field.initialValue;
+    return this.control.field.defaultValue;
   }
 
   private _getInheritedValue() {

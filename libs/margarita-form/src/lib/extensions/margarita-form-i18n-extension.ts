@@ -34,7 +34,9 @@ export class MargaritaFormI18NExtension<CONTROL extends MFC> {
   public static localizeField<FIELD extends MFC['field']>(control: MFC, field: FIELD): MFF {
     const { localizationOutput } = field.config || control.config;
     const locales = control.locales || [];
-    const initialValue = field.initialValue && typeof field.initialValue === 'object' ? field.initialValue : undefined;
+    const getValue = (key: 'defaultValue' | 'initialValue') => (field[key] && typeof field[key] === 'object' ? field[key] : undefined);
+    const defaultValue = getValue('defaultValue');
+    const initialValue = getValue('initialValue');
 
     const { parent = fallbackFn, child = fallbackFn } =
       field.handleLocalize || control.getFieldValue<MargaritaFormHandleLocalize<FIELD>>('handleLocalize', {});
@@ -45,6 +47,7 @@ export class MargaritaFormI18NExtension<CONTROL extends MFC> {
         name: field.name,
         localize: false,
         wasLocalized: true,
+        defaultValue,
         initialValue,
         grouping: 'array',
         startWith: locales as string[],

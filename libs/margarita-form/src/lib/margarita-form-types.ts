@@ -51,6 +51,7 @@ export interface MargaritaFormField<
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: VALUE;
+  defaultValue?: VALUE;
   valueResolver?: MargaritaFormResolver<VALUE> | NotFunction;
   params?: MargaritaFormFieldParams;
   attributes?: MargaritaFormFieldAttributes;
