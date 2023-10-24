@@ -304,10 +304,10 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 /** Shorthand for {@link MargaritaFormField}  */
 export type MFF<
   VALUE = any,
-  EXTENDS extends MFF = MargaritaFormChildField,
+  CHILD_FIELD extends MFF = MargaritaFormChildField,
   LOCALES extends string = string,
   I18N extends object = any
-> = MargaritaFormField<VALUE, EXTENDS, LOCALES, I18N>;
+> = MargaritaFormField<VALUE, CHILD_FIELD, LOCALES, I18N>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<FIELD extends MFF = MFF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
