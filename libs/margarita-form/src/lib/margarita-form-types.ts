@@ -40,10 +40,14 @@ import { NotFunction, OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
-export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES extends string = never, I18N extends object = never>
-  extends UserDefinedStatesField {
+export interface MargaritaFormField<
+  VALUE = unknown,
+  CHILD_FIELD extends Partial<MFF> = object,
+  LOCALES extends string = never,
+  I18N extends object = never
+> extends UserDefinedStatesField {
   name: string;
-  fields?: EXTENDS[];
+  fields?: (MFF<any> & CHILD_FIELD)[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: VALUE;
@@ -63,13 +67,13 @@ export interface MargaritaFormField<VALUE = unknown, EXTENDS = MFF, LOCALES exte
   onValueChanges?: MargaritaFormResolver;
   onStateChanges?: MargaritaFormResolver;
   onChildControlChanges?: MargaritaFormResolver;
-  handleSubmit?: string | MargaritaFormSubmitHandler<MFF<VALUE, EXTENDS>> | MargaritaFormSubmitHandlers<MFF<VALUE, EXTENDS>>;
+  handleSubmit?: string | MargaritaFormSubmitHandler<MFF<VALUE>> | MargaritaFormSubmitHandlers<MFF<VALUE>>;
   locales?: Readonly<LOCALES[]>;
   localize?: LOCALES extends never ? undefined : boolean;
   currentLocale?: LOCALES extends never ? undefined : LOCALES;
   wasLocalized?: boolean;
   isLocaleField?: boolean;
-  handleLocalize?: MargaritaFormHandleLocalize<EXTENDS>;
+  handleLocalize?: MargaritaFormHandleLocalize;
   i18n?: I18NField<LOCALES, I18N>;
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
@@ -292,12 +296,12 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 // Shorthands
 
 /** Shorthand for {@link MargaritaFormField}  */
-export type MFF<VALUE = any, EXTENDS = any, LOCALES extends string = string, I18N extends object = any> = MargaritaFormField<
-  VALUE,
-  EXTENDS,
-  LOCALES,
-  I18N
->;
+export type MFF<
+  VALUE = any,
+  EXTENDS extends Partial<MFF> = object,
+  LOCALES extends string = string,
+  I18N extends object = any
+> = MargaritaFormField<VALUE, EXTENDS, LOCALES, I18N>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<FIELD extends MFF = MFF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */

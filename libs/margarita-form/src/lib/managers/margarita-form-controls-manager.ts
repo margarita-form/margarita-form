@@ -1,7 +1,7 @@
 import { filter } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
-import { DeepControlIdentifier, MFC, MFCA, MFCG, MFF } from '../margarita-form-types';
+import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
 import { startAfterInitialize } from './margarita-form-create-managers';
 
@@ -131,15 +131,16 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     fieldTemplate?: string | number | FIELD,
     overrides: Partial<FIELD> = {}
   ): null | MFC<FIELD> {
-    const { fields } = this.control.field;
+    const { fields } = this.control.field as MFF<any, FIELD>;
 
-    const getField = () => {
+    const getField = (): undefined | FIELD => {
       if (fields) {
         if (!fieldTemplate) return fields[0];
         if (typeof fieldTemplate === 'string') return fields.find((field: MFF) => field.name === fieldTemplate);
         if (typeof fieldTemplate === 'number') return fields[fieldTemplate];
       }
-      return fieldTemplate;
+      if (typeof fieldTemplate === 'object') return fieldTemplate;
+      return undefined;
     };
 
     const field = getField();
@@ -147,7 +148,8 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       if (this.control.expectArray) throw 'Invalid field provided for "appendRepeatingControl" controls!';
       return null;
     }
-    return this.addControl({ ...field, ...overrides });
+    const asd = { ...field, ...overrides };
+    return this.addControl(asd);
   }
 
   public addControls<FIELD extends MFF = CONTROL['field']>(fields: FIELD[], resetControl = false, emit = true): MFC<FIELD>[] {
@@ -244,7 +246,10 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
         return control.getControl(rest);
       }
     }
-    return this.value.find((control) => [control.name, control.key].includes(identifier));
+    return this.value.find((control) => {
+      const identifiers: unknown[] = [control.name, control.key, control.uid];
+      return identifiers.includes(identifier);
+    });
   }
 
   public getControlIndex(identifier: string | MFC) {

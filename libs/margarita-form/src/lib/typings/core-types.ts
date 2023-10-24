@@ -56,19 +56,19 @@ export type MargaritaFormValidators = Partial<DefaultValidators> & CommonRecord<
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
-export type MargaritaFormHandleLocalizeParentFn<FIELD> = (params: {
+export type MargaritaFormHandleLocalizeParentFn<FIELD extends MFF = MFF> = (params: {
   field: FIELD;
   parent: MFC<MFF>;
   locales: readonly string[];
 }) => Partial<FIELD> | CommonRecord;
 
-export type MargaritaFormHandleLocalizeChildFn<FIELD> = (params: {
+export type MargaritaFormHandleLocalizeChildFn<FIELD extends MFF = MFF> = (params: {
   field: FIELD;
   parent: MFC<MFF>;
   locale: string;
 }) => Partial<FIELD> | CommonRecord;
 
-export interface MargaritaFormHandleLocalize<FIELD> {
+export interface MargaritaFormHandleLocalize<FIELD extends MFF = MFF> {
   parent?: MargaritaFormHandleLocalizeParentFn<FIELD>;
   child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
 }
