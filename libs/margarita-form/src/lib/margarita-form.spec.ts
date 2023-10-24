@@ -215,7 +215,7 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  it('#0-b Create single level schema with one field and check initial value', () => {
+  it('#0-b Test flat grouping in 2 levels', () => {
     const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [withFlatField, withDoubleFlatField],
