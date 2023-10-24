@@ -11,6 +11,7 @@ export class MargaritaFormControlDirective implements OnInit {
   constructor(private el: ElementRef, private mfService: MargaritaFormService) {}
 
   ngOnInit(): void {
+    if (!this.mfControl) throw 'Value for [mfControl] is required!';
     if (this.mfControl instanceof MargaritaFormControl) {
       this.mfControl.setRef(this.el.nativeElement);
     } else if (this.mfService.form) {
