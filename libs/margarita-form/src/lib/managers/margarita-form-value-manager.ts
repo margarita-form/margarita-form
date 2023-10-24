@@ -1,7 +1,7 @@
 import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager } from './margarita-form-base-manager';
-import { CommonRecord, MFC } from '../margarita-form-types';
+import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { SearchParamsStorage } from '../extensions/storages/search-params-storage';
@@ -156,10 +156,16 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         return inheritedValue;
       }
     } else if (expectFlat && field.fields) {
-      const inheritedValue = field.fields.reduce((acc, field) => {
+      const reducer = (acc: CommonRecord, field: MFF): CommonRecord => {
+        if (field.grouping === 'flat' && field.fields) {
+          const inheritedValue: CommonRecord = field.fields.reduce(reducer, {});
+          return { ...acc, ...inheritedValue };
+        }
         acc[field.name] = _get(parentValue, [field.name], undefined);
         return acc;
-      }, {} as CommonRecord);
+      };
+
+      const inheritedValue = field.fields.reduce(reducer, {});
 
       if (inheritedValue !== undefined) {
         return inheritedValue;
