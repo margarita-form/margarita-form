@@ -1,5 +1,5 @@
 import type { Observable } from 'rxjs';
-import { MF, MFC, MFF, MargaritaFormState } from '../margarita-form-types';
+import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
 import { DefaultValidation, DefaultValidators } from '../validators/default-validators';
 import { CommonRecord, NotFunction, OrString } from './util-types';
 
@@ -11,7 +11,7 @@ export interface MargaritaFormControlContext {
   idStore: Set<string>;
 }
 
-export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC, PARAMS = any> {
+export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> {
   control: CONTROL;
   value?: CONTROL['value'];
   params?: PARAMS;
@@ -20,7 +20,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC, PARAMS = a
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
-export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC> = (
+export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = (
   context: MargaritaFormFieldContext<CONTROL, PARAMS>
 ) => MargaritaFormResolverOutput<OUTPUT>;
 
@@ -56,19 +56,19 @@ export type MargaritaFormValidators = Partial<DefaultValidators> & CommonRecord<
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
-export type MargaritaFormHandleLocalizeParentFn<FIELD extends MFF = MFF> = (params: {
+export type MargaritaFormHandleLocalizeParentFn<FIELD extends MFF = MFGF> = (params: {
   field: FIELD;
   parent: MFC<MFF>;
   locales: readonly string[];
 }) => Partial<FIELD> | CommonRecord;
 
-export type MargaritaFormHandleLocalizeChildFn<FIELD extends MFF = MFF> = (params: {
+export type MargaritaFormHandleLocalizeChildFn<FIELD extends MFF = MFGF> = (params: {
   field: FIELD;
   parent: MFC<MFF>;
   locale: string;
 }) => Partial<FIELD> | CommonRecord;
 
-export interface MargaritaFormHandleLocalize<FIELD extends MFF = MFF> {
+export interface MargaritaFormHandleLocalize<FIELD extends MFF = MFGF> {
   parent?: MargaritaFormHandleLocalizeParentFn<FIELD>;
   child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
 }
@@ -81,12 +81,12 @@ export type MargaritaFormFieldState = MargaritaFormResolverOutput<boolean> | Mar
 
 export type GenerateKeyFunction = (control: MFC) => string;
 
-export type MargaritaFormSubmitHandler<FIELD extends MFF = MFF, PARAMS = any> = (
+export type MargaritaFormSubmitHandler<FIELD extends MFF = MFGF, PARAMS = any> = (
   form: MFC<FIELD>,
   params?: PARAMS
 ) => unknown | Promise<unknown>;
 
-export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFF> {
+export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFGF> {
   valid: MargaritaFormSubmitHandler<FIELD>;
   invalid?: MargaritaFormSubmitHandler<FIELD>;
 }

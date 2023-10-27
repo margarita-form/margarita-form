@@ -36,7 +36,7 @@ import {
   I18NField,
   ControlChange,
 } from './typings/helper-types';
-import { CommonRecord, NotFunction, OrString } from './typings/util-types';
+import { CommonRecord, NotFunction, OrAny, OrString } from './typings/util-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -45,7 +45,7 @@ interface MargaritaFormChildField extends MFF {
 }
 
 export interface MargaritaFormField<
-  VALUE = unknown,
+  VALUE = any,
   CHILD_FIELD extends MFF = MargaritaFormChildField,
   LOCALES extends string = never,
   I18N extends object = never
@@ -72,7 +72,7 @@ export interface MargaritaFormField<
   onValueChanges?: MargaritaFormResolver;
   onStateChanges?: MargaritaFormResolver;
   onChildControlChanges?: MargaritaFormResolver;
-  handleSubmit?: string | MargaritaFormSubmitHandler<MFF<VALUE>> | MargaritaFormSubmitHandlers<MFF<VALUE>>;
+  handleSubmit?: string | MargaritaFormSubmitHandler<MFGF<VALUE>> | MargaritaFormSubmitHandlers<MFGF<VALUE>>;
   locales?: Readonly<LOCALES[]>;
   localize?: LOCALES extends never ? undefined : boolean;
   currentLocale?: LOCALES extends never ? undefined : LOCALES;
@@ -86,6 +86,10 @@ export interface MargaritaFormField<
   context?: CommonRecord;
   __value?: VALUE;
   __i18n?: I18N;
+}
+
+interface MargaritaFormGeneralField<VALUE = any> extends MFF<VALUE> {
+  [key: string]: OrAny;
 }
 
 export interface UserDefinedStates<TYPE = MargaritaFormFieldState, ALLOW_RESOLVER = false> {
@@ -149,7 +153,7 @@ export interface MargaritaFormConfig {
   runTransformersForInitialValues?: boolean;
 }
 
-export type MargaritaFormBaseElement<CONTROL extends MFC = MFC, NODE extends HTMLElement = HTMLElement> = NODE & {
+export type MargaritaFormBaseElement<CONTROL extends MFC = MFC<MFGF>, NODE extends HTMLElement = HTMLElement> = NODE & {
   controls?: CONTROL[];
   value?: unknown;
   checked?: boolean;
@@ -308,16 +312,18 @@ export type MFF<
   LOCALES extends string = string,
   I18N extends object = any
 > = MargaritaFormField<VALUE, CHILD_FIELD, LOCALES, I18N>;
+/** Shorthand for {@link MargaritaFormGeneralField} */
+export type MFGF<VALUE = any> = MargaritaFormGeneralField<VALUE>;
 /** Shorthand for {@link MargaritaForm}  */
-export type MF<FIELD extends MFF = MFF> = MargaritaForm<FIELD>;
+export type MF<FIELD extends MFF = MFGF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC<FIELD extends MFF = MFF> = MargaritaFormControl<FIELD>;
+export type MFC<FIELD extends MFF = MFGF> = MargaritaFormControl<FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
-export type MFBE<CONTROL extends MFC = MFC> = MargaritaFormBaseElement<CONTROL>;
+export type MFBE<CONTROL extends MFC = MFC<MFGF>> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */
-export type MFCG<FIELD extends MFF = any> = Record<string, MFC<FIELD>>;
+export type MFCG<FIELD extends MFF = MFGF> = Record<string, MFC<FIELD>>;
 /** Margarita form controls as array */
-export type MFCA<FIELD extends MFF = any> = MFC<FIELD>[];
+export type MFCA<FIELD extends MFF = MFGF> = MFC<FIELD>[];
 /** Margarita form managers */
 export type MFCM = MargaritaFormControlManagers;
 /** Get child control */

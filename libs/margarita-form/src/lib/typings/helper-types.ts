@@ -1,4 +1,4 @@
-import { MF, MFC, MFF, MargaritaFormState } from '../margarita-form-types';
+import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
 import { OrString, OrNumber, OrT } from './util-types';
 
 export type StateKey = keyof MargaritaFormState;
@@ -99,4 +99,4 @@ export type I18NField<LOCALES extends string, I18NType extends object> = {
 /**
  * Type of a change event
  */
-export type ControlChange<FIELD extends MFF = MFF, CHANGE = unknown> = { name: string; change: CHANGE; control: MFC<FIELD> };
+export type ControlChange<FIELD extends MFF = MFGF, CHANGE = unknown> = { name: string; change: CHANGE; control: MFC<FIELD> };
