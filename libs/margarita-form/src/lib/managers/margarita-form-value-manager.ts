@@ -14,7 +14,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   constructor(public override control: CONTROL) {
     super('value', control);
     const initialValue = this._getInitialValue();
-    if (initialValue) {
+    if (valueExists(initialValue)) {
       this._setValue(initialValue, control.config.runTransformersForInitialValues);
     }
     this.initialized = true;
@@ -128,7 +128,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     const inheritedValue = this._getInheritedValue();
     if (inheritedValue !== undefined) return inheritedValue;
 
-    if (this.control.field.initialValue) return this.control.field.initialValue;
+    if (valueExists(this.control.field.initialValue)) return this.control.field.initialValue;
 
     if (allowStorage) {
       const storageValue = this._getStorageValue();
