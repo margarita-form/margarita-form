@@ -33,7 +33,7 @@ export interface MargaritaFormValidatorResult {
   error?: unknown;
 }
 
-export type MargaritaFormValidator<PARAMS = unknown> = MargaritaFormResolver<MargaritaFormValidatorResult, PARAMS>;
+export type MargaritaFormValidator<PARAMS = any> = MargaritaFormResolver<MargaritaFormValidatorResult, PARAMS>;
 
 export type MargaritaFormFieldValidationsState = CommonRecord<MargaritaFormValidatorResult>;
 
