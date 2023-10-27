@@ -16,3 +16,5 @@ export * from './slug-validator';
 export * from './typeof-validator';
 export * from './unique-validator';
 export * from './url-validator';
+export * from './yup-validator';
+export * from './zod-validator';

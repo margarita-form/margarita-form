@@ -20,6 +20,8 @@ import {
   typeofValidator,
   uniqueValidator,
   urlValidator,
+  yupValidator,
+  zodValidator,
 } from '.';
 
 export const defaultValidators = {
@@ -44,6 +46,8 @@ export const defaultValidators = {
   typeof: typeofValidator(),
   unique: uniqueValidator(),
   url: urlValidator(),
+  yup: yupValidator(),
+  zod: zodValidator(),
 };
 
 export type DefaultValidators = typeof defaultValidators;
