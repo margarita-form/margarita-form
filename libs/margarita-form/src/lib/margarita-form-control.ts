@@ -751,7 +751,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
     if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this, params));
 
-    if (typeof handleSubmit === 'string' && /^http.+|^\/\/.+/gi.test(handleSubmit))
+    if (typeof handleSubmit === 'string' && /^http.+|^\/.+/gi.test(handleSubmit))
       return await this._resolveValidSubmitPostHandler(handleSubmit);
 
     if (typeof handleSubmit === 'object' && handleSubmit.valid) return await Promise.resolve(handleSubmit.valid(this, params));
