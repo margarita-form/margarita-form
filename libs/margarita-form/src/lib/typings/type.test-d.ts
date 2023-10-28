@@ -1,5 +1,5 @@
 import { expectType } from 'tsd';
-import { MF, MFC, MFCA, MFF, createMargaritaForm } from '../../index';
+import { MF, MFC, MFCA, MFF, MFGF, createMargaritaForm } from '../../index';
 
 interface Address {
   street: string;
@@ -28,15 +28,13 @@ type PersonField = MFF<Person, PersonChildFields>;
 const form = createMargaritaForm<PersonField>({
   name: 'form-1',
   handleSubmit: (form) => {
-    expectType<MF<PersonField>>(form);
-    expectType<MFC<PersonField>>(form);
+    expectType<MFC<MFGF<Person>>>(form);
     expectType<Person>(form.value);
   },
   validation: {
     custom: (context) => {
-      expectType<MF<PersonField>>(context.control);
-      expectType<MFC<PersonField>>(context.control);
-      expectType<Person>(context.value);
+      expectType<MFC<MFGF<Person>>>(context.control);
+      expectType<Person | undefined>(context.value);
     },
   },
   fields: [
@@ -117,7 +115,7 @@ if (emailAddressControl) {
 }
 
 const kindaUnknownControl = form.getControl(['address', 'street']);
-expectType<MFC<PersonChildFields> | undefined>(kindaUnknownControl);
+expectType<MFC<PersonChildFields>>(kindaUnknownControl);
 
 type StringControl = MFC<StringField>;
 
