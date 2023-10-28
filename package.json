@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "nx run baking-oven:serve",
     "gen:lib": "./generate-lib.sh",
+    "test:types": "tsd libs/margarita-form --files src/lib/typings/*.test-d.ts",
     "test:core": "nx run margarita-form:lint && nx run margarita-form:test && npm run build:core",
     "test:react": "nx run margarita-form-react:lint && npm run build:react",
     "test:angular": "nx run margarita-form-angular:lint && npm run build:angular",
@@ -84,6 +85,7 @@
     "postcss-preset-env": "~7.5.0",
     "postcss-url": "~10.1.3",
     "prettier": "^2.6.2",
+    "tsd": "^0.29.0",
     "typedoc": "^0.24.8",
     "typescript": "5.1.6",
     "vite": "4.4.2",
