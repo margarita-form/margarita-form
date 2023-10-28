@@ -682,7 +682,9 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public submit: ControlLike<FIELD>['submit'] = async (params) => {
     try {
       await this.validate();
-      if (!this.field.handleSubmit && !this.managers.ref.formAction) throw 'Add "handleSubmit" option to submit form!';
+      const { formAction, useNativeSubmit } = this.managers.ref;
+      if (!this.field.handleSubmit && !formAction && !useNativeSubmit)
+        throw 'Add "handleSubmit" option to field or define action to form element to submit the form!';
       const canSubmit = this.config.allowConcurrentSubmits || !this.state.submitting;
       if (!canSubmit) throw 'Form is already submitting!';
       this.updateStateValue('submitting', true);
