@@ -33,7 +33,11 @@ export interface MargaritaFormValidatorResult {
   error?: unknown;
 }
 
-export type MargaritaFormValidator<PARAMS = any> = MargaritaFormResolver<MargaritaFormValidatorResult, PARAMS>;
+export type MargaritaFormValidator<PARAMS = any, VALUE = any> = MargaritaFormResolver<
+  MargaritaFormValidatorResult,
+  PARAMS,
+  MFC<MFGF<VALUE>>
+>;
 
 export type MargaritaFormFieldValidationsState = CommonRecord<MargaritaFormValidatorResult>;
 
@@ -48,9 +52,9 @@ export interface FieldValidationParams extends Required<ResolverParams> {
   errorMessage?: string;
 }
 
-export type MargaritaFormFieldValidation = {
+export type MargaritaFormFieldValidation<VALUE> = {
   [key in keyof DefaultValidation]?: DefaultValidation[key] | MargaritaFormValidator | FieldValidationParams;
-} & Record<string, MargaritaFormValidator | FieldValidationParams | NotFunction>;
+} & Record<string, MargaritaFormValidator<any, VALUE> | FieldValidationParams | NotFunction>;
 
 export type MargaritaFormValidators = Partial<DefaultValidators> & CommonRecord<MargaritaFormValidator<any>>;
 

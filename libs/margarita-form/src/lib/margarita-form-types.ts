@@ -61,7 +61,7 @@ export interface MargaritaFormField<
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
-  validation?: MargaritaFormFieldValidation;
+  validation?: MargaritaFormFieldValidation<VALUE>;
   dispatcher?: MargaritaFormResolver<VALUE>;
   transformer?: MargaritaFormResolver<VALUE>;
   beforeSubmit?: MargaritaFormResolver;
