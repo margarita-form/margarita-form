@@ -30,3 +30,27 @@ export const handleFormElementReset = <CONTROL extends MFC = MFC>({
     control.reset();
   });
 };
+
+export const handleFormElementFormData = <CONTROL extends MFC = MFC>({
+  node,
+  control,
+}: {
+  node: MargaritaFormBaseElement<CONTROL>;
+  control: CONTROL;
+}) => {
+  const isForm = node instanceof HTMLFormElement;
+  if (!isForm) return null;
+  return fromEvent<FormDataEvent>(node, 'formdata').subscribe(({ formData }) => {
+    const appendFormData = (formData: FormData, obj: any, parentKey?: string) => {
+      if (!obj) return;
+      if (typeof obj === 'object')
+        Object.entries(obj).forEach(([key, value]) => {
+          const newKey = parentKey ? `${parentKey}[${key}]` : key;
+          appendFormData(formData, value, newKey);
+        });
+      else if (parentKey) formData.append(parentKey, obj);
+      else formData.append('rootValue', obj);
+    };
+    appendFormData(formData, control.value);
+  });
+};

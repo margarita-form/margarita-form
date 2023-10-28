@@ -1,6 +1,10 @@
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MargaritaFormBaseElement } from '../margarita-form-types';
-import { handleFormElementReset, handleFormElementSubmit } from './ref-manager-helpers/margarita-form-ref-form-submit';
+import {
+  handleFormElementFormData,
+  handleFormElementReset,
+  handleFormElementSubmit,
+} from './ref-manager-helpers/margarita-form-ref-form-submit';
 import { setControlValidationFromNode } from './ref-manager-helpers/margarita-form-ref-set-control-validation';
 import {
   handleControlAttributeChanges,
@@ -48,11 +52,38 @@ class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
     this.emitChange(this.value);
   }
 
-  public get formAction() {
-    const ref = this.value.find((ref) => ref.node.getAttribute('action'));
+  public get formElement() {
+    const ref = this.value.find((ref) => ref.node.tagName === 'FORM');
     if (!ref) return undefined;
-    const action = ref.node.getAttribute('action');
+    const formElement = ref.node as HTMLFormElement;
+    return formElement;
+  }
+
+  public get formAction() {
+    const formElement = this.formElement;
+    if (!formElement) return undefined;
+    const action = formElement.getAttribute('action');
     return action;
+  }
+
+  public get useNativeSubmit() {
+    const formElement = this.formElement;
+    if (!formElement) return false;
+    const useNativeSubmit = formElement.hasAttribute('data-use-action');
+    return useNativeSubmit;
+  }
+
+  public nativeSubmit() {
+    try {
+      const formElement = this.formElement;
+      if (!formElement) return;
+      formElement.submit();
+    } catch (error) {
+      throw {
+        message: 'Native submit failed',
+        error,
+      };
+    }
   }
 
   public disconnectRef(node: MargaritaFormBaseElement<CONTROL> | null) {
@@ -78,6 +109,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
     const handleFocus = handleElementFocus(params);
     const handleSubmit = handleFormElementSubmit(params);
     const handleReset = handleFormElementReset(params);
+    const handleFormData = handleFormElementFormData(params);
     const handleAttributes = handleControlAttributeChanges(params);
 
     const unsubscribe = () => {
@@ -90,6 +122,7 @@ class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
         handleFocus?.unsubscribe();
         handleSubmit?.unsubscribe();
         handleReset?.unsubscribe();
+        handleFormData?.unsubscribe();
         handleAttributes?.unsubscribe();
         mutationObserver.disconnect();
       } catch (error) {

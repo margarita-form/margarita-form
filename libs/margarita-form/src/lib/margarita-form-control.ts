@@ -747,7 +747,13 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   private async _resolveValidSubmitHandler(params: any): Promise<any> {
     const { handleSubmit } = this.field;
-    if (!handleSubmit) throw 'No submit handler for valid submit!';
+    if (!handleSubmit) {
+      const action = this.managers.ref.formAction;
+      if (action) return await this._resolveValidSubmitPostHandler(action);
+      const useNativeSubmit = this.managers.ref.useNativeSubmit;
+      if (useNativeSubmit) return this.managers.ref.nativeSubmit();
+      throw 'No submit handler for valid submit!';
+    }
 
     if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this, params));
 
@@ -760,9 +766,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
     if (resolver) return await getResolverOutputPromise('handleSubmit', resolver, this);
 
-    const action = this.managers.ref.formAction;
-    if (!action) throw 'No submit handler for valid submit!';
-    return await this._resolveValidSubmitPostHandler(action);
+    throw 'Submit handler (handleSubmit) is invalid!';
   }
 
   private async _resolveValidSubmitPostHandler(url: string) {
