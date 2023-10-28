@@ -14,8 +14,8 @@
   "scripts": {
     "dev": "nx run baking-oven:serve",
     "gen:lib": "./generate-lib.sh",
-    "test:types": "tsd libs/margarita-form --files src/lib/typings/*.test-d.ts",
-    "test:core": "nx run margarita-form:lint && nx run margarita-form:test && npm run build:core",
+    "test:core": "nx run margarita-form:lint && nx run margarita-form:test && npm run test:core-types && npm run build:core",
+    "test:core-types": "tsd libs/margarita-form --files src/lib/typings/*.test-d.ts",
     "test:react": "nx run margarita-form-react:lint && npm run build:react",
     "test:angular": "nx run margarita-form-angular:lint && npm run build:angular",
     "test:all": "npm run test:core && npm run test:react && npm run test:angular",
