@@ -48,8 +48,7 @@ export const handleFormElementFormData = <CONTROL extends MFC = MFC>({
           const newKey = parentKey ? `${parentKey}[${key}]` : key;
           appendFormData(formData, value, newKey);
         });
-      else if (parentKey) formData.append(parentKey, obj);
-      else formData.append('rootValue', obj);
+      else if (parentKey) formData.set(parentKey, obj);
     };
     appendFormData(formData, control.value);
   });
