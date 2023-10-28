@@ -88,7 +88,7 @@ export interface MargaritaFormField<
   __i18n?: I18N;
 }
 
-interface MargaritaFormGeneralField<VALUE = any> extends MFF<VALUE> {
+interface MargaritaFormGeneralField<VALUE = any, CHILD_FIELD extends MFF = any> extends MFF<VALUE, CHILD_FIELD, any, any> {
   [key: string]: OrAny;
 }
 
