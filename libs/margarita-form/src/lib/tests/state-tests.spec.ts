@@ -1,7 +1,7 @@
 import { createMargaritaForm } from '../create-margarita-form';
 
 describe('State testing', () => {
-  it('should allow visible to be true if sibling value equals 1', () => {
+  it('control visible states should be able to check sibling value', () => {
     const form = createMargaritaForm({
       name: 'initial-value-matching',
       fields: [
@@ -17,10 +17,30 @@ describe('State testing', () => {
             return Boolean(exists);
           },
         },
+        {
+          name: 'c',
+          visible: ({ control }) => {
+            const sibling = control.parent.getControl('a');
+            const exists = sibling && sibling.value === true;
+            return Boolean(exists);
+          },
+        },
+        {
+          name: 'd',
+          visible: ({ control }) => {
+            const sibling = control.parent.getControl('a');
+            const exists = sibling && sibling.value === false;
+            return Boolean(exists);
+          },
+        },
       ],
     });
 
     const bControl = form.getControl('b');
     expect(bControl.state.visible).toBe(true);
+    const cControl = form.getControl('c');
+    expect(cControl.state.visible).toBe(true);
+    const dControl = form.getControl('d');
+    expect(dControl.state.visible).toBe(false);
   });
 });
