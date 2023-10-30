@@ -3,7 +3,7 @@ import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
-import { startAfterInitialize } from './margarita-form-create-managers';
+import { startPrepareLoop, startOnInitializeLoop, startAfterInitializeLoop } from './margarita-form-create-managers';
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   private _buildWith: CONTROL['field'] | null = null;
@@ -11,13 +11,15 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
 
   constructor(public override control: CONTROL) {
     super('controls', control, []);
+    this._requireUniqueNames = !this.control.expectArray;
+  }
+
+  public override prepare() {
     const { fields } = this.control.field;
     const fieldsAreValid = !fields || Array.isArray(fields);
     if (!fieldsAreValid) {
       throw 'Invalid fields provided for field at: ' + (this.control.isRoot ? 'root' : this.control.getPath().join(' > '));
     }
-
-    this._requireUniqueNames = !this.control.expectArray;
 
     if (this.control.field) {
       this.rebuild();
@@ -98,8 +100,14 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
 
   private _emitChanges(syncValue = true) {
     this.emitChange(this.value);
-    if (syncValue) this.control.managers.value.refreshSync(true, false);
-    if (this.control.initialized) startAfterInitialize(this.control);
+
+    if (this.control.ready) {
+      startPrepareLoop(this.control);
+      startOnInitializeLoop(this.control);
+      startAfterInitializeLoop(this.control);
+      this.control.managers.value.refreshSync(true, false);
+    } else if (syncValue) this.control.managers.value.refreshSync(true, false);
+
     if (syncValue && this.control.initialized) this.control.updateStateValue('dirty', true);
   }
 

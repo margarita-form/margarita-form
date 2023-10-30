@@ -18,16 +18,35 @@ export const createManagers = <CONTROL extends MargaritaFormControl<MFF>>(contro
     });
     return [key, manager];
   });
-  Object.values(control.managers).forEach((manager) => manager.onInitialize());
   return control.managers;
 };
 
-export const startAfterInitialize = <CONTROL extends MargaritaFormControl<MFF>>(control: CONTROL) => {
-  if (!control.ready) {
-    Object.values(control.managers).forEach((manager) => manager.afterInitialize());
-    control.ready = true;
+export const startPrepareLoop = <CONTROL extends MargaritaFormControl<MFF>>(control: CONTROL) => {
+  if (!control.prepared) {
+    control.prepared = true;
+    Object.values(control.managers).forEach((manager) => manager.prepare());
   }
   control.controls.forEach((control) => {
-    startAfterInitialize(control);
+    startPrepareLoop(control);
+  });
+};
+
+export const startOnInitializeLoop = <CONTROL extends MargaritaFormControl<MFF>>(control: CONTROL) => {
+  if (!control.initialized) {
+    control.initialized = true;
+    Object.values(control.managers).forEach((manager) => manager.onInitialize());
+  }
+  control.controls.forEach((control) => {
+    startOnInitializeLoop(control);
+  });
+};
+
+export const startAfterInitializeLoop = <CONTROL extends MargaritaFormControl<MFF>>(control: CONTROL) => {
+  if (!control.ready) {
+    control.ready = true;
+    Object.values(control.managers).forEach((manager) => manager.afterInitialize());
+  }
+  control.controls.forEach((control) => {
+    startAfterInitializeLoop(control);
   });
 };

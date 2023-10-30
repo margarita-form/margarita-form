@@ -6,7 +6,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
     super('events', control);
   }
 
-  public override onInitialize(): void {
+  public override afterInitialize(): void {
     this.createSubscription(this.control.changes, ({ name, change: value, control }) => {
       const { onChanges, onValueChanges, onStateChanges } = control.field;
       if (onChanges) onChanges({ control, value, params: name });

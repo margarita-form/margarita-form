@@ -13,9 +13,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
 
   constructor(public override control: CONTROL) {
     super('value', control);
+  }
+
+  public override prepare() {
     const initialValue = this._getInitialValue();
     if (valueExists(initialValue)) {
-      this._setValue(initialValue, control.config.runTransformersForInitialValues);
+      this._setValue(initialValue, this.control.config.runTransformersForInitialValues);
     }
     this.initialized = true;
   }

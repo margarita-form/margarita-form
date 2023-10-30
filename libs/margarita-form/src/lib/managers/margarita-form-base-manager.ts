@@ -38,6 +38,10 @@ export class BaseManager<VALUE = unknown> {
     this.control.emitChange(this.name, change);
   };
 
+  public prepare() {
+    // Do nothing
+  }
+
   public onInitialize() {
     // Do nothing
   }

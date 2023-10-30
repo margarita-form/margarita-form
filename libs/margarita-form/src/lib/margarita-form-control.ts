@@ -28,6 +28,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public uid: string;
   public syncId: string = nanoid(4);
   public managers: ManagerInstances;
+  public prepared = false;
   public initialized = false;
   public ready = false;
   public changes: BehaviorSubject<ControlChange>;
@@ -46,7 +47,6 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     this.managers = createManagers<typeof this>(this);
     if (field.onCreate) field.onCreate({ control: this });
     this.uid = this._resolveUid();
-    this.initialized = true;
   }
 
   private _resolveUid = (forceNew = false): string => {

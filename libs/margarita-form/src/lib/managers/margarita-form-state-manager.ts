@@ -176,7 +176,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     this.value = new MargaritaFormStateValue(control);
   }
 
-  public override onInitialize(): void {
+  public override prepare(): void {
     this._setInitialState();
   }
 
