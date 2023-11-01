@@ -268,6 +268,10 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     await this.managers.field.updateField(changes as any, resetControl);
   };
 
+  public get fieldChanges(): ControlLike<FIELD>['fieldChanges'] {
+    return this.managers.field.changes as Observable<FIELD>;
+  }
+
   public getPath: ControlLike<FIELD>['getPath'] = (outcome) => {
     const parentPath = this.isRoot ? [] : this.parent.getPath(outcome);
     if (outcome === 'controls') {

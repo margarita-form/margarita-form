@@ -201,6 +201,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   setField(field: FIELD, resetControl?: boolean): Promise<void>;
   updateField(field: Partial<FIELD>, resetControl?: boolean): Promise<void>;
   getPath(outcome?: 'default' | 'keys' | 'controls' | 'uids'): ControlPath;
+  get fieldChanges(): Observable<FIELD>;
 
   // Events
 
