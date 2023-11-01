@@ -1,4 +1,4 @@
-import { debounceTime, filter, switchMap } from 'rxjs';
+import { debounceTime, filter, startWith, switchMap } from 'rxjs';
 import { MFC, MargaritaFormFieldContext, MargaritaFormResolverOutput } from '../margarita-form-types';
 import { checkAsync } from './async-checks';
 
@@ -12,6 +12,7 @@ export const fromChanges = <CONTROL extends MFC, VALUE = unknown>(
 ) => {
   return control.changes.pipe(
     filter((change) => change.name === changeName),
+    startWith(null),
     debounceTime(control?.config?.afterChangesDebounceTime || 10),
     switchMap(() => {
       const context = control._generateContext();
