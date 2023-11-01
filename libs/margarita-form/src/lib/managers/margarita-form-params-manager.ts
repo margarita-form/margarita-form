@@ -1,4 +1,4 @@
-import { combineLatest, debounceTime, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC } from '../margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
@@ -11,8 +11,7 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
   }
 
   public override onInitialize() {
-    const paramsSubscriptionObservable = combineLatest([this.control.valueChanges, this.control.stateChanges]).pipe(
-      debounceTime(1),
+    const paramsSubscriptionObservable = this.control.fieldChanges.pipe(
       switchMap(() => {
         const { params = {} } = this.control.field;
         return getResolverOutputMapObservable(params, this.control);
