@@ -1,4 +1,4 @@
-import { filter } from 'rxjs';
+import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
@@ -27,8 +27,12 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   }
 
   public override onInitialize() {
-    this.createSubscription(this.control.managers.field.changes.pipe(filter((field) => field !== this._buildWith)), () =>
-      this.rebuild(this.control.managers.field.shouldResetControl)
+    this.createSubscription(
+      this.control.managers.field.changes.pipe(
+        skip(1),
+        filter((field) => field !== this._buildWith)
+      ),
+      () => this.rebuild(this.control.managers.field.shouldResetControl)
     );
   }
 
