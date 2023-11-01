@@ -321,9 +321,11 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   }
 
   public updateStates(changes: Partial<MargaritaFormState>, emit = true) {
-    const changed = Object.entries(changes).some(([key, value]: [any, any]) => {
-      return this.updateState(key, value, false);
-    });
+    const changed = Object.entries(changes).reduce((acc, [key, value]: [any, any]) => {
+      const changed = this.updateState(key, value, false);
+      if (changed) return true;
+      return acc;
+    }, false);
     if (!changed) return false;
     if (emit) this._emitChanges();
     return true;
