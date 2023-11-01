@@ -1,4 +1,4 @@
-import { combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay, skip, switchMap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay, skip, switchMap, tap } from 'rxjs';
 import {
   MargaritaFormState,
   MargaritaFormStateErrors,
@@ -10,7 +10,7 @@ import {
   MargaritaFormValidatorResult,
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
-import { valueExists } from '../helpers/check-value';
+import { isEqual, valueExists } from '../helpers/check-value';
 import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 
 // States which can be modfiied in the field
@@ -181,7 +181,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   }
 
   public override afterInitialize(): void {
-    const userDefinedStateSubscriptionObservable = this.control.valueChanges.pipe(
+    const userDefinedStateSubscriptionObservable = this.control.fieldChanges.pipe(
       switchMap(() => {
         const state = fieldStateKeys.reduce((acc, key) => {
           const value = this.control.field[key];
@@ -194,7 +194,6 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
 
     this.createSubscription(userDefinedStateSubscriptionObservable, (state) => {
       this.updateStates(state);
-      this._emitChanges();
     });
 
     const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
@@ -211,13 +210,12 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     );
 
     const childStateSubscriptionObservable = this.control.managers.controls.changes.pipe(
-      debounceTime(1),
       switchMap((controls) => {
         if (!controls.length) return Promise.resolve([]);
         const stateChanges = controls.map((control) => control.stateChanges);
-
         return combineLatest(stateChanges);
-      })
+      }),
+      distinctUntilChanged()
     );
 
     this.createSubscription(
@@ -310,21 +308,25 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   // Methods
 
   public updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
+    const changed = !isEqual(this.value[key], value);
+    if (!changed) return false;
     Object.assign(this.value, { [key]: value });
     if (key === 'enabled') this._enableChildren(!!value);
     if (key === 'disabled') this._enableChildren(!value);
     if (key === 'dirty' && value === true) this._setParentDirty();
     if (key === 'pristine' && value === false) this._setParentDirty();
-
     if (emit) this._emitChanges();
+    if (key === 'children') return false;
+    return true;
   }
 
   public updateStates(changes: Partial<MargaritaFormState>, emit = true) {
-    Object.entries(changes).forEach(([key, value]: [any, any]) => {
-      this.updateState(key, value, false);
+    const changed = Object.entries(changes).some(([key, value]: [any, any]) => {
+      return this.updateState(key, value, false);
     });
-
+    if (!changed) return false;
     if (emit) this._emitChanges();
+    return true;
   }
 
   /**
