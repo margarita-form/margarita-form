@@ -12,7 +12,7 @@ import {
   ControlChange,
   MargaritaFormFieldContext,
 } from './margarita-form-types';
-import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
@@ -98,8 +98,12 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     this.initialize();
   };
 
-  public emitChange: ControlLike<FIELD>['emitChange'] = (name, change) => {
-    this.changes.next({ control: this, change, name });
+  public emitChange: ControlLike<FIELD>['emitChange'] = (name, change, origin = this) => {
+    this.changes.next({ control: this, change, name, origin });
+    if (!this.isRoot) {
+      const newName = this === origin ? `${this.uid}-${name}` : name;
+      this.parent.emitChange(newName, change, origin);
+    }
   };
 
   public updateSyncId: ControlLike<FIELD>['updateSyncId'] = () => {
@@ -289,6 +293,14 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   };
 
   // Events
+
+  public get ownChanges(): ControlLike<FIELD>['ownChanges'] {
+    return this.changes.pipe(filter((change) => change.origin === this));
+  }
+
+  public get childChanges(): ControlLike<FIELD>['childChanges'] {
+    return this.changes.pipe(filter((change) => change.origin !== this));
+  }
 
   public get afterChanges(): ControlLike<FIELD>['afterChanges'] {
     return this.changes.pipe(debounceTime(this.config?.afterChangesDebounceTime || 10), shareReplay(1));

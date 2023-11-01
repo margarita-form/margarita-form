@@ -176,7 +176,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   updateSyncId(): void;
   updateUid(): void;
   updateKey(): void;
-  emitChange(name: string, change: unknown): void;
+  emitChange(name: string, change: unknown, origin?: MFC<any>): void;
   get root(): MFC;
   get isRoot(): boolean;
   get parent(): MFC;
@@ -206,6 +206,8 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   // Events
 
   get changes(): BehaviorSubject<ControlChange>;
+  get ownChanges(): Observable<ControlChange>;
+  get childChanges(): Observable<ControlChange>;
   get afterChanges(): Observable<ControlChange>;
 
   // Value
