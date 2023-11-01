@@ -13,19 +13,17 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
   public override onInitialize() {
     const paramsSubscriptionObservable = this.control.fieldChanges.pipe(
       switchMap(() => {
-        const { params = {} } = this.control.field;
+        const { params } = this.control.field;
+        if (!params) return Promise.resolve(null);
         return getResolverOutputMapObservable(params, this.control);
       })
     );
 
     this.createSubscription(paramsSubscriptionObservable, (params) => {
+      if (!params) return;
       this.value = params;
-      this._emitChanges();
+      this.emitChange(params);
     });
-  }
-
-  private _emitChanges() {
-    this.emitChange(this.value);
   }
 }
 
