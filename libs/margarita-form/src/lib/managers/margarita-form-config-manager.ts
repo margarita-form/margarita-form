@@ -4,6 +4,7 @@ import { MFC, MargaritaFormConfig } from '../margarita-form-types';
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
   addMetadata: false,
+  afterChangesDebounceTime: 10,
   allowUnresolvedArrayChildNames: false,
   allowConcurrentSubmits: false,
   asyncFunctionWarningTimeout: 5000,

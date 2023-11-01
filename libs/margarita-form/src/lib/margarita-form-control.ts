@@ -287,7 +287,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   // Events
 
   public get afterChanges(): ControlLike<FIELD>['afterChanges'] {
-    return this.changes.pipe(debounceTime(1), shareReplay(1));
+    return this.changes.pipe(debounceTime(this.config?.afterChangesDebounceTime || 10), shareReplay(1));
   }
 
   // Value
