@@ -123,7 +123,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   }
 
   private _emitChanges() {
-    this.control.updateSyncId();
     this.emitChange(this.value);
   }
 

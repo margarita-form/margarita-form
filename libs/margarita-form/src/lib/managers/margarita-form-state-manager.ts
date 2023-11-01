@@ -1,4 +1,4 @@
-import { combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay, skip, switchMap, tap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay, skip, switchMap } from 'rxjs';
 import {
   MargaritaFormState,
   MargaritaFormStateErrors,
@@ -239,7 +239,6 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   }
 
   private _emitChanges() {
-    this.control.updateSyncId();
     this.emitChange(this.value);
   }
 

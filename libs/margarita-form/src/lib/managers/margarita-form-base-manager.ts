@@ -35,6 +35,7 @@ export class BaseManager<VALUE = unknown> {
   }
 
   public emitChange = <VALUE = unknown>(change: VALUE) => {
+    this.control.updateSyncId();
     this.control.emitChange(this.name, change);
   };
 
