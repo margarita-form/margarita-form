@@ -2,7 +2,7 @@ import type { MF } from '@margarita-form/core';
 
 export const createFormStore = (form: MF) => {
   const subscribe = (listener: () => void) => {
-    const subscription = form.changes.subscribe(() => {
+    const subscription = form.afterChanges.subscribe(() => {
       listener();
     });
     return () => {
