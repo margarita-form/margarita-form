@@ -28,7 +28,7 @@ export const isIncluded = (value: unknown, array: unknown[]): boolean => {
   return array.some((item) => isEqual(item, value));
 };
 
-export const isEqual = (value: unknown, other: unknown, log = true): boolean => {
+export const isEqual = (value: unknown, other: unknown, log = false): boolean => {
   try {
     if (typeof value === 'object') {
       return JSON.stringify(value) === JSON.stringify(other);
