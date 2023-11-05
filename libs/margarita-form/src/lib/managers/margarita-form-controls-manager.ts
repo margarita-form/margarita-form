@@ -3,7 +3,13 @@ import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
-import { startPrepareLoop, startOnInitializeLoop, startAfterInitializeLoop } from './margarita-form-create-managers';
+
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    controls: ControlsManager<MFC>;
+  }
+}
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   private _buildWith: CONTROL['field'] | null = null;
@@ -106,9 +112,9 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     this.emitChange(this.value);
 
     if (this.control.ready) {
-      startPrepareLoop(this.control);
-      startOnInitializeLoop(this.control);
-      startAfterInitializeLoop(this.control);
+      this.control._startPrepareLoop();
+      this.control._startOnInitializeLoop();
+      this.control._startAfterInitializeLoop();
       this.control.managers.value.refreshSync(true, false);
     } else if (syncValue) this.control.managers.value.refreshSync(true, false);
 
@@ -160,8 +166,8 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       if (this.control.expectArray) throw 'Invalid field provided for "appendRepeatingControl" controls!';
       return null;
     }
-    const asd = { ...field, ...overrides };
-    return this.addControl(asd);
+    const merged = { ...field, ...overrides };
+    return this.addControl(merged);
   }
 
   public addControls<FIELD extends MFF = CONTROL['field']>(fields: FIELD[], resetControl = false, emit = true): MFC<FIELD>[] {

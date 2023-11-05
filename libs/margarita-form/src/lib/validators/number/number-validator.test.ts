@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { numberValidator, integerValidator, floatValidator, positiveNumberValidator, negativeNumberValidator } from './number-validator';
 
 const _numberValidator = numberValidator(true, 'Please enter a valid number');

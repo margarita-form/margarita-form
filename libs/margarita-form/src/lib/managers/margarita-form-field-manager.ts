@@ -1,6 +1,13 @@
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MFF } from '../margarita-form-types';
 
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    field: FieldManager<MFC>;
+  }
+}
+
 class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
   public shouldResetControl = false;
 

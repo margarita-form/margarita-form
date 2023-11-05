@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { passwordValidator } from './password-validator';
 
 const _passwordValidator = passwordValidator();

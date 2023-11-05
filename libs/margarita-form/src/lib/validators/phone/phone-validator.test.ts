@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { phoneValidator } from './phone-validator';
 
 const validator = phoneValidator(true, 'Please enter a valid phone number');

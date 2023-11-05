@@ -1,5 +1,5 @@
 import { expectType } from 'tsd';
-import { MF, MFC, MFCA, MFF, MFGF, createMargaritaForm } from '../../index';
+import { MFC, MFCA, MFF, MFGF, createMargaritaForm } from '../../index';
 
 interface Address {
   street: string;

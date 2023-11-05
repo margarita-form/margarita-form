@@ -2,8 +2,7 @@
 import type { BehaviorSubject, Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
-import type { MargaritaFormControlManagers } from './managers/margarita-form-default-managers';
-import { Params } from './managers/margarita-form-params-manager';
+
 import { MargaritaFormExtensions } from './extensions/margarita-form-extensions';
 import {
   MargaritaFormFieldParams,
@@ -246,9 +245,6 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   validate(setAsTouched?: boolean): Promise<boolean>;
   registerValidator(key: string, validator: MargaritaFormValidator): void;
 
-  get params(): Params;
-  get paramsChanges(): Observable<Params>;
-
   get resolvers(): MargaritaFormResolvers;
   registerResolver(key: string, resolver: MargaritaFormResolver): void;
 
@@ -328,8 +324,6 @@ export type MFBE<CONTROL extends MFC = MFC<MFGF>> = MargaritaFormBaseElement<CON
 export type MFCG<FIELD extends MFF = MFGF> = Record<string, MFC<FIELD>>;
 /** Margarita form controls as array */
 export type MFCA<FIELD extends MFF = MFGF> = MFC<FIELD>[];
-/** Margarita form managers */
-export type MFCM = MargaritaFormControlManagers;
 /** Get child control */
 export type MFCCF<FIELD extends MFF> = MFC<ChildField<FIELD>>;
 

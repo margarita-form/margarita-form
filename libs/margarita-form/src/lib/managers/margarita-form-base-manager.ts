@@ -69,3 +69,15 @@ export class BaseManager<VALUE = unknown> {
     this.subscriptions.push(subscription);
   };
 }
+
+class _ManagerLike extends BaseManager {
+  constructor(control: MFC<any>) {
+    super('_', control);
+  }
+}
+
+export type ManagerLike = typeof _ManagerLike;
+export type ManagerLikeInstance = InstanceType<ManagerLike>;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Managers {}

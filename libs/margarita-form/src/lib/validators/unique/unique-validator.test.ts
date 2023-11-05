@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { uniqueValidator } from './unique-validator';
 
 describe('uniqueValidator', () => {

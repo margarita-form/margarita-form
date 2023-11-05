@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { patternValidator } from './pattern-validator';
 
 const helloalidator = patternValidator('hello', 'Please enter a string containing "hello"');

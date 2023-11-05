@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { z } from 'zod';
 import { zodValidator } from './zod-validator';
 

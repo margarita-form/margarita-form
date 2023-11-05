@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { urlValidator } from './url-validator';
 
 const validator = urlValidator(true, 'Please enter a valid url');

@@ -13,6 +13,13 @@ import { BaseManager } from './margarita-form-base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
 import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    state: StateManager<MFC>;
+  }
+}
+
 // States which can be modfiied in the field
 export const fieldStateKeys: (keyof UserDefinedStates)[] = [
   'enabled',

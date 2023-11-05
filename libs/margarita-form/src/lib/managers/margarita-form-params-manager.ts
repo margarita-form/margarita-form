@@ -1,11 +1,35 @@
-import { switchMap } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { BaseManager } from './margarita-form-base-manager';
-import { CommonRecord, MFC } from '../margarita-form-types';
+import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
+import { MargaritaForm } from '../margarita-form';
 
 export type Params = CommonRecord;
 
-class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    params: ParamsManager<MFC>;
+  }
+
+  export interface MargaritaFormControl<FIELD extends MFF> {
+    get params(): Params;
+    get paramsChanges(): Observable<Params>;
+  }
+}
+
+// Implementation
+
+MargaritaForm.extend({
+  get params() {
+    return this.managers.params.value;
+  },
+  get paramsChanges() {
+    return this.managers.params.changes;
+  },
+});
+
+export class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
   constructor(public override control: CONTROL) {
     super('params', control, {});
   }
@@ -26,5 +50,3 @@ class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
     });
   }
 }
-
-export { ParamsManager };

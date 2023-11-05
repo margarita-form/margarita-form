@@ -18,6 +18,13 @@ import {
   setControlValueOnNodeValueChanges,
 } from './ref-manager-helpers/margarita-form-ref-value-changes';
 
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    ref: RefManager<MFC>;
+  }
+}
+
 interface RefEntry<CONTROL extends MFC> {
   node: MargaritaFormBaseElement<CONTROL, HTMLElement>;
   cleanup: () => void;

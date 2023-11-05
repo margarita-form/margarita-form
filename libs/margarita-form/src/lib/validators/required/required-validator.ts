@@ -1,4 +1,4 @@
-import { MargaritaFormValidator } from '../../margarita-form-types';
+import { MargaritaFormValidator } from '../../../index';
 
 type RequiredValidatorParams = boolean;
 

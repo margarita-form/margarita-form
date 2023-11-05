@@ -18,7 +18,16 @@
     "paths": {
       "@margarita-form/angular": ["libs/margarita-form-angular/src/index.ts"],
       "@margarita-form/core": ["libs/margarita-form/src/index.ts"],
-      "@margarita-form/react": ["libs/margarita-form-react/src/index.ts"]
+      "@margarita-form/react": ["libs/margarita-form-react/src/index.ts"],
+      "@margarita-form/core/light": ["libs/margarita-form/src/light.ts"],
+      "@margarita-form/core/managers/config-manager": ["libs/margarita-form/src/lib/managers/margarita-form-config-manager.ts"],
+      "@margarita-form/core/managers/controls-manager": ["libs/margarita-form/src/lib/managers/margarita-form-controls-manager.ts"],
+      "@margarita-form/core/managers/events-manager": ["libs/margarita-form/src/lib/managers/margarita-form-events-manager.ts"],
+      "@margarita-form/core/managers/field-manager": ["libs/margarita-form/src/lib/managers/margarita-form-field-manager.ts"],
+      "@margarita-form/core/managers/params-manager": ["libs/margarita-form/src/lib/managers/margarita-form-params-manager.ts"],
+      "@margarita-form/core/managers/ref-manager": ["libs/margarita-form/src/lib/managers/margarita-form-ref-manager.ts"],
+      "@margarita-form/core/managers/state-manager": ["libs/margarita-form/src/lib/managers/margarita-form-state-manager.ts"],
+      "@margarita-form/core/managers/value-manager": ["libs/margarita-form/src/lib/managers/margarita-form-value-manager.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

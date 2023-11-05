@@ -1,9 +1,9 @@
 import { Observable, debounceTime, firstValueFrom, map } from 'rxjs';
-import { createMargaritaForm } from './create-margarita-form';
 import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormFieldContext, StorageLike } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 import { SubmitError } from './classes/submit-error';
 import { createServer } from 'http';
+import { createMargaritaForm } from '../index';
 
 let responseCode = 200;
 let responseText = 'success';

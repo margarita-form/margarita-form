@@ -16,18 +16,18 @@ import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
-import { ManagerInstances, createManagers } from './managers/margarita-form-create-managers';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { removeFormFromCache } from './create-margarita-form';
 import { SubmitError } from './classes/submit-error';
 import { getResolverOutput, getResolverOutputPromise } from './helpers/resolve-function-outputs';
+import { ManagerLike, Managers } from './managers/margarita-form-base-manager';
 
 export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIELD> {
   public key: string;
   public uid: string;
   public syncId: string = nanoid(4);
-  public managers: ManagerInstances;
+  public managers = {} as Managers;
   public prepared = false;
   public initialized = false;
   public ready = false;
@@ -42,11 +42,18 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   ) {
     this.changes = new BehaviorSubject<ControlChange>({ control: this, change: undefined, name: 'initialize' });
     if (!field.name) throw 'Missing name in field: ' + (this.isRoot ? 'root' : this.getPath('default').join(' > ') + '*');
-    // console.debug('Creating control:', field.name, { field });
+
     this.key = this._generateKey();
-    this.managers = createManagers<typeof this>(this);
-    if (field.onCreate) field.onCreate({ control: this });
+    this._constructManagers();
     this.uid = this._resolveUid();
+
+    if (this.isRoot) {
+      this._startPrepareLoop();
+      this._startOnInitializeLoop();
+      this._startAfterInitializeLoop();
+      this.managers.value.refreshSync();
+    }
+    if (field.onCreate) field.onCreate({ control: this });
   }
 
   private _resolveUid = (forceNew = false): string => {
@@ -482,16 +489,6 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     });
   };
 
-  // Params
-
-  public get params(): ControlLike<FIELD>['params'] {
-    return this.managers.params.value;
-  }
-
-  public get paramsChanges(): ControlLike<FIELD>['paramsChanges'] {
-    return this.managers.params.changes.pipe(debounceTime(1), shareReplay(1));
-  }
-
   /**
    * Get resolvers for the control
    */
@@ -897,5 +894,69 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
       ...params,
       ...fieldContext,
     };
+  };
+
+  private _constructManagers = () => {
+    this.managers = Object.entries(MargaritaFormControl.managers).reduce((acc, [key, constructor]) => {
+      acc[key] = new constructor(this);
+      return acc;
+    }, {} as any);
+  };
+
+  public _startPrepareLoop = () => {
+    if (!this.prepared) {
+      this.prepared = true;
+      Object.values(this.managers).forEach((manager) => manager.prepare());
+    }
+    this.controls.forEach((control) => {
+      control._startPrepareLoop();
+    });
+  };
+
+  public _startOnInitializeLoop = () => {
+    if (!this.initialized) {
+      this.initialized = true;
+      Object.values(this.managers).forEach((manager) => manager.onInitialize());
+    }
+    this.controls.forEach((control) => {
+      control._startOnInitializeLoop();
+    });
+  };
+
+  public _startAfterInitializeLoop = () => {
+    if (!this.ready) {
+      this.ready = true;
+      Object.values(this.managers).forEach((manager) => manager.afterInitialize());
+    }
+    this.controls.forEach((control) => {
+      control._startAfterInitializeLoop();
+    });
+  };
+
+  // Static
+
+  public static managers = {} as Record<string, ManagerLike>;
+
+  /**
+   * @internal
+   */
+  public static extend = (source: ThisType<MargaritaFormControl<any>>): void => {
+    const target = MargaritaFormControl.prototype;
+    const descriptors = Object.keys(source).reduce((descriptors, key) => {
+      const descriptor = Object.getOwnPropertyDescriptor(source, key);
+      if (descriptor) descriptors[key] = descriptor;
+      return descriptors;
+    }, {} as PropertyDescriptorMap);
+
+    // By default, Object.assign copies enumerable Symbols, too
+    Object.getOwnPropertySymbols(source).forEach((sym) => {
+      const descriptor = Object.getOwnPropertyDescriptor(source, sym);
+      if (descriptor && descriptor.enumerable) descriptors[sym] = descriptor;
+    });
+    Object.defineProperties(target, descriptors as any);
+  };
+
+  public static addManager = <T extends ManagerLike>(key: string, manager: T): void => {
+    MargaritaFormControl.managers[key] = manager as any;
   };
 }

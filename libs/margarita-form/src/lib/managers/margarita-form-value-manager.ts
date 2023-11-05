@@ -8,6 +8,13 @@ import { SearchParamsStorage } from '../extensions/storages/search-params-storag
 import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
 import { checkAsync } from '../helpers/async-checks';
 
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    value: ValueManager<MFC>;
+  }
+}
+
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   private initialized = false;
 

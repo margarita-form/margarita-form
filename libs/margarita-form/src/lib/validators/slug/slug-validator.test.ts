@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { slugValidator } from './slug-validator';
 
 const validator = slugValidator(true, 'Please enter a valid slug');

@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { anyOfValidator } from './any-of-validator';
 
 const validator = anyOfValidator(['red', 'green', 'blue'], 'Please enter a valid color');

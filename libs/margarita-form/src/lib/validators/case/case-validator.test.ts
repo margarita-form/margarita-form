@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { caseValidator } from './case-validator';
 
 const camelValidator = caseValidator('camel', 'Value must be in camel case');

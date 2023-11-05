@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { emailValidator } from './email-validator';
 
 const validator = emailValidator(true, 'Please enter a valid email address');

@@ -1,15 +1,14 @@
 import styled from 'styled-components';
-import { useMargaritaForm, MargaritaFormField, Form, MFC } from '@margarita-form/react';
+import { useMargaritaForm, MargaritaFormField, Form, MFC, MargaritaFormControl } from '@margarita-form/react';
 import { useState } from 'react';
 import { recipeConfig } from './fields/receipe';
 import { websiteConfig } from './fields/website';
-import { registerManager } from '@margarita-form/core';
 import { CustomManager } from './managers/custom-manager';
 import { ControlError } from './components/error';
 import { lifecycleConfig } from './fields/lifecycle';
 import { conditionalsConfig } from './fields/conditionals';
 
-registerManager('custom', CustomManager);
+MargaritaFormControl.addManager('custom', CustomManager);
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;

@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { dateValidator } from './date-validator';
 
 const validator = dateValidator(true, 'Please enter a valid date');

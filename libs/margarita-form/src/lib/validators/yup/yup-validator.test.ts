@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { yupValidator } from './yup-validator';
 import * as yup from 'yup';
 

@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../create-margarita-form';
+import { createMargaritaForm } from '../../index';
 
 describe('State testing', () => {
   it('control visible states should be able to check sibling value', () => {

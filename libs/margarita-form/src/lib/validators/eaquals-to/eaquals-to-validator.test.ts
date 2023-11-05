@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { eaqualsToValidator } from './eaquals-to-validator';
 
 const validator = eaqualsToValidator('requiredValue', 'Value does not equal to required value!');

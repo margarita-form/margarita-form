@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { maxValidator, minValidator } from './min-max-validators';
 
 const _maxValidator = maxValidator(10, 'Value is too high!');

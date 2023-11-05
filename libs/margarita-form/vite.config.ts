@@ -34,9 +34,30 @@ export default defineConfig({
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points.
-      entry: ['src/index.ts'],
       name: 'margarita-form',
-      fileName: 'index',
+      entry: {
+        index: 'src/index.ts',
+        'light/index': 'src/light.ts',
+        'managers/config-manager': 'src/lib/managers/margarita-form-config-manager.ts',
+        'managers/controls-manager': 'src/lib/managers/margarita-form-controls-manager.ts',
+        'managers/events-manager': 'src/lib/managers/margarita-form-events-manager.ts',
+        'managers/field-manager': 'src/lib/managers/margarita-form-field-manager.ts',
+        'managers/params-manager': 'src/lib/managers/margarita-form-params-manager.ts',
+        'managers/ref-manager': 'src/lib/managers/margarita-form-ref-manager.ts',
+        'managers/state-manager': 'src/lib/managers/margarita-form-state-manager.ts',
+        'managers/value-manager': 'src/lib/managers/margarita-form-value-manager.ts',
+      },
+      fileName: (format, entryName) => {
+        const ext = format === 'es' ? 'js' : format;
+        const parts = entryName.split('/');
+        if (parts.length > 1) {
+          const name = parts.at(-1);
+          const path = parts.slice(0, -1).join('/');
+          return `${path}/${name}.${ext}`;
+        }
+
+        return `${entryName}.${ext}`;
+      },
       // Change this to the formats you want to support.
       // Don't forgot to update your package.json as well.
       formats: ['es', 'cjs'],

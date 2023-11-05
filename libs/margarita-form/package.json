@@ -17,8 +17,44 @@
   },
   "exports": {
     ".": {
-      "import": "./index.js",
-      "require": "./index.cjs"
+      "import": "./margarita-form.index.js",
+      "require": "./margarita-form.index.cjs"
+    },
+    "./light": {
+      "import": "./margarita-form-light.js",
+      "require": "./margarita-form-light.cjs"
+    },
+    "./managers/config": {
+      "import": "./managers/config-manager.js",
+      "require": "./managers/config-manager.cjs"
+    },
+    "./managers/controls": {
+      "import": "./managers/controls-manager.js",
+      "require": "./managers/controls-manager.cjs"
+    },
+    "./managers/events": {
+      "import": "./managers/events-manager.js",
+      "require": "./managers/events-manager.cjs"
+    },
+    "./managers/field": {
+      "import": "./managers/field-manager.js",
+      "require": "./managers/field-manager.cjs"
+    },
+    "./managers/params": {
+      "import": "./managers/params-manager.js",
+      "require": "./managers/params-manager.cjs"
+    },
+    "./managers/ref": {
+      "import": "./managers/ref-manager.js",
+      "require": "./managers/ref-manager.cjs"
+    },
+    "./managers/state": {
+      "import": "./managers/state-manager.js",
+      "require": "./managers/state-manager.cjs"
+    },
+    "./managers/value": {
+      "import": "./managers/value-manager.js",
+      "require": "./managers/value-manager.cjs"
     }
   },
   "typedoc": {

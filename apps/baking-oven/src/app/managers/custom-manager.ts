@@ -1,4 +1,10 @@
-import { MF, BaseManager, MargaritaForm } from '@margarita-form/core';
+import { MF, BaseManager, MargaritaForm, MFC } from '@margarita-form/core';
+
+declare module '@margarita-form/core' {
+  export interface Managers {
+    custom: CustomManager<MFC>;
+  }
+}
 
 class CustomManager<CONTROL extends MF> extends BaseManager {
   constructor(public control: CONTROL) {

@@ -1,6 +1,13 @@
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
 
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    events: EventsManager<MFC>;
+  }
+}
+
 class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
   constructor(public override control: CONTROL) {
     super('events', control);

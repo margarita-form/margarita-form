@@ -1,4 +1,4 @@
-import { createMargaritaForm } from '../../create-margarita-form';
+import { createMargaritaForm } from '../../../index';
 import { sameAsValidator } from './same-as-validator';
 
 const validator = sameAsValidator('passwordConfirmation', 'Passwords do not match');

@@ -1,6 +1,13 @@
 import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MargaritaFormConfig } from '../margarita-form-types';
 
+// Extends types
+declare module '@margarita-form/core' {
+  export interface Managers {
+    config: ConfigManager<MFC>;
+  }
+}
+
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   addDefaultValidators: true,
   addMetadata: false,
