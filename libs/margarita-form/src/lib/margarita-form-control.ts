@@ -19,8 +19,6 @@ import { isEqual, isIncluded } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { removeFormFromCache } from './create-margarita-form';
-import { SubmitError } from './classes/submit-error';
-import { getResolverOutput, getResolverOutputPromise } from './helpers/resolve-function-outputs';
 import { ManagerLike, Managers } from './managers/margarita-form-base-manager';
 
 export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIELD> {
@@ -691,118 +689,8 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
    * @returns Promise with the submit handler's response
    */
   public submit: ControlLike<FIELD>['submit'] = async (params) => {
-    try {
-      await this.validate();
-      const { formAction, useNativeSubmit } = this.managers.ref;
-      if (!this.field.handleSubmit && !formAction && !useNativeSubmit)
-        throw 'Add "handleSubmit" option to field or define action to form element to submit the form!';
-      const canSubmit = this.config.allowConcurrentSubmits || !this.state.submitting;
-      if (!canSubmit) throw 'Form is already submitting!';
-      this.updateStateValue('submitting', true);
-      if (this.config.disableFormWhileSubmitting) this.updateStateValue('disabled', true);
-
-      // Handle valid submit
-      if (this.state.valid || this.config.allowInvalidSubmit) {
-        const handleValidSubmit = async () => {
-          try {
-            await this._handleBeforeSubmit();
-            const submitResponse = await this._resolveValidSubmitHandler(params);
-            if (submitResponse instanceof SubmitError) {
-              this.updateState({ submitResult: 'error', disabled: false });
-              return submitResponse.value;
-            } else {
-              this.updateStateValue('submitResult', 'success');
-              switch (this.config.handleSuccesfullSubmit) {
-                case 'disable':
-                  this.updateStateValue('disabled', true);
-                  break;
-                case 'reset':
-                  this.reset();
-                  break;
-                default:
-                  this.updateStateValue('disabled', false);
-                  break;
-              }
-              await this._handleAfterSubmit();
-              return submitResponse;
-            }
-          } catch (error) {
-            console.error('Could not handle valid submit!', { formName: this.name, error });
-            this.updateState({ submitResult: 'error', disabled: false });
-            return error;
-          }
-        };
-
-        const submitResponse = await handleValidSubmit();
-        this.updateStateValue('submitted', true);
-        this.updateStateValue('submitting', false);
-        const submits = this.state.submits || 0;
-        this.updateStateValue('submits', submits + 1);
-        return submitResponse;
-      }
-
-      // Handle invalid submit
-      const invalidSubmitHandler = this._resolveInvalidSubmitHandler(params);
-      return await invalidSubmitHandler.finally(() => {
-        const submits = this.state.submits || 0;
-        this.updateState({
-          submitting: false,
-          submitted: true,
-          submitResult: 'form-invalid',
-          disabled: false,
-          submits: submits + 1,
-        });
-      });
-    } catch (error) {
-      return console.error('Could not handle form submit! Error: ', error);
-    }
+    return this.managers.events.submit(params);
   };
-
-  private async _resolveValidSubmitHandler(params: any): Promise<any> {
-    const { handleSubmit } = this.field;
-    if (!handleSubmit) {
-      const action = this.managers.ref.formAction;
-      if (action) return await this._resolveValidSubmitPostHandler(action);
-      const useNativeSubmit = this.managers.ref.useNativeSubmit;
-      if (useNativeSubmit) return this.managers.ref.nativeSubmit();
-      throw 'No submit handler for valid submit!';
-    }
-
-    if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(this, params));
-
-    if (typeof handleSubmit === 'string' && /^http.+|^\/.+/gi.test(handleSubmit))
-      return await this._resolveValidSubmitPostHandler(handleSubmit);
-
-    if (typeof handleSubmit === 'object' && handleSubmit.valid) return await Promise.resolve(handleSubmit.valid(this, params));
-
-    const resolver = getResolverOutput({ getter: handleSubmit, control: this, strict: true });
-
-    if (resolver) return await getResolverOutputPromise('handleSubmit', resolver, this);
-
-    throw 'Submit handler (handleSubmit) is invalid!';
-  }
-
-  private async _resolveValidSubmitPostHandler(url: string) {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(this.value),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!response.ok) return new SubmitError('error-on-submit', response);
-    return response;
-  }
-
-  private async _resolveInvalidSubmitHandler(params: any): Promise<any> {
-    const { handleSubmit } = this.field;
-    const defaultHandler = () => console.log('Form is invalid!', { form: this });
-    if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
-    if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(this, params));
-    return console.log('Form is invalid!', {
-      form: this,
-    });
-  }
 
   // Misc
 
@@ -850,35 +738,6 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public getFieldValue: ControlLike<FIELD>['getFieldValue'] = (key, defaultValue) => {
     if (this.field[key]) return this.field[key] as any;
     return defaultValue;
-  };
-
-  /**
-   * @internal
-   */
-  public _resolveSubmitHandler = async (key: 'beforeSubmit' | 'afterSubmit'): Promise<void> => {
-    const resolver = getResolverOutput({ getter: this.field[key], control: this });
-    if (resolver) await getResolverOutputPromise(key, resolver, this);
-    const childHandlers = this.controls.map((control) => {
-      if (key === 'beforeSubmit') return control._handleBeforeSubmit();
-      if (key === 'afterSubmit') return control._handleAfterSubmit();
-      return control._resolveSubmitHandler(key);
-    });
-    await Promise.all(childHandlers);
-  };
-
-  /**
-   * @internal
-   */
-  public _handleBeforeSubmit = async () => {
-    await this._resolveSubmitHandler('beforeSubmit');
-  };
-
-  /**
-   * @internal
-   */
-  public _handleAfterSubmit = async () => {
-    if (this.config.clearStorageOnSuccessfullSubmit) this.extensions.storage.clearStorage();
-    await this._resolveSubmitHandler('afterSubmit');
   };
 
   /**
