@@ -9,7 +9,7 @@ import { getResolverOutput, getResolverOutputObservable } from '../helpers/resol
 import { checkAsync } from '../helpers/async-checks';
 
 // Extends types
-declare module '@margarita-form/core' {
+declare module './margarita-form-base-manager' {
   export interface Managers {
     value: ValueManager<MFC>;
   }

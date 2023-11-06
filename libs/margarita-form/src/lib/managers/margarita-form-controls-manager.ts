@@ -5,7 +5,7 @@ import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-t
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
 
 // Extends types
-declare module '@margarita-form/core' {
+declare module './margarita-form-base-manager' {
   export interface Managers {
     controls: ControlsManager<MFC>;
   }

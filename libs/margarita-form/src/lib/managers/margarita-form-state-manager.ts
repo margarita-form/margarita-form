@@ -14,7 +14,7 @@ import { isEqual, valueExists } from '../helpers/check-value';
 import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 
 // Extends types
-declare module '@margarita-form/core' {
+declare module './margarita-form-base-manager' {
   export interface Managers {
     state: StateManager<MFC>;
   }

@@ -19,7 +19,7 @@ import {
 } from './ref-manager-helpers/margarita-form-ref-value-changes';
 
 // Extends types
-declare module '@margarita-form/core' {
+declare module './margarita-form-base-manager' {
   export interface Managers {
     ref: RefManager<MFC>;
   }

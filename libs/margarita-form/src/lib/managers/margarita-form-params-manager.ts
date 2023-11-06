@@ -7,11 +7,13 @@ import { MargaritaForm } from '../margarita-form';
 export type Params = CommonRecord;
 
 // Extends types
-declare module '@margarita-form/core' {
+declare module './margarita-form-base-manager' {
   export interface Managers {
     params: ParamsManager<MFC>;
   }
+}
 
+declare module '../margarita-form-control' {
   export interface MargaritaFormControl<FIELD extends MFF> {
     get params(): Params;
     get paramsChanges(): Observable<Params>;

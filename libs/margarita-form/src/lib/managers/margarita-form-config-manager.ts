@@ -2,7 +2,7 @@ import { BaseManager } from './margarita-form-base-manager';
 import { MFC, MargaritaFormConfig } from '../margarita-form-types';
 
 // Extends types
-declare module '@margarita-form/core' {
+declare module './margarita-form-base-manager' {
   export interface Managers {
     config: ConfigManager<MFC>;
   }
