@@ -21,8 +21,8 @@
       "require": "./index.cjs"
     },
     "./light": {
-      "import": "./light.js",
-      "require": "./light.cjs"
+      "import": "./light/index.js",
+      "require": "./light/index.cjs"
     },
     "./managers/config": {
       "import": "./managers/config-manager.js",
