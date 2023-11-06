@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    zod: ReturnType<typeof zodValidator>;
+  }
+}
+
 export interface ZodLikeSchema {
   parseAsync(value: any): Promise<unknown>;
   [key: string]: any;

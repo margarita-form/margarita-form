@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    password: ReturnType<typeof passwordValidator>;
+  }
+}
+
 type PasswordLengths = number | 'long' | 'medium' | 'regular' | 'short';
 type PasswordValidatorParams = PasswordLengths | undefined;
 

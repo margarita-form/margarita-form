@@ -2,6 +2,13 @@ import { map } from 'rxjs';
 import { MargaritaFormValidator, MargaritaFormValidatorResult } from '../../margarita-form-types';
 import { getResolverOutputMapObservable } from '../../helpers/resolve-function-outputs';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    and: ReturnType<typeof andValidator>;
+    or: ReturnType<typeof orValidator>;
+  }
+}
+
 type AndOrValidatorParams = undefined | Record<string, any>;
 
 const _validatorBase: (

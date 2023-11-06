@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    color: ReturnType<typeof colorValidator>;
+  }
+}
+
 type ColorValidatorParams = undefined | boolean;
 
 export const colorValidator: (_params?: ColorValidatorParams, errorMessage?: string) => MargaritaFormValidator<boolean> =

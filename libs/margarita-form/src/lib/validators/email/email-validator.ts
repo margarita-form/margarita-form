@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    email: ReturnType<typeof emailValidator>;
+  }
+}
+
 type EmailValidatorParams = undefined | boolean;
 
 export const emailValidator: (_params?: EmailValidatorParams, errorMessage?: string) => MargaritaFormValidator<boolean> =

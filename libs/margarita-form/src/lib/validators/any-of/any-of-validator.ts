@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    anyOf: ReturnType<typeof anyOfValidator>;
+  }
+}
+
 type AnyOfValidatorParams = unknown[];
 
 export const anyOfValidator: (_params?: AnyOfValidatorParams, errorMessage?: string) => MargaritaFormValidator<unknown[]> =

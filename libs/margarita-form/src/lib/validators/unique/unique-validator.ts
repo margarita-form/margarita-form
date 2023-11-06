@@ -1,6 +1,12 @@
 import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    unique: ReturnType<typeof uniqueValidator>;
+  }
+}
+
 type UniqueValidatorParams = boolean | string[];
 
 export const uniqueValidator: (_params?: UniqueValidatorParams, errorMessage?: string) => MargaritaFormValidator<boolean | string[]> =

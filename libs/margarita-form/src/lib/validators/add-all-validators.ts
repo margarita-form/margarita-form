@@ -1,3 +1,4 @@
+import { MargaritaFormControl } from '../margarita-form-control';
 import {
   andValidator,
   anyOfValidator,
@@ -28,7 +29,7 @@ import {
   zodValidator,
 } from '.';
 
-export const defaultValidators = {
+const allValidators = {
   and: andValidator(),
   anyOf: anyOfValidator(),
   case: caseValidator(),
@@ -58,11 +59,6 @@ export const defaultValidators = {
   zod: zodValidator(),
 };
 
-export type DefaultValidators = typeof defaultValidators;
-export type DefaultValidatorNames = keyof DefaultValidators;
-export type DefaultValidator<T extends DefaultValidatorNames> = DefaultValidators[T];
-
-type ValidatorParam<T extends DefaultValidatorNames> = Parameters<DefaultValidators[T]>[0]['params'];
-export type DefaultValidation = {
-  [K in DefaultValidatorNames]: ValidatorParam<K>;
-};
+Object.entries(allValidators).forEach(([name, validator]) => {
+  MargaritaFormControl.addValidator(name, validator);
+});

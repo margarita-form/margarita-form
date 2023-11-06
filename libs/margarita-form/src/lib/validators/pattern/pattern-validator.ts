@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    pattern: ReturnType<typeof patternValidator>;
+  }
+}
+
 const DEFAULT_TIMEOUT = 2000; // 2 seconds
 
 const validateRegex = (regex: RegExp, value: string, timeout: number = DEFAULT_TIMEOUT): boolean => {

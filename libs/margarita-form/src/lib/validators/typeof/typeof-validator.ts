@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    typeof: ReturnType<typeof typeofValidator>;
+  }
+}
+
 type Types =
   | 'string'
   | 'number'

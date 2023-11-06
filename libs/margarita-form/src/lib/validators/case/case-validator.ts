@@ -1,5 +1,12 @@
 import { MargaritaFormValidator, MargaritaFormValidatorResult } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    case: ReturnType<typeof caseValidator>;
+    controlNameCase: ReturnType<typeof controlNameCaseValidator>;
+  }
+}
+
 const isCamelCase = (value: string) => /^[a-z][a-zA-Z0-9]*$/.test(value);
 const isSnakeCase = (value: string) => /^[a-z][a-z0-9_]*$/.test(value);
 const isKebabCase = (value: string) => /^[a-z][a-z0-9-]*$/.test(value);

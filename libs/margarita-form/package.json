@@ -24,6 +24,18 @@
       "import": "./light/index.js",
       "require": "./light/index.cjs"
     },
+    "./validators": {
+      "import": "./validators/index.js",
+      "require": "./validators/index.cjs"
+    },
+    "./validators/add-default-validators": {
+      "import": "./validators/add-default-validators.js",
+      "require": "./validators/add-default-validators.cjs"
+    },
+    "./validators/add-all-validators": {
+      "import": "./validators/add-all-validators.js",
+      "require": "./validators/add-all-validators.cjs"
+    },
     "./managers/config": {
       "import": "./managers/config-manager.js",
       "require": "./managers/config-manager.cjs"

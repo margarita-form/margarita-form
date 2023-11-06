@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    slug: ReturnType<typeof slugValidator>;
+  }
+}
+
 type SlugValidatorParams = boolean;
 
 export const slugValidator: (_params?: SlugValidatorParams, errorMessage?: string) => MargaritaFormValidator<boolean> =

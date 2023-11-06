@@ -1,5 +1,15 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    number: ReturnType<typeof numberValidator>;
+    integer: ReturnType<typeof integerValidator>;
+    float: ReturnType<typeof floatValidator>;
+    positiveNumber: ReturnType<typeof positiveNumberValidator>;
+    negativeNumber: ReturnType<typeof negativeNumberValidator>;
+  }
+}
+
 type NumberValidatorParams = undefined | boolean;
 
 export const numberValidator: (

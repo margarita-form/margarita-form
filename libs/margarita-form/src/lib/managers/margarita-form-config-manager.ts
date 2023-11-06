@@ -9,7 +9,6 @@ declare module './margarita-form-base-manager' {
 }
 
 export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
-  addDefaultValidators: true,
   addMetadata: false,
   afterChangesDebounceTime: 10,
   allowUnresolvedArrayChildNames: false,

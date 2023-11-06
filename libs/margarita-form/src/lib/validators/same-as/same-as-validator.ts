@@ -1,6 +1,12 @@
 import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    sameAs: ReturnType<typeof sameAsValidator>;
+  }
+}
+
 type SameAsValidatorParams = undefined | string | string[];
 
 export const sameAsValidator: (_params?: SameAsValidatorParams, errorMessage?: string) => MargaritaFormValidator<string | string[]> =

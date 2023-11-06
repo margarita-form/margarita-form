@@ -1,5 +1,12 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    min: ReturnType<typeof minValidator>;
+    max: ReturnType<typeof maxValidator>;
+  }
+}
+
 type MinMaxValidatorParams = number | undefined;
 
 const invalids: unknown[] = [undefined, null, ''];

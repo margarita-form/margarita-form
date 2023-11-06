@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../../index';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    required: ReturnType<typeof requiredValidator>;
+  }
+}
+
 type RequiredValidatorParams = boolean;
 
 export const requiredValidator: (_params?: RequiredValidatorParams, errorMessage?: string) => MargaritaFormValidator<boolean> =

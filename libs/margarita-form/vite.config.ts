@@ -38,6 +38,9 @@ export default defineConfig({
       entry: {
         index: 'src/index.ts',
         'light/index': 'src/light.ts',
+        'validators/index': 'src/lib/validators/index.ts',
+        'validators/add-default-validators': 'src/lib/validators/add-default-validators',
+        'validators/add-all-validators': 'src/lib/validators/add-all-validators',
         'managers/config-manager': 'src/lib/managers/margarita-form-config-manager.ts',
         'managers/controls-manager': 'src/lib/managers/margarita-form-controls-manager.ts',
         'managers/events-manager': 'src/lib/managers/margarita-form-events-manager.ts',

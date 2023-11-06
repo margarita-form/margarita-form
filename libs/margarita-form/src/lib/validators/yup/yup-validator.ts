@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    yup: ReturnType<typeof yupValidator>;
+  }
+}
+
 export interface YupLikeSchema {
   validate(value: any): Promise<unknown>;
   [key: string]: any;

@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    date: ReturnType<typeof dateValidator>;
+  }
+}
+
 type DateValidatorParams = undefined | boolean;
 
 export const dateValidator: (params?: DateValidatorParams, errorMessage?: string) => MargaritaFormValidator<boolean> =

@@ -11,10 +11,10 @@ import {
   CommonRecord,
   ControlChange,
   MargaritaFormFieldContext,
+  MargaritaFormValidator,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
-import { defaultValidators } from './validators/default-validators';
 import { isEqual, isIncluded } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
@@ -430,10 +430,8 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public get validators(): ControlLike<FIELD>['validators'] {
     const fieldValidators = this.field.validators || {};
     const parentValidators = this.context.parent?.field?.validators || {};
-    if (this.config.addDefaultValidators) {
-      return { ...defaultValidators, ...parentValidators, ...fieldValidators };
-    }
-    return { ...parentValidators, ...fieldValidators };
+    const defaultValidators = MargaritaFormControl.validators;
+    return { ...defaultValidators, ...parentValidators, ...fieldValidators };
   }
 
   public enable: ControlLike<FIELD>['enable'] = () => {
@@ -936,10 +934,8 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   // Static
 
   public static managers = {} as Record<string, ManagerLike>;
+  public static validators = {} as Record<string, MargaritaFormValidator>;
 
-  /**
-   * @internal
-   */
   public static extend = (source: ThisType<MargaritaFormControl<any>>): void => {
     const target = MargaritaFormControl.prototype;
     const descriptors = Object.keys(source).reduce((descriptors, key) => {
@@ -958,5 +954,9 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   public static addManager = <T extends ManagerLike>(key: string, manager: T): void => {
     MargaritaFormControl.managers[key] = manager as any;
+  };
+
+  public static addValidator = (key: string, validator: MargaritaFormValidator): void => {
+    MargaritaFormControl.validators[key] = validator;
   };
 }

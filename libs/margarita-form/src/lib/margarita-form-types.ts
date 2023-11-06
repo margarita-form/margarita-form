@@ -127,7 +127,6 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
 }
 
 export interface MargaritaFormConfig {
-  addDefaultValidators?: boolean;
   addMetadata?: boolean;
   afterChangesDebounceTime?: number;
   allowUnresolvedArrayChildNames?: boolean;

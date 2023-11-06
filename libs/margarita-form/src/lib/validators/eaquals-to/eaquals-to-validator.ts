@@ -1,5 +1,11 @@
 import { MargaritaFormValidator } from '../../margarita-form-types';
 
+declare module '../../typings/resolver-types' {
+  export interface Validators {
+    eaqualsTo: ReturnType<typeof eaqualsToValidator>;
+  }
+}
+
 type EaqualsToValidatorParams = unknown;
 
 export const eaqualsToValidator: (_params?: EaqualsToValidatorParams, errorMessage?: string) => MargaritaFormValidator<unknown> =
