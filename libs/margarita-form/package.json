@@ -17,12 +17,12 @@
   },
   "exports": {
     ".": {
-      "import": "./margarita-form.index.js",
-      "require": "./margarita-form.index.cjs"
+      "import": "./index.js",
+      "require": "./index.cjs"
     },
     "./light": {
-      "import": "./margarita-form-light.js",
-      "require": "./margarita-form-light.cjs"
+      "import": "./light.js",
+      "require": "./light.cjs"
     },
     "./managers/config": {
       "import": "./managers/config-manager.js",
