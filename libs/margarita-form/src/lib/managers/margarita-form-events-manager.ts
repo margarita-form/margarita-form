@@ -121,7 +121,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
   private async _resolveValidSubmitPostHandler(url: string) {
     const response = await fetch(url, {
       method: 'POST',
-      body: JSON.stringify(this.value),
+      body: JSON.stringify(this.control.value),
       headers: {
         'Content-Type': 'application/json',
       },
