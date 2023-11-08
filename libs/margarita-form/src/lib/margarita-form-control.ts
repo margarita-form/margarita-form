@@ -815,6 +815,10 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     MargaritaFormControl.managers[key] = manager as any;
   };
 
+  public static removeManager = (key: string): void => {
+    delete MargaritaFormControl.managers[key];
+  };
+
   public static addValidator = (key: string, validator: MargaritaFormValidator): void => {
     MargaritaFormControl.validators[key] = validator;
   };
