@@ -211,7 +211,13 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
         if (this.control.config.requiredNameCase) {
           validation['controlNameCase'] = this.control.config.requiredNameCase;
         }
-        return getResolverOutputMapObservable<MargaritaFormValidatorResult>(validation, this.control, validators);
+        return getResolverOutputMapObservable<MargaritaFormValidatorResult>(
+          validation,
+          this.control,
+          validators,
+          {},
+          this._invalidValidationWarning
+        );
       }),
       shareReplay(1)
     );
@@ -252,7 +258,6 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   private _updateValidationState(validationResult: Record<string, MargaritaFormValidatorResult>, childStates: MargaritaFormStateChildren) {
     const childrenAreValid = childStates.every((child) => child.valid || child.inactive);
     const currentIsValid = Object.values(validationResult).every((state) => state && state.valid);
-
     const valid = currentIsValid && childrenAreValid;
 
     const errors = Object.entries(validationResult).reduce((acc, [key, { valid, error }]) => {
@@ -299,6 +304,16 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     this.updateStates(state);
     this._setInitialValidationState();
   }
+
+  private _invalidValidationWarning = (validation: unknown, validators: unknown) => {
+    console.warn(
+      `Could not resolve validation for getter! Check if you have a typo in your validation or if you have not defined a custom validator.`,
+      {
+        validation,
+        validators,
+      }
+    );
+  };
 
   private _setInitialValidationState() {
     const validators = this.control.validators;
