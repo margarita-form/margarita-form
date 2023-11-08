@@ -2,6 +2,7 @@ import { MargaritaFormValidator } from '../../margarita-form-types';
 
 declare module '../../typings/resolver-types' {
   export interface Validators {
+    tel: ReturnType<typeof phoneValidator>;
     phone: ReturnType<typeof phoneValidator>;
   }
 }

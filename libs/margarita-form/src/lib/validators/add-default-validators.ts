@@ -28,6 +28,7 @@ const defaultValidators = {
   password: passwordValidator(),
   pattern: patternValidator(),
   phone: phoneValidator(),
+  tel: phoneValidator(),
   required: requiredValidator(),
   typeof: typeofValidator(),
   url: urlValidator(),

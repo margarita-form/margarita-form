@@ -49,6 +49,7 @@ const allValidators = {
   password: passwordValidator(),
   pattern: patternValidator(),
   phone: phoneValidator(),
+  tel: phoneValidator(),
   required: requiredValidator(),
   sameAs: sameAsValidator(),
   slug: slugValidator(),
