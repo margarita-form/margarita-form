@@ -755,8 +755,15 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   private _constructManagers = () => {
     this.managers = Object.entries(MargaritaFormControl.managers).reduce((acc, [key, constructor]) => {
-      acc[key] = new constructor(this);
-      return acc;
+      try {
+        acc[key] = new constructor(this);
+        return acc;
+      } catch (error) {
+        throw {
+          message: `Error while constructing manager "${key}" for control "${this.name}"!`,
+          error,
+        };
+      }
     }, this.managers as any);
   };
 
