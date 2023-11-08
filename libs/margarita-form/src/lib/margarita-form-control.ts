@@ -757,7 +757,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     this.managers = Object.entries(MargaritaFormControl.managers).reduce((acc, [key, constructor]) => {
       acc[key] = new constructor(this);
       return acc;
-    }, {} as any);
+    }, this.managers as any);
   };
 
   public _startPrepareLoop = () => {
