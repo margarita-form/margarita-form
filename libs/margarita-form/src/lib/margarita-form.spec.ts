@@ -914,9 +914,9 @@ describe('margaritaForm', () => {
     const commonControl = form.getControl([commonField.name]);
     if (!commonControl) throw 'No control found!';
 
-    expect(commonControl.state.valid).toBe(false);
+    expect(commonControl.state.valid).toBe(true); // Required validator initially syncronously returns true
     commonControl.setValue(undefined, false, false);
-    expect(commonControl.state.valid).toBe(false);
+    expect(commonControl.state.valid).toBe(true); // Required validator is not yet updated
     const response1 = await commonControl.validate();
     expect(response1).toBe(false);
     expect(commonControl.state.valid).toBe(false);
