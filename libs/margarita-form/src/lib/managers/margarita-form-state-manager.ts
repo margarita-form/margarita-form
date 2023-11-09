@@ -1,4 +1,4 @@
-import { combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, map, shareReplay, skip, switchMap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, shareReplay, skip, switchMap } from 'rxjs';
 import {
   MargaritaFormState,
   MargaritaFormStateErrors,
@@ -11,7 +11,11 @@ import {
 } from '../margarita-form-types';
 import { BaseManager } from './margarita-form-base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
-import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
+import {
+  getResolverOutputMapObservable,
+  getResolverOutputMapPromise,
+  getResolverOutputMapSyncronous,
+} from '../helpers/resolve-function-outputs';
 
 // Extends types
 declare module './margarita-form-base-manager' {
@@ -216,7 +220,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
           this.control,
           validators,
           {},
-          this._invalidValidationWarning
+          this._invalidValidationWarning()
         );
       }),
       shareReplay(1)
@@ -259,8 +263,9 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     const childrenAreValid = childStates.every((child) => child.valid || child.inactive);
     const currentIsValid = Object.values(validationResult).every((state) => state && state.valid);
     const valid = currentIsValid && childrenAreValid;
-
-    const errors = Object.entries(validationResult).reduce((acc, [key, { valid, error }]) => {
+    const errors = Object.entries(validationResult).reduce((acc, [key, result]) => {
+      if (!result) return acc;
+      const { valid, error } = result;
       if (!valid && error) acc[key] = error;
       return acc;
     }, {} as MargaritaFormStateErrors);
@@ -305,15 +310,18 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     this._setInitialValidationState();
   }
 
-  private _invalidValidationWarning = (validation: unknown, validators: unknown) => {
-    console.warn(
-      `Could not resolve validation for getter! Check if you have a typo in your validation or if you have not defined a custom validator.`,
-      {
-        validation,
-        validators,
-      }
-    );
-  };
+  private _invalidValidationWarning =
+    (returns: unknown = undefined) =>
+    (validation: unknown, validators: unknown) => {
+      console.warn(
+        `Could not resolve validation for getter! Check if you have a typo in your validation or if you have not defined a custom validator.`,
+        {
+          validation,
+          validators,
+        }
+      );
+      return returns;
+    };
 
   private _setInitialValidationState() {
     const validators = this.control.validators;
@@ -321,7 +329,13 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     if (this.control.config.requiredNameCase) {
       validation['controlNameCase'] = this.control.config.requiredNameCase;
     }
-    const syncronousValidationResults = getResolverOutputMapSyncronous<MargaritaFormValidatorResult>(validation, this.control, validators);
+    const syncronousValidationResults = getResolverOutputMapSyncronous<MargaritaFormValidatorResult>(
+      validation,
+      this.control,
+      validators,
+      {},
+      this._invalidValidationWarning({ valid: false })
+    );
     const currentChildStateResults = this.control.activeControls.map((control) => control.state);
     this._updateValidationState(syncronousValidationResults, currentChildStateResults);
   }
@@ -362,9 +376,20 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     await Promise.all(childValidations);
 
     // Validate self
-    const changes = this.changes.pipe(debounceTime(5));
-    this.control.managers.value.refreshSync(false, false);
-    await firstValueFrom(changes);
+    const validators = this.control.validators;
+    const validation = this.control.field.validation || {};
+    if (this.control.config.requiredNameCase) {
+      validation['controlNameCase'] = this.control.config.requiredNameCase;
+    }
+    const validationResult = await getResolverOutputMapPromise<MargaritaFormValidatorResult>(
+      validation,
+      this.control,
+      validators,
+      {},
+      this._invalidValidationWarning()
+    );
+    const currentChildStateResults = this.control.activeControls.map((control) => control.state);
+    this._updateValidationState(validationResult, currentChildStateResults);
 
     if (setAsTouched) this.updateState('touched', true);
 
