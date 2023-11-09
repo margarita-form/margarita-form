@@ -8,8 +8,8 @@ type ResolverEntry<O = unknown> = [string, O];
 type ResolverOutputMap<O> = Record<PropertyKey, MargaritaFormResolverOutput<O>>;
 type ResolverOutputResultMap<O> = Record<PropertyKey, O>;
 type Resolvers<O> = Record<string, MargaritaFormResolver<O>>;
-type LoggerFn = (getter: unknown, resolvers: unknown) => void;
-type Strict = boolean | LoggerFn;
+type StrictResultFn = (getter: unknown, resolvers: unknown) => unknown;
+type Strict = boolean | StrictResultFn;
 
 interface GetResolverOutputParams<O> {
   getter: unknown;
@@ -19,8 +19,8 @@ interface GetResolverOutputParams<O> {
   strict?: Strict;
 }
 
-const resolveStrict = (logger: Strict, getter: unknown, resolvers: unknown) => {
-  if (typeof logger === 'function') logger(getter, resolvers);
+const resolveStrict = (strictResultFn: Strict, getter: unknown, resolvers: unknown) => {
+  if (typeof strictResultFn === 'function') return strictResultFn(getter, resolvers);
   return undefined;
 };
 
@@ -45,7 +45,7 @@ export const getResolverOutput = <OUTPUT>({
       const getterName = name.slice(2);
       const data = Object.fromEntries(rest.map((item) => item.split(':')));
       const combinedData = { ...contextData, ...data };
-      return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData });
+      return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData, strict });
     }
     if (resolvers[getter]) {
       return resolvers[getter](context);
@@ -59,13 +59,13 @@ export const getResolverOutput = <OUTPUT>({
         const { name, ...rest } = getter as ResolverParams;
         const getterName = name.slice(2);
         const combinedData = { ...contextData, ...rest };
-        return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData });
+        return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData, strict });
       }
     } catch (error) {
       //
     }
   }
-  if (strict) return resolveStrict(strict, getter, resolvers);
+  if (strict) return resolveStrict(strict, { getter }, resolvers) as OUTPUT;
   return getter as OUTPUT;
 };
 
@@ -88,8 +88,9 @@ export const getResolverOutputMap = <OUTPUT = unknown>(
       acc[key] = keyOutput;
       return acc;
     }
-    if (strict) resolveStrict(strict, { key, value: params }, resolvers);
+    if (strict) acc[key] = resolveStrict(strict, { key, value: params }, resolvers) as OUTPUT;
     else acc[key] = params as OUTPUT;
+    if (acc[key] === undefined) delete acc[key];
     return acc;
   }, {} as ResolverOutputMap<OUTPUT>);
 };
@@ -152,7 +153,7 @@ export const getResolverOutputMapObservable = <OUTPUT = unknown>(
     acc.push(withKey);
     return acc;
   }, [] as Observable<ResolverEntry<OUTPUT>>[]);
-
+  if (observables.length === 0) return of({}) as Observable<ResolverOutputResultMap<OUTPUT>>;
   return combineLatest(observables).pipe(map((values) => Object.fromEntries(values)));
 };
 
@@ -175,8 +176,8 @@ export const getResolverOutputMapSyncronous = <OUTPUT = unknown>(
   contextData: CommonRecord = {},
   strict: Strict = false
 ): ResolverOutputResultMap<OUTPUT> => {
-  return Object.entries(obj).reduce((acc, [key, getter]) => {
-    const resolver = getResolverOutput<OUTPUT>({ getter, control, resolvers, contextData, strict });
+  const mapped = getResolverOutputMap<OUTPUT>(obj, control, resolvers, contextData, strict);
+  return Object.entries(mapped).reduce((acc, [key, resolver]) => {
     const result = getResolverOutputSyncronous(resolver);
     if (result !== undefined) acc[key] = resolver as OUTPUT;
     return acc;
