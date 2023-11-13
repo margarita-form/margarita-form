@@ -11,8 +11,8 @@
     "url": "https://github.com/margarita-form/margarita-form/issues"
   },
   "peerDependencies": {
-    "@angular/common": "^16.2.0",
-    "@angular/core": "^16.2.0",
+    "@angular/common": ">=14.x",
+    "@angular/core": ">=14.x",
     "nanoid": "^3.2.0 || 4.x || 5.x",
     "react": ">=18.x",
     "rxjs": ">=7.x"
