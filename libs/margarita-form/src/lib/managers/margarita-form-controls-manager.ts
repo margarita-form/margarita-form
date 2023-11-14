@@ -100,7 +100,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       const hasDuplicateNames = fields.filter((field, index) => fields.findIndex((f) => f.name === field.name) !== index);
       if (hasDuplicateNames.length > 0) {
         const duplicateNames = hasDuplicateNames.map((field) => field.name).join(', ');
-        throw `Duplicate field names (${duplicateNames}) found for control "${this.control.name}"d! Please make sure all field names are unique when grouping is not set to "array".`;
+        throw `Duplicate field names (${duplicateNames}) found for control "${this.control.name}"! Please make sure all field names are unique when grouping is not set to "array".`;
       }
       this.addControls(fields, resetControls, false);
     }
