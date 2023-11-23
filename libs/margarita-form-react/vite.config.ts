@@ -33,17 +33,29 @@ export default defineConfig({
   // See: https://vitejs.dev/guide/build.html#library-mode
   build: {
     lib: {
-      // Could also be a dictionary or array of multiple entry points.
-      entry: 'src/index.ts',
       name: 'margarita-form-react',
-      fileName: 'index',
+      entry: {
+        index: 'src/index.ts',
+        'light/index': 'src/light.ts',
+      },
+      fileName: (format, entryName) => {
+        const ext = format === 'es' ? 'js' : format;
+        const parts = entryName.split('/');
+        if (parts.length > 1) {
+          const name = parts.at(-1);
+          const path = parts.slice(0, -1).join('/');
+          return `${path}/${name}.${ext}`;
+        }
+
+        return `${entryName}.${ext}`;
+      },
       // Change this to the formats you want to support.
       // Don't forgot to update your package.json as well.
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'rxjs', 'nanoid', '@margarita-form/core'],
+      external: ['react', 'react-dom', 'rxjs', 'nanoid', '@margarita-form/core', '@margarita-form/core/light'],
       output: {
         globals: {
           react: 'React',

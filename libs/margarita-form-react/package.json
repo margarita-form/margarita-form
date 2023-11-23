@@ -20,6 +20,10 @@
     ".": {
       "import": "./index.js",
       "require": "./index.cjs"
+    },
+    "./light": {
+      "import": "./light/index.js",
+      "require": "./light/index.cjs"
     }
   },
   "typedoc": {
