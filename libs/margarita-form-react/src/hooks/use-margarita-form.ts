@@ -1,9 +1,18 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { DependencyList, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { createFormStore } from '../misc/margarita-form-store';
-import { MFF, createMargaritaForm } from '@margarita-form/core';
+import { MFC, MFF, MFGF, createMargaritaForm } from '@margarita-form/core';
 
-export const useMargaritaForm = <FIELD extends MFF>(field: FIELD, dependencies: DependencyList = [], useCache = true) => {
+type FieldOrControl = MFF | MFC<MFGF>;
+type AsField<T extends FieldOrControl> = T extends MFC ? T['field'] : T;
+
+export const useMargaritaForm = <FOC extends FieldOrControl = MFF>(
+  field: AsField<FOC>,
+  dependencies: DependencyList = [],
+  useCache = true
+) => {
+  type FIELD = AsField<FOC>;
+
   const fieldRef = useRef<null | FIELD>(null);
   const form = useMemo(() => {
     return createMargaritaForm<FIELD>(field, useCache);
