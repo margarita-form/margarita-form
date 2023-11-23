@@ -280,6 +280,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   >(
     identifier: IDENTIFIER
   ): undefined | _T;
+  queryControls<RESULT_FIELD extends MFF = MFGF>(query: (control: MFC<MFGF>) => boolean, recursive?: boolean): MFC<RESULT_FIELD>[];
 
   removeControl: <IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>>(identifier: IDENTIFIER) => void;
   moveControl: <IDENTIFIER extends DeepControlIdentifier<FIELD> = DeepControlIdentifier<FIELD>>(

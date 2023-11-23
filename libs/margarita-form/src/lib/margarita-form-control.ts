@@ -601,6 +601,21 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   };
 
   /**
+   * Find control where query function returns true. Can search all child controls recursively to get all matches in the tree.
+   * @param query Query function that returns true if control matches
+   * @param recursive Should the query be run recursively
+   * @returns The control that was found or undefined if control doesn't exist.
+   * */
+  public queryControls: ControlLike<FIELD>['queryControls'] = (query, recursive = true) => {
+    const results = this.controls.filter(query);
+    if (recursive) {
+      const nestedResults = this.controls.map((control) => control.queryControls(query, recursive)).flat();
+      return [...results, ...nestedResults] as MFC<any>[];
+    }
+    return results;
+  };
+
+  /**
    * Check if control exists
    * @param identifier name, index or key of the control
    * @returns boolean
