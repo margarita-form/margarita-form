@@ -2,7 +2,7 @@ import { Observable, switchMap } from 'rxjs';
 import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
-import { MargaritaForm } from '../margarita-form';
+import { MargaritaFormControl } from '../margarita-form-control';
 
 export type Params = CommonRecord;
 
@@ -22,7 +22,7 @@ declare module '../margarita-form-control' {
 
 // Implementation
 
-MargaritaForm.extend({
+MargaritaFormControl.extend({
   get params() {
     return this.managers.params.value;
   },
