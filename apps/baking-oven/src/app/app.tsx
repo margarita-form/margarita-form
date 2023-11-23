@@ -8,7 +8,7 @@ import { ControlError } from './components/error';
 import { lifecycleConfig } from './fields/lifecycle';
 import { conditionalsConfig } from './fields/conditionals';
 
-MargaritaFormControl.addManager('custom', CustomManager);
+MargaritaFormControl.addManager(CustomManager);
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;
@@ -231,6 +231,10 @@ export function App() {
 
           <button type="button" onClick={() => form.reset()}>
             Reset
+          </button>
+
+          <button type="button" onClick={() => form.disable()}>
+            Disable
           </button>
 
           {submitResponse && <span>{submitResponse}</span>}

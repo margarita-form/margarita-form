@@ -7,8 +7,9 @@ declare module '@margarita-form/core' {
 }
 
 class CustomManager<CONTROL extends MF> extends BaseManager {
+  public static override managerName = 'custom';
   constructor(public control: CONTROL) {
-    super('custom-manager', control);
+    super(control);
     if (this.control instanceof MargaritaForm) {
       console.log('Hello from custom manager!', this.control);
     }
