@@ -36,6 +36,7 @@ import {
   ControlChange,
 } from './typings/helper-types';
 import { CommonRecord, NotFunction, OrAny, OrString } from './typings/util-types';
+import { Managers } from './managers/margarita-form-base-manager';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -83,6 +84,7 @@ export interface MargaritaFormField<
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
   context?: CommonRecord;
+  managers?: Partial<Managers>;
   __value?: VALUE;
   __i18n?: I18N;
 }
