@@ -6,6 +6,7 @@ export * from './components/control-component';
 export * from './components/input-component';
 
 // Hooks
+export * from './hooks/use-changes';
 export * from './hooks/use-margarita-form';
 export * from './hooks/use-get-control';
 export * from './hooks/use-get-or-add-control';
