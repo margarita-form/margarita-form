@@ -1,4 +1,4 @@
-import type { ControlChange, MFC } from '@margarita-form/core';
+import type { ControlChange, MFC } from '@margarita-form/core/light';
 import { useEffect, useState } from 'react';
 import { filter } from 'rxjs';
 

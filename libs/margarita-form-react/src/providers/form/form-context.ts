@@ -1,4 +1,4 @@
-import type { MargaritaForm } from '@margarita-form/core';
+import type { MargaritaForm } from '@margarita-form/core/light';
 import { createContext, useContext } from 'react';
 
 export const FormContext = createContext<MargaritaForm<any> | null>(null);

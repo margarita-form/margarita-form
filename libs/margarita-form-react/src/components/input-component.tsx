@@ -1,4 +1,4 @@
-import type { MFF, MargaritaFormControl } from '@margarita-form/core';
+import type { MFF, MargaritaFormControl } from '@margarita-form/core/light';
 import { InputHTMLAttributes } from 'react';
 
 interface InputComponentProps<FIELD extends MFF = MFF> extends InputHTMLAttributes<HTMLInputElement> {

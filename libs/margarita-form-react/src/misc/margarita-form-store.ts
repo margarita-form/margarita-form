@@ -1,4 +1,4 @@
-import type { MF } from '@margarita-form/core';
+import type { MF } from '@margarita-form/core/light';
 import { skip } from 'rxjs';
 
 export const createFormStore = (form: MF) => {

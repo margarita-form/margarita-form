@@ -1,4 +1,4 @@
-import type { MargaritaForm } from '@margarita-form/core';
+import type { MargaritaForm } from '@margarita-form/core/light';
 import type { ReactNode } from 'react';
 import { FormContext } from './form-context';
 import { ControlProvider } from '../control/control-provider';

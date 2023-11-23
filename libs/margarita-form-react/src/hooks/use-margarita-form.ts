@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { DependencyList, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { createFormStore } from '../misc/margarita-form-store';
-import { MFC, MFF, MFGF, createMargaritaForm } from '@margarita-form/core';
+import { MFC, MFF, MFGF, createMargaritaForm } from '@margarita-form/core/light';
 
 type FieldOrControl = MFF | MFC<MFGF>;
 type AsField<T extends FieldOrControl> = T extends MFC ? T['field'] : T;

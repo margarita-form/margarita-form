@@ -1,5 +1,5 @@
 import type { FormHTMLAttributes } from 'react';
-import type { CommonRecord, MargaritaForm, MargaritaFormField } from '@margarita-form/core';
+import type { CommonRecord, MargaritaForm, MargaritaFormField } from '@margarita-form/core/light';
 import { useMargaritaForm } from '../hooks/use-margarita-form';
 import { FormProvider } from '../providers/form/form-provider';
 

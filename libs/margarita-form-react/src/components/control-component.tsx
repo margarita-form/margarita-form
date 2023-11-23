@@ -1,4 +1,4 @@
-import type { CommonRecord, MargaritaFormControl, MargaritaFormField } from '@margarita-form/core';
+import type { CommonRecord, MargaritaFormControl, MargaritaFormField } from '@margarita-form/core/light';
 import { ControlProvider } from '../providers/control/control-provider';
 import { HTMLAttributes, createElement, Fragment } from 'react';
 import { useGetOrAddControl } from '../hooks/use-get-or-add-control';

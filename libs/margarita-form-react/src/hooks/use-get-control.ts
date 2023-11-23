@@ -1,4 +1,4 @@
-import type { MFC, MFF } from '@margarita-form/core';
+import type { MFC, MFF } from '@margarita-form/core/light';
 import { useControlContext } from '../providers/control/control-context';
 
 export const useGetControl = <FIELD extends MFF>(identifier: string | number): MFC<FIELD> | null => {
