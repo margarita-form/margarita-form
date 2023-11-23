@@ -802,7 +802,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public static managers = {} as Record<string, ManagerLike>;
   public static validators = {} as Record<string, MargaritaFormValidator>;
 
-  public static extend = (source: ThisType<MargaritaFormControl<any>>): void => {
+  public static extend = (source: Partial<MargaritaFormControl<any>> & ThisType<MargaritaFormControl<any>>): void => {
     const target = MargaritaFormControl.prototype;
     const descriptors = Object.keys(source).reduce((descriptors, key) => {
       const descriptor = Object.getOwnPropertyDescriptor(source, key);
