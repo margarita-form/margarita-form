@@ -12,11 +12,12 @@ declare module './margarita-form-base-manager' {
 }
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
+  public static override managerName = 'controls';
   private _buildWith: CONTROL['field'] | null = null;
   private _requireUniqueNames: boolean;
 
   constructor(public override control: CONTROL) {
-    super('controls', control, []);
+    super(control, []);
     this._requireUniqueNames = !this.control.expectArray;
   }
 

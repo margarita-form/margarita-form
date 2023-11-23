@@ -9,10 +9,11 @@ declare module './margarita-form-base-manager' {
 }
 
 class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
+  public static override managerName = 'field';
   public shouldResetControl = false;
 
   constructor(public override control: CONTROL) {
-    super('field', control);
+    super(control);
     this.setField(control.field);
   }
 

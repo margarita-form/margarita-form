@@ -2,15 +2,17 @@ import { nanoid } from 'nanoid';
 import { BaseManager, MFC, MargaritaForm, createMargaritaForm } from '../../index';
 
 class CustomManager extends BaseManager {
+  public static override managerName = 'custom-1';
   constructor(public override control: MFC) {
-    super('custom-1', control);
+    super(control);
   }
 }
 
 class ManagerThatDependsOnNonExistingManager extends BaseManager {
+  public static override managerName = 'custom-2';
   public firstControl: MFC;
   constructor(public override control: MFC) {
-    super('custom-2', control);
+    super(control);
     const managers = this.control.managers as any;
     const firstControlManager = managers['custom-3'] as FirstControlManager;
     this.firstControl = firstControlManager.firstControl;
@@ -18,9 +20,10 @@ class ManagerThatDependsOnNonExistingManager extends BaseManager {
 }
 
 class FirstControlManager extends BaseManager {
+  public static override managerName = 'custom-3';
   public firstControl: MFC;
   constructor(public override control: MFC) {
-    super('custom-3', control);
+    super(control);
     this.firstControl = this.control.controls[0];
   }
 }
@@ -43,7 +46,7 @@ describe('Manager constructor testing', () => {
     expect(form1.managers).not.toHaveProperty('custom-2');
     expect(form1.managers).not.toHaveProperty('custom-3');
 
-    MargaritaForm.addManager('custom-1', CustomManager);
+    MargaritaForm.addManager(CustomManager);
 
     const form2 = createMargaritaForm({
       name: nanoid(),
@@ -52,7 +55,7 @@ describe('Manager constructor testing', () => {
     expect(form2.managers).not.toHaveProperty('custom-2');
     expect(form2.managers).not.toHaveProperty('custom-3');
 
-    MargaritaForm.addManager('custom-2', ManagerThatDependsOnNonExistingManager);
+    MargaritaForm.addManager(ManagerThatDependsOnNonExistingManager);
 
     const create = () =>
       createMargaritaForm({
@@ -62,8 +65,8 @@ describe('Manager constructor testing', () => {
     expect(create).toThrowError();
 
     MargaritaForm.removeManager('custom-2');
-    MargaritaForm.addManager('custom-3', FirstControlManager);
-    MargaritaForm.addManager('custom-2', ManagerThatDependsOnNonExistingManager);
+    MargaritaForm.addManager(FirstControlManager);
+    MargaritaForm.addManager(ManagerThatDependsOnNonExistingManager);
 
     const form3 = createMargaritaForm({
       name: nanoid(),

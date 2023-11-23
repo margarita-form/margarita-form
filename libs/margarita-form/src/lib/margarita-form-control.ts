@@ -818,8 +818,10 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     Object.defineProperties(target, descriptors as any);
   };
 
-  public static addManager = <T extends ManagerLike>(key: string, manager: T): void => {
-    MargaritaFormControl.managers[key] = manager as any;
+  public static addManager = <T extends ManagerLike>(manager: T): void => {
+    const { managerName } = manager;
+    if (!managerName) throw 'Manager must have a name!';
+    MargaritaFormControl.managers[managerName] = manager as any;
   };
 
   public static removeManager = (key: string): void => {

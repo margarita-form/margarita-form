@@ -180,11 +180,11 @@ export class MargaritaFormStateValue implements MargaritaFormState {
 }
 
 class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateValue> {
-  public override value: MargaritaFormStateValue;
+  public static override managerName = 'state';
 
   constructor(public override control: CONTROL) {
-    super('state', control);
-    this.value = new MargaritaFormStateValue(control);
+    const value = new MargaritaFormStateValue(control);
+    super(control, value);
   }
 
   public override prepare(): void {

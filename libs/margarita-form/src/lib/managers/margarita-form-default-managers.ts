@@ -8,17 +8,17 @@ import { ConfigManager } from './margarita-form-config-manager';
 import { EventsManager } from './margarita-form-events-manager';
 import { MargaritaFormControl } from '../margarita-form-control';
 
-export const margaritaFormDefaultManagers = {
-  field: FieldManager,
-  config: ConfigManager,
-  value: ValueManager,
-  controls: ControlsManager,
-  state: StateManager,
-  ref: RefManager,
-  params: ParamsManager,
-  events: EventsManager,
-};
+export const margaritaFormDefaultManagers = [
+  FieldManager,
+  ConfigManager,
+  ValueManager,
+  ControlsManager,
+  StateManager,
+  RefManager,
+  ParamsManager,
+  EventsManager,
+];
 
-Object.entries(margaritaFormDefaultManagers).forEach(([name, manager]) => {
-  MargaritaFormControl.addManager(name, manager);
+margaritaFormDefaultManagers.forEach((manager) => {
+  MargaritaFormControl.addManager(manager);
 });

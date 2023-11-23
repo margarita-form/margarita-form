@@ -16,10 +16,11 @@ declare module './margarita-form-base-manager' {
 }
 
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
+  public static override managerName = 'value';
   private initialized = false;
 
   constructor(public override control: CONTROL) {
-    super('value', control);
+    super(control);
   }
 
   public override prepare() {

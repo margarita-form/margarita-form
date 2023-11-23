@@ -31,8 +31,9 @@ interface RefEntry<CONTROL extends MFC> {
 }
 
 class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
+  public static override managerName = 'ref';
   constructor(public override control: CONTROL) {
-    super('ref', control, []);
+    super(control, []);
   }
 
   public override onInitialize() {

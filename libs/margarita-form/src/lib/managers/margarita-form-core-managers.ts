@@ -6,15 +6,8 @@ import { ConfigManager } from './margarita-form-config-manager';
 import { EventsManager } from './margarita-form-events-manager';
 import { MargaritaFormControl } from '../margarita-form-control';
 
-export const margaritaFormCoreManagers = {
-  field: FieldManager,
-  config: ConfigManager,
-  value: ValueManager,
-  controls: ControlsManager,
-  state: StateManager,
-  events: EventsManager,
-};
+export const margaritaFormCoreManagers = [FieldManager, ConfigManager, ValueManager, ControlsManager, StateManager, EventsManager];
 
-Object.entries(margaritaFormCoreManagers).forEach(([name, manager]) => {
-  MargaritaFormControl.addManager(name, manager);
+margaritaFormCoreManagers.forEach((manager) => {
+  MargaritaFormControl.addManager(manager);
 });

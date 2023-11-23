@@ -32,8 +32,9 @@ MargaritaFormControl.extend({
 });
 
 export class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
+  public static override managerName = 'params';
   constructor(public override control: CONTROL) {
-    super('params', control, {});
+    super(control, {});
   }
 
   public override onInitialize() {

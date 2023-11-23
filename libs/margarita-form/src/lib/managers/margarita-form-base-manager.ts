@@ -10,11 +10,17 @@ export interface Subscribable<VALUE = unknown> {
 type ManagerChanges<VALUE> = Observable<ControlChange<MFF, VALUE>>;
 
 export class BaseManager<VALUE = unknown> {
+  public static managerName: string;
   public value: VALUE = undefined as any;
   public subscriptions: Subscription[] = [];
 
-  constructor(public name: string, public control: MFC, public initialValue?: VALUE) {
+  constructor(public control: MFC, public initialValue?: VALUE) {
     this.value = initialValue as VALUE;
+  }
+
+  get name() {
+    const constructor = this.constructor as typeof BaseManager;
+    return constructor.managerName;
   }
 
   public get changes(): Observable<VALUE> {
@@ -71,8 +77,9 @@ export class BaseManager<VALUE = unknown> {
 }
 
 class _ManagerLike extends BaseManager {
+  public static override managerName = '_';
   constructor(control: MFC<any>) {
-    super('_', control);
+    super(control);
   }
 }
 

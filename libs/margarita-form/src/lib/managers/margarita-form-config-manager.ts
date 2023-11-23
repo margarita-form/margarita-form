@@ -35,9 +35,10 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
 });
 
 class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager<MargaritaFormConfig> {
+  public static override managerName = 'config';
   constructor(public override control: CONTROL) {
     const defaultConfig = getDefaultConfig();
-    super('config', control, defaultConfig);
+    super(control, defaultConfig);
     this.updateConfig();
   }
 

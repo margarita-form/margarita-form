@@ -11,8 +11,9 @@ declare module './margarita-form-base-manager' {
 }
 
 class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
+  public static override managerName = 'events';
   constructor(public override control: CONTROL) {
-    super('events', control);
+    super(control);
   }
 
   public override afterInitialize(): void {
