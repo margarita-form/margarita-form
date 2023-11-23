@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MF, MFF, addFormToCache, createMargaritaForm, getFormFromCache, removeFormFromCache } from '@margarita-form/core';
+import { MF, MFF, addFormToCache, createMargaritaForm, getFormFromCache, removeFormFromCache } from '@margarita-form/core/light';
 
 @Injectable()
 export class MargaritaFormService {

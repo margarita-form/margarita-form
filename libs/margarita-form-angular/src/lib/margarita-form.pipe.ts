@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarita-form/core';
+import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarita-form/core/light';
 import { MargaritaFormService } from './margarita-form.service';
 
 @Pipe({
