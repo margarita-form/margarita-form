@@ -33,7 +33,6 @@ export default defineConfig({
   // See: https://vitejs.dev/guide/build.html#library-mode
   build: {
     lib: {
-      // Could also be a dictionary or array of multiple entry points.
       name: 'margarita-form',
       entry: {
         index: 'src/index.ts',
