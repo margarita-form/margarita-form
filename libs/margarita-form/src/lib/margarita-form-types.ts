@@ -256,6 +256,10 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get controls(): MFC<CHILD_FIELD>[];
   get activeControls(): MFC<CHILD_FIELD>[];
 
+  getSiblings<SIBLING_FIELD extends MFF = MFGF>(): MFC<SIBLING_FIELD>[];
+  getActiveSiblings<SIBLING_FIELD extends MFF = MFGF>(): MFC<SIBLING_FIELD>[];
+  getSibling<SIBLING_FIELD extends MFF = MFGF>(identifier: ControlIdentifier): MFC<SIBLING_FIELD>;
+
   addControl<CHILD_FIELD extends ChildField<FIELD>>(field: CHILD_FIELD, replaceExisting?: boolean): MFC<CHILD_FIELD>;
 
   getOrAddControl<CHILD_FIELD extends ChildField<FIELD>>(field: CHILD_FIELD): MFC<CHILD_FIELD>;

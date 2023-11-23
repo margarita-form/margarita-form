@@ -12,6 +12,7 @@ import {
   ControlChange,
   MargaritaFormFieldContext,
   MargaritaFormValidator,
+  MFC,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
@@ -539,6 +540,37 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public get activeControls(): ControlLike<FIELD>['activeControls'] {
     return this.managers.controls.array.filter((control) => control.state.active);
   }
+
+  /**
+   * Get all sibling controls as an array
+   * @returns Array of sibling controls
+   * @throws Error if control is root
+   */
+  public getSiblings: ControlLike<FIELD>['getSiblings'] = () => {
+    if (this.isRoot) throw 'Cannot get siblings of root control!';
+    return this.parent.controls.filter((control) => control !== this);
+  };
+
+  /**
+   * Get all active sibling controls as an array
+   * @returns Array of active sibling controls
+   * @throws Error if control is root
+   */
+  public getActiveSiblings: ControlLike<FIELD>['getActiveSiblings'] = () => {
+    const siblings = this.getSiblings();
+    return siblings.filter((control) => control.state.active) as MFC<any>[];
+  };
+
+  /**
+   * Get sibling control with identifier
+   * @param identifier name, index or key of the control
+   * @returns The control that was found or added or null if control doesn't exist.
+   * @throws Error if control is root
+   */
+  public getSibling: ControlLike<FIELD>['getSibling'] = (identifier) => {
+    if (this.isRoot) throw 'Cannot get sibling of root control!';
+    return this.parent.getControl<any>(identifier);
+  };
 
   /**
    * Get control with identifier
