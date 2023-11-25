@@ -6,6 +6,7 @@ type Filter = (change: ControlChange) => boolean;
 const defaultFilterFn: Filter = () => true;
 
 export const useControlChanges = <CHANGES = unknown>(control: MFC, filterFn: Filter = defaultFilterFn) => {
+  const [syncId, setSyncId] = useState(control.syncId);
   const [current, setCurrent] = useState<undefined | CHANGES>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<undefined | unknown>(undefined);
@@ -14,6 +15,7 @@ export const useControlChanges = <CHANGES = unknown>(control: MFC, filterFn: Fil
     try {
       const subscription = control.ownChanges.pipe(filter(filterFn)).subscribe(({ change }) => {
         setCurrent(change as CHANGES);
+        setSyncId(control.syncId);
         setLoading(false);
       });
       return () => subscription.unsubscribe();
@@ -23,7 +25,7 @@ export const useControlChanges = <CHANGES = unknown>(control: MFC, filterFn: Fil
     }
   }, []);
 
-  return { current, loading, error };
+  return { current, loading, error, syncId };
 };
 
 export const useUpdateOnChanges = (control: MFC) => {
