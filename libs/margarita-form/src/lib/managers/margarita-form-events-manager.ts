@@ -34,8 +34,8 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
         throw 'Add "handleSubmit" option to field or define action to form element to submit the form!';
       const canSubmit = config.allowConcurrentSubmits || !state.submitting;
       if (!canSubmit) throw 'Form is already submitting!';
-      updateStateValue('submitting', true);
-      if (config.disableFormWhileSubmitting) updateStateValue('disabled', true);
+      await updateStateValue('submitting', true);
+      if (config.disableFormWhileSubmitting) await updateStateValue('disabled', true);
 
       // Handle valid submit
       if (state.valid || config.allowInvalidSubmit) {
@@ -44,19 +44,19 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
             await this._handleBeforeSubmit();
             const submitResponse = await this._resolveValidSubmitHandler(params);
             if (submitResponse instanceof SubmitError) {
-              updateState({ submitResult: 'error', disabled: false });
+              await updateState({ submitResult: 'error', disabled: false });
               return submitResponse.value;
             } else {
-              updateStateValue('submitResult', 'success');
+              await updateStateValue('submitResult', 'success');
               switch (config.handleSuccesfullSubmit) {
                 case 'disable':
-                  updateStateValue('disabled', true);
+                  await updateStateValue('disabled', true);
                   break;
                 case 'reset':
                   reset();
                   break;
                 default:
-                  updateStateValue('disabled', false);
+                  await updateStateValue('disabled', false);
                   break;
               }
               await this._handleAfterSubmit();
@@ -64,24 +64,26 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
             }
           } catch (error) {
             console.error('Could not handle valid submit!', { formName: this.name, error });
-            updateState({ submitResult: 'error', disabled: false });
+            await updateState({ submitResult: 'error', disabled: false });
             return error;
           }
         };
 
         const submitResponse = await handleValidSubmit();
-        updateStateValue('submitted', true);
-        updateStateValue('submitting', false);
         const submits = state.submits || 0;
-        updateStateValue('submits', submits + 1);
+        await updateState({
+          submitted: true,
+          submitting: false,
+          submits: submits + 1,
+        });
         return submitResponse;
       }
 
       // Handle invalid submit
       const invalidSubmitHandler = this._resolveInvalidSubmitHandler(params);
-      return await invalidSubmitHandler.finally(() => {
+      return await invalidSubmitHandler.finally(async () => {
         const submits = state.submits || 0;
-        updateState({
+        await updateState({
           submitting: false,
           submitted: true,
           submitResult: 'form-invalid',

@@ -37,6 +37,7 @@ import {
 } from './typings/helper-types';
 import { CommonRecord, NotFunction, OrAny, OrString } from './typings/util-types';
 import { Managers } from './managers/margarita-form-base-manager';
+import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -240,8 +241,8 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   deactivate(): void;
   toggleActive(): void;
 
-  updateStateValue<T extends StateKey>(key: T, value: MargaritaFormState[T]): void;
-  updateState: <T extends Partial<MargaritaFormState>>(changes: T) => void;
+  updateStateValue<T extends StateKey>(key: T, value: MargaritaFormState[T]): Promise<boolean>;
+  updateState: <T extends Partial<MargaritaFormState>>(changes: T) => Promise<boolean>;
 
   validate(setAsTouched?: boolean): Promise<boolean>;
   registerValidator(key: string, validator: MargaritaFormValidator): void;

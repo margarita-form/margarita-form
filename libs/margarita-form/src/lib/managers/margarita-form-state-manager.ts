@@ -256,7 +256,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   }
 
   private _emitChanges() {
-    this.emitChange(this.value);
+    return this.emitChange(this.value);
   }
 
   private _updateValidationState(validationResult: Record<string, MargaritaFormValidatorResult>, childStates: MargaritaFormStateChildren) {
@@ -342,7 +342,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
 
   // Methods
 
-  public updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
+  private _updateStateValue(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key]) {
     const changed = !isEqual(this.value[key], value);
     if (!changed) return false;
     Object.assign(this.value, { [key]: value });
@@ -350,19 +350,24 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     if (key === 'disabled') this._enableChildren(!value);
     if (key === 'dirty' && value === true) this._setParentDirty();
     if (key === 'pristine' && value === false) this._setParentDirty();
-    if (emit) this._emitChanges();
     if (key === 'children') return false;
     return true;
   }
 
-  public updateStates(changes: Partial<MargaritaFormState>, emit = true) {
+  public async updateState(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key], emit = true) {
+    const changed = this._updateStateValue(key, value);
+    if (emit) await this._emitChanges();
+    return changed;
+  }
+
+  public async updateStates(changes: Partial<MargaritaFormState>, emit = true) {
     const changed = Object.entries(changes).reduce((acc, [key, value]: [any, any]) => {
-      const changed = this.updateState(key, value, false);
+      const changed = this._updateStateValue(key, value);
       if (changed) return true;
       return acc;
     }, false);
     if (!changed) return false;
-    if (emit) this._emitChanges();
+    if (emit) await this._emitChanges();
     return true;
   }
 

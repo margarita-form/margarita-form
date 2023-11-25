@@ -460,11 +460,11 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   };
 
   public updateStateValue: ControlLike<FIELD>['updateStateValue'] = (key, value: MargaritaFormState[typeof key]) => {
-    this.managers.state.updateState(key, value);
+    return this.managers.state.updateState(key, value);
   };
 
   public updateState: ControlLike<FIELD>['updateState'] = (changes) => {
-    this.managers.state.updateStates(changes);
+    return this.managers.state.updateStates(changes);
   };
 
   /**
@@ -725,7 +725,10 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   // Submit
 
   public get onSubmit(): ControlLike<FIELD>['onSubmit'] {
-    return this.getStateChanges('submits').pipe(map(() => this));
+    return this.getStateChanges('submits').pipe(
+      filter((submits) => submits > 0),
+      map(() => this)
+    );
   }
 
   /**
