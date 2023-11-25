@@ -1,3 +1,4 @@
+import { Managers } from '../managers/margarita-form-base-manager';
 import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
 import { OrString, OrNumber, OrT } from './util-types';
 
@@ -100,7 +101,7 @@ export type I18NField<LOCALES extends string, I18NType extends object> = {
  * Type of a change event
  */
 export type ControlChange<FIELD extends MFF = MFGF, CHANGE = unknown> = {
-  name: string;
+  name: keyof Managers;
   change: CHANGE;
   control: MFC<FIELD>;
   origin?: MFC<any>;
