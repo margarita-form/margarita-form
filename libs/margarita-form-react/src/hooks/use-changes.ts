@@ -31,3 +31,17 @@ export const useControlChanges = <CHANGES = unknown>(control: MFC, filterFn: Fil
 export const useUpdateOnChanges = (control: MFC) => {
   useControlChanges(control);
 };
+
+type SimpleEffect<C> = (changes?: C) => void;
+type SubscriptionEffect<C> = (changes?: C) => () => void;
+type Effect<C> = SimpleEffect<C> | SubscriptionEffect<C>;
+
+export const useEffectOnChanges = <CHANGES = unknown>(control: MFC, effect: Effect<CHANGES>) => {
+  const { current, syncId } = useControlChanges<CHANGES>(control);
+  useEffect(() => {
+    const unsub = effect(current);
+    if (typeof unsub === 'function') return () => unsub();
+
+    return;
+  }, [syncId]);
+};
