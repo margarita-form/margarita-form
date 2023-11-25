@@ -1,6 +1,6 @@
 import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
-import { BaseManager } from './margarita-form-base-manager';
+import { BaseManager, Managers } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
 import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
 
@@ -12,7 +12,7 @@ declare module './margarita-form-base-manager' {
 }
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
-  public static override managerName = 'controls';
+  public static override managerName: keyof Managers = 'controls';
   private _buildWith: CONTROL['field'] | null = null;
   private _requireUniqueNames: boolean;
 

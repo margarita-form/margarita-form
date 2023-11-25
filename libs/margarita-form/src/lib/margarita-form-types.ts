@@ -34,6 +34,7 @@ import {
   ChildControl,
   I18NField,
   ControlChange,
+  ControlChangeName,
 } from './typings/helper-types';
 import { CommonRecord, NotFunction, OrAny, OrString } from './typings/util-types';
 import { Managers } from './managers/margarita-form-base-manager';
@@ -176,7 +177,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   updateSyncId(): void;
   updateUid(): void;
   updateKey(): void;
-  emitChange(name: string, change: unknown, origin?: MFC<any>): void;
+  emitChange(name: ControlChangeName, change: unknown, origin?: MFC<any>): void;
   get root(): MFC;
   get isRoot(): boolean;
   get parent(): MFC;

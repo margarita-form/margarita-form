@@ -1,6 +1,6 @@
 import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
-import { BaseManager } from './margarita-form-base-manager';
+import { BaseManager, Managers } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
@@ -16,7 +16,7 @@ declare module './margarita-form-base-manager' {
 }
 
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
-  public static override managerName = 'value';
+  public static override managerName: keyof Managers = 'value';
   private initialized = false;
 
   constructor(public override control: CONTROL) {

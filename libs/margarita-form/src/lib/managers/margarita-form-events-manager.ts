@@ -1,4 +1,4 @@
-import { BaseManager } from './margarita-form-base-manager';
+import { BaseManager, Managers } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
 import { getResolverOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';
@@ -11,7 +11,7 @@ declare module './margarita-form-base-manager' {
 }
 
 class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
-  public static override managerName = 'events';
+  public static override managerName: keyof Managers = 'events';
   constructor(public override control: CONTROL) {
     super(control);
   }

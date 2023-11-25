@@ -13,6 +13,7 @@ import {
   MargaritaFormFieldContext,
   MargaritaFormValidator,
   MFC,
+  ControlChangeName,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
@@ -107,7 +108,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   public emitChange: ControlLike<FIELD>['emitChange'] = (name, change, origin = this) => {
     this.changes.next({ control: this, change, name, origin });
     if (!this.isRoot) {
-      const newName = this === origin ? `${this.uid}-${name}` : name;
+      const newName: ControlChangeName = this === origin ? `${this.uid}-${name}` : name;
       this.parent.emitChange(newName, change, origin);
     }
   };

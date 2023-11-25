@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, switchMap } from 'rxjs';
-import { BaseManager } from './margarita-form-base-manager';
+import { BaseManager, Managers } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';
@@ -33,7 +33,7 @@ MargaritaFormControl.extend({
 });
 
 export class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
-  public static override managerName = 'params';
+  public static override managerName: keyof Managers = 'params';
   constructor(public override control: CONTROL) {
     super(control, {});
   }

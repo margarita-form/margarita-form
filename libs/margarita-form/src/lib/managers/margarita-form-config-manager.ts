@@ -1,4 +1,4 @@
-import { BaseManager } from './margarita-form-base-manager';
+import { BaseManager, Managers } from './margarita-form-base-manager';
 import { MFC, MargaritaFormConfig } from '../margarita-form-types';
 
 // Extends types
@@ -35,7 +35,7 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
 });
 
 class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager<MargaritaFormConfig> {
-  public static override managerName = 'config';
+  public static override managerName: keyof Managers = 'config';
   constructor(public override control: CONTROL) {
     const defaultConfig = getDefaultConfig();
     super(control, defaultConfig);

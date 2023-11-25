@@ -96,12 +96,15 @@ export type I18NField<LOCALES extends string, I18NType extends object> = {
     [L in LOCALES]: I18NType[K];
   };
 };
+export type OwnControlChangeName = keyof Managers | 'initialize';
+export type ChildControlChangeName = `${string}-${OwnControlChangeName}`;
+export type ControlChangeName = OwnControlChangeName | ChildControlChangeName;
 
 /**
  * Type of a change event
  */
 export type ControlChange<FIELD extends MFF = MFGF, CHANGE = unknown> = {
-  name: keyof Managers | 'initialize';
+  name: ControlChangeName;
   change: CHANGE;
   control: MFC<FIELD>;
   origin?: MFC<any>;
