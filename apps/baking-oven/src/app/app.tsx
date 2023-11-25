@@ -7,6 +7,7 @@ import { CustomManager } from './managers/custom-manager';
 import { ControlError } from './components/error';
 import { lifecycleConfig } from './fields/lifecycle';
 import { conditionalsConfig } from './fields/conditionals';
+import { helloWorldConfig } from './fields/hello-world';
 
 MargaritaFormControl.addManager(CustomManager);
 
@@ -109,9 +110,9 @@ type FormValue = Record<string, unknown>;
 
 type RootField = MargaritaFormField<FormValue, CustomField, Locales>;
 
-export function App() {
+export function App({ children }: { children?: React.ReactNode }) {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(recipeConfig);
+  const [currentFields, setCurrentFields] = useState(helloWorldConfig);
   const [shouldReset, setShouldReset] = useState(true);
 
   const form = useMargaritaForm<RootField>({
@@ -181,6 +182,14 @@ export function App() {
 
           <div className="change-fields-wrapper">
             <h2>Change fields</h2>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(helloWorldConfig);
+              }}
+            >
+              Hello world field
+            </button>
             <button
               type="button"
               onClick={() => {
