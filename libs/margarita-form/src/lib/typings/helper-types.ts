@@ -101,7 +101,7 @@ export type I18NField<LOCALES extends string, I18NType extends object> = {
  * Type of a change event
  */
 export type ControlChange<FIELD extends MFF = MFGF, CHANGE = unknown> = {
-  name: keyof Managers;
+  name: keyof Managers | 'initialize';
   change: CHANGE;
   control: MFC<FIELD>;
   origin?: MFC<any>;
