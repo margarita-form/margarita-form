@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, switchMap } from 'rxjs';
 import { BaseManager } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';

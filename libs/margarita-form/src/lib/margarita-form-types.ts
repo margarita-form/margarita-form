@@ -37,7 +37,6 @@ import {
 } from './typings/helper-types';
 import { CommonRecord, NotFunction, OrAny, OrString } from './typings/util-types';
 import { Managers } from './managers/margarita-form-base-manager';
-import { MargaritaFormStateValue } from './managers/margarita-form-state-manager';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
