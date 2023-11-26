@@ -22,7 +22,7 @@ import {
   MargaritaFormStateChildren,
   GenerateKeyFunction,
   MargaritaFormValidator,
-  MargaritaFormFieldContext,
+  MargaritaFormControlContext,
 } from './typings/core-types';
 import {
   ControlValue,
@@ -309,7 +309,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   clear(resetChildren?: boolean): void;
 
   getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;
-  get context(): MargaritaFormFieldContext<MFC<FIELD>, never>;
+  get context(): MargaritaFormControlContext<MFC<FIELD>, never>;
 }
 
 // Shorthands

@@ -1,5 +1,5 @@
 import { Observable, debounceTime, firstValueFrom, map } from 'rxjs';
-import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormFieldContext, StorageLike } from './margarita-form-types';
+import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormControlContext, StorageLike } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 import { SubmitError } from './classes/submit-error';
 import { createServer } from 'http';
@@ -42,12 +42,12 @@ const invalidField: MargaritaFormField<any, MFF> = {
       params: 20,
       errorMessage: 'Value is way way way too high!',
     },
-    max: async ({ value }: MargaritaFormFieldContext) => {
+    max: async ({ value }: MargaritaFormControlContext) => {
       if (!value) return { valid: true };
       if (value > 42) return { valid: false, error: 'Value must be under 42!' };
       return { valid: true };
     },
-    divisible: async ({ value }: MargaritaFormFieldContext) => {
+    divisible: async ({ value }: MargaritaFormControlContext) => {
       if (!value) return { valid: true };
       const remainderIsZero = value % 5 === 0;
       if (remainderIsZero) return { valid: true };
@@ -55,13 +55,13 @@ const invalidField: MargaritaFormField<any, MFF> = {
     },
   },
   validators: {
-    pattern: ({ value }: MargaritaFormFieldContext) => {
+    pattern: ({ value }: MargaritaFormControlContext) => {
       if (!value) return { valid: true };
       const isPattern = /\d\d/gi.test(String(value));
       if (isPattern) return { valid: true };
       return { valid: false, error: 'Value must have two digits!' };
     },
-    customValidator: ({ value }: MargaritaFormFieldContext) => {
+    customValidator: ({ value }: MargaritaFormControlContext) => {
       if (!value) return { valid: true };
       const isPattern = /\d5/gi.test(String(value));
       if (isPattern) return { valid: true };
@@ -90,7 +90,7 @@ const asyncGroupField: MargaritaFormField = {
   name: 'groupName',
   fields: [{ ...uncommonField, initialValue: null, validation: { asyncGroupValidator: true, required: true } }],
   validators: {
-    asyncGroupValidator: ({ value, control }: MargaritaFormFieldContext) => {
+    asyncGroupValidator: ({ value, control }: MargaritaFormControlContext) => {
       if (!value) return { valid: true };
       return control.root.valueChanges.pipe(
         map((rootValue) => {

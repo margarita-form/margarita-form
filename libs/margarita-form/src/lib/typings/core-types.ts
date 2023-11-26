@@ -11,7 +11,7 @@ export interface MargaritaFormControlBuildParams {
   idStore: Set<string>;
 }
 
-export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends ControlContext {
+export interface MargaritaFormControlContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends ControlContext {
   control: CONTROL;
   value?: CONTROL['value'];
   params?: PARAMS;
@@ -21,7 +21,7 @@ export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC<MFGF>, PARA
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
 export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = (
-  context: MargaritaFormFieldContext<CONTROL, PARAMS>
+  context: MargaritaFormControlContext<CONTROL, PARAMS>
 ) => MargaritaFormResolverOutput<OUTPUT>;
 
 export type MargaritaFormFieldParams = CommonRecord<NotFunction | MargaritaFormResolver<any>>;

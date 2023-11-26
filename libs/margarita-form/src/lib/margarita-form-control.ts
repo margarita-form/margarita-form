@@ -10,7 +10,7 @@ import {
   MargaritaFormResolverOutput,
   CommonRecord,
   ControlChange,
-  MargaritaFormFieldContext,
+  MargaritaFormControlContext,
   MargaritaFormValidator,
   MFC,
   ControlChangeName,
@@ -794,11 +794,13 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   /**
    * @internal
    */
-  public generateContext = <PARAMS = any>(params: CommonRecord = {}): MargaritaFormFieldContext<typeof this, PARAMS> => {
+  public generateContext = <PARAMS = any>(params: CommonRecord = {}): MargaritaFormControlContext<typeof this, PARAMS> => {
+    const staticContext = MargaritaFormControl.context || {};
     const fieldContext = this.field.context || {};
     return {
       control: this,
       value: this.value,
+      ...staticContext,
       ...params,
       ...fieldContext,
     };
@@ -863,6 +865,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   public static managers = {} as Record<string, ManagerLike>;
   public static validators = {} as Record<string, MargaritaFormValidator>;
+  public static context: Partial<MargaritaFormControlContext<any>> = {};
 
   public static extend = (source: Partial<MargaritaFormControl<any>> & ThisType<MargaritaFormControl<any>>): void => {
     const target = MargaritaFormControl.prototype;
@@ -892,5 +895,17 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   public static addValidator = (key: string, validator: MargaritaFormValidator): void => {
     MargaritaFormControl.validators[key] = validator;
+  };
+
+  public static addContextValue = <T extends keyof MargaritaFormControlContext>(key: T, value: MargaritaFormControlContext[T]): void => {
+    MargaritaFormControl.context[key] = value;
+  };
+
+  public static removeContextValue = <T extends keyof MargaritaFormControlContext>(key: T): void => {
+    delete MargaritaFormControl.context[key];
+  };
+
+  public static extendContext = (context: Partial<MargaritaFormControlContext>): void => {
+    MargaritaFormControl.context = { ...MargaritaFormControl.context, ...context };
   };
 }
