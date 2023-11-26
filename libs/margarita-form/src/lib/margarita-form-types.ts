@@ -37,8 +37,9 @@ import {
   ControlChange,
   ControlChangeName,
 } from './typings/helper-types';
-import { CommonRecord, NotFunction, OrAny, OrString } from './typings/util-types';
+import { NotFunction, OrAny, OrString } from './typings/util-types';
 import { Managers } from './managers/margarita-form-base-manager';
+import { ControlContext } from './typings/expandable-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -85,7 +86,7 @@ export interface MargaritaFormField<
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
-  context?: CommonRecord;
+  context?: ControlContext;
   managers?: Partial<Managers>;
   __value?: VALUE;
   __i18n?: I18N;
@@ -300,7 +301,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   setRef(ref: any): void;
 
   get onSubmit(): Observable<MFC<FIELD>>;
-  submit<OUTPUT, PARAMS = any>(params?: PARAMS): Promise<OUTPUT>;
+  submit<OUTPUT, PARAMS = object>(params?: PARAMS): Promise<OUTPUT>;
 
   resetValue(setDirtyAs?: boolean | undefined, resetChildren?: boolean, origin?: boolean): void;
   clearValue(setDirtyAs?: boolean | undefined, resetChildren?: boolean, origin?: boolean): void;

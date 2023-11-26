@@ -13,7 +13,7 @@ export interface MargaritaFormControlBuildParams {
 
 export interface MargaritaFormControlContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends ControlContext {
   control: CONTROL;
-  value?: CONTROL['value'];
+  value: CONTROL['value'] | undefined;
   params?: PARAMS;
   errorMessage?: string;
 }
@@ -86,8 +86,7 @@ export type MargaritaFormFieldState = MargaritaFormResolverOutput<boolean> | Mar
 export type GenerateKeyFunction = (control: MFC) => string;
 
 export type MargaritaFormSubmitHandler<FIELD extends MFF = MFGF, PARAMS = any> = (
-  form: MFC<FIELD>,
-  params?: PARAMS
+  context: MargaritaFormControlContext<MFC<FIELD>, PARAMS>
 ) => unknown | Promise<unknown>;
 
 export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFGF> {

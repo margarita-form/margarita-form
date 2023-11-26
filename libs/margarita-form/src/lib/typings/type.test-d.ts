@@ -27,9 +27,9 @@ type PersonField = MFF<Person, PersonChildFields>;
 
 const form = createMargaritaForm<PersonField>({
   name: 'form-1',
-  handleSubmit: (form) => {
-    expectType<MFC<MFGF<Person>>>(form);
-    expectType<Person>(form.value);
+  handleSubmit: ({ control, value }) => {
+    expectType<MFC<MFGF<Person>>>(control);
+    expectType<Person | undefined>(value);
   },
   validation: {
     custom: (context) => {

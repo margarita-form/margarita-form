@@ -53,7 +53,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
       this._startAfterInitializeLoop();
       this.managers.value.refreshSync();
     }
-    if (field.onCreate) field.onCreate({ control: this });
+    if (field.onCreate) field.onCreate(this.context);
   }
 
   private _resolveUid = (forceNew = false): string => {
@@ -794,16 +794,18 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   /**
    * @internal
    */
-  public generateContext = <PARAMS = any>(params: CommonRecord = {}): MargaritaFormControlContext<typeof this, PARAMS> => {
+  public generateContext = <PARAMS>(params?: PARAMS, overrides: CommonRecord = {}): MargaritaFormControlContext<typeof this, PARAMS> => {
     const staticContext = MargaritaFormControl.context || {};
     const fieldContext = this.field.context || {};
-    return {
+    const context: MargaritaFormControlContext<typeof this, PARAMS> = {
       control: this,
       value: this.value,
       ...staticContext,
-      ...params,
       ...fieldContext,
+      ...overrides,
     };
+    if (params !== undefined) context['params'] = params;
+    return context;
   };
 
   public get context(): ControlLike<FIELD>['context'] {

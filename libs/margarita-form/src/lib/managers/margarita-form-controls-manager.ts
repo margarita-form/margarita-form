@@ -239,7 +239,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
         const [control] = this.value.splice(index, 1);
         this._removeCleanup(control);
         const { onRemove } = control.field;
-        if (onRemove) onRemove({ control });
+        if (onRemove) onRemove(control.context);
       }
     }
     if (emit) this._emitChanges();
