@@ -36,7 +36,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   constructor(
     public field: FIELD,
-    public context: MargaritaFormControlContext = {
+    public _buildParams: MargaritaFormControlContext = {
       idStore: new Set<string>(),
     }
   ) {
@@ -60,13 +60,13 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     if (!forceNew && this.value && typeof this.value === 'object' && '_uid' in this.value) {
       const uid = this.value._uid as string;
       if (this.uid === uid) return uid;
-      if (this.context.idStore.has(uid)) return this._resolveUid(true);
-      this.context.idStore.add(uid);
+      if (this._buildParams.idStore.has(uid)) return this._resolveUid(true);
+      this._buildParams.idStore.add(uid);
       return uid;
     }
     if (!forceNew && this.uid) return this.uid;
     const uid = nanoid(4);
-    this.context.idStore.add(uid);
+    this._buildParams.idStore.add(uid);
     return uid;
   };
 
@@ -82,7 +82,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
    */
   public cleanup: ControlLike<FIELD>['cleanup'] = () => {
     Object.values(this.managers).forEach((manager) => manager.cleanup());
-    this.context.idStore.delete(this.uid);
+    this._buildParams.idStore.delete(this.uid);
     if (this.isRoot) removeFormFromCache(this.name);
   };
 
@@ -139,7 +139,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   };
 
   public get root(): ControlLike<FIELD>['root'] {
-    return this.context.root || this;
+    return this._buildParams.root || this;
   }
 
   public get isRoot(): ControlLike<FIELD>['isRoot'] {
@@ -147,10 +147,10 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   }
 
   public get parent(): ControlLike<FIELD>['parent'] {
-    if (!this.context.parent) {
+    if (!this._buildParams.parent) {
       console.warn('Root of controls reached!', this);
     }
-    return this.context.parent || this;
+    return this._buildParams.parent || this;
   }
 
   public get config(): ControlLike<FIELD>['config'] {
@@ -212,7 +212,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
       if (resolvedIndex > -1) return resolvedIndex;
     }
 
-    const { initialIndex = -1 } = this.context;
+    const { initialIndex = -1 } = this._buildParams;
     return initialIndex;
   }
 
@@ -429,7 +429,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   public get validators(): ControlLike<FIELD>['validators'] {
     const fieldValidators = this.field.validators || {};
-    const parentValidators = this.context.parent?.field?.validators || {};
+    const parentValidators = this._buildParams.parent?.field?.validators || {};
     const defaultValidators = MargaritaFormControl.validators;
     return { ...defaultValidators, ...parentValidators, ...fieldValidators };
   }
@@ -492,7 +492,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
    */
   public get resolvers(): ControlLike<FIELD>['resolvers'] {
     const fieldResolvers = this.field.resolvers || {};
-    const parentResolvers = this.context.parent?.field?.resolvers || {};
+    const parentResolvers = this._buildParams.parent?.field?.resolvers || {};
     return { ...parentResolvers, ...fieldResolvers };
   }
 

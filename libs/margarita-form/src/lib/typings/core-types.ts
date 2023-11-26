@@ -4,7 +4,6 @@ import { CommonRecord, NotFunction, OrString } from './util-types';
 import { Validation, Validators } from './resolver-types';
 
 export interface MargaritaFormControlContext {
-  form?: MF;
   root?: MF | MFC;
   parent?: MF | MFC;
   initialIndex?: number;

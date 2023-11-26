@@ -200,7 +200,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       parent: this.control,
       root: this.control.root,
       initialIndex: this.value.length,
-      idStore: this.control.context.idStore,
+      idStore: this.control._buildParams.idStore,
     });
 
     return this.appendControl(control as any, resetControl, emit);
