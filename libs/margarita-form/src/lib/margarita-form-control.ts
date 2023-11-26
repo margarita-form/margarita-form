@@ -14,6 +14,7 @@ import {
   MargaritaFormValidator,
   MFC,
   ControlChangeName,
+  Managers,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
@@ -21,7 +22,7 @@ import { isEqual, isIncluded } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
 import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { removeFormFromCache } from './create-margarita-form';
-import { ManagerLike, Managers } from './managers/margarita-form-base-manager';
+import { ManagerLike } from './managers/margarita-form-base-manager';
 
 export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIELD> {
   public key: string;

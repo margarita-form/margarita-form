@@ -9,7 +9,7 @@ import {
   MargaritaFormStateAllErrors,
   MargaritaFormValidatorResult,
 } from '../margarita-form-types';
-import { BaseManager, Managers } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
 import {
   getResolverOutputMapObservable,
@@ -18,7 +18,7 @@ import {
 } from '../helpers/resolve-function-outputs';
 
 // Extends types
-declare module './margarita-form-base-manager' {
+declare module '../typings/expandable-types' {
   export interface Managers {
     state: StateManager<MFC>;
   }
@@ -180,7 +180,7 @@ export class MargaritaFormStateValue implements MargaritaFormState {
 }
 
 class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateValue> {
-  public static override managerName: keyof Managers = 'state';
+  public static override managerName: ManagerName = 'state';
 
   constructor(public override control: CONTROL) {
     const value = new MargaritaFormStateValue(control);

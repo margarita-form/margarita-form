@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Observable, Subscription, debounceTime, filter, firstValueFrom, map, shareReplay, startWith } from 'rxjs';
-import { ControlChange, MFC, MFF } from '../margarita-form-types';
+import { ControlChange, MFC, MFF, Managers } from '../margarita-form-types';
 
 export interface Subscribable<VALUE = unknown> {
   observable: Observable<VALUE>;
@@ -10,7 +10,7 @@ export interface Subscribable<VALUE = unknown> {
 type ManagerChanges<VALUE> = Observable<ControlChange<MFF, VALUE>>;
 
 export class BaseManager<VALUE = unknown> {
-  public static managerName: keyof Managers;
+  public static managerName: ManagerName;
   public value: VALUE = undefined as any;
   public subscriptions: Subscription[] = [];
 
@@ -86,6 +86,4 @@ class _ManagerLike extends BaseManager {
 
 export type ManagerLike = typeof _ManagerLike;
 export type ManagerLikeInstance = InstanceType<ManagerLike>;
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Managers {}
+export type ManagerName = keyof Managers;

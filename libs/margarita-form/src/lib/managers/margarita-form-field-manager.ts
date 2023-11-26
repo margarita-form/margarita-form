@@ -1,15 +1,15 @@
-import { BaseManager, Managers } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { MFC, MFF } from '../margarita-form-types';
 
 // Extends types
-declare module './margarita-form-base-manager' {
+declare module '../typings/expandable-types' {
   export interface Managers {
     field: FieldManager<MFC>;
   }
 }
 
 class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
-  public static override managerName: keyof Managers = 'field';
+  public static override managerName: ManagerName = 'field';
   public shouldResetControl = false;
 
   constructor(public override control: CONTROL) {

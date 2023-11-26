@@ -1,4 +1,4 @@
-import { Managers } from '../managers/margarita-form-base-manager';
+import { ManagerName } from '../managers/margarita-form-base-manager';
 import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
 import { OrString, OrNumber, OrT } from './util-types';
 
@@ -96,7 +96,7 @@ export type I18NField<LOCALES extends string, I18NType extends object> = {
     [L in LOCALES]: I18NType[K];
   };
 };
-export type OwnControlChangeName = keyof Managers | 'initialize';
+export type OwnControlChangeName = ManagerName | 'initialize';
 export type ChildControlChangeName = `${string}-${OwnControlChangeName}`;
 export type ControlChangeName = OwnControlChangeName | ChildControlChangeName;
 

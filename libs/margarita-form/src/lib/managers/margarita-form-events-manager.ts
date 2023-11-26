@@ -1,17 +1,17 @@
-import { BaseManager, Managers } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { MFC } from '../margarita-form-types';
 import { getResolverOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';
 
 // Extends types
-declare module './margarita-form-base-manager' {
+declare module '../typings/expandable-types' {
   export interface Managers {
     events: EventsManager<MFC>;
   }
 }
 
 class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
-  public static override managerName: keyof Managers = 'events';
+  public static override managerName: ManagerName = 'events';
   constructor(public override control: CONTROL) {
     super(control);
   }

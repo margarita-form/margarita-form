@@ -1,6 +1,6 @@
 import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
-import { BaseManager, Managers } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
@@ -9,14 +9,14 @@ import { getResolverOutput, getResolverOutputObservable } from '../helpers/resol
 import { checkAsync } from '../helpers/async-checks';
 
 // Extends types
-declare module './margarita-form-base-manager' {
+declare module '../typings/expandable-types' {
   export interface Managers {
     value: ValueManager<MFC>;
   }
 }
 
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
-  public static override managerName: keyof Managers = 'value';
+  public static override managerName: ManagerName = 'value';
   private initialized = false;
 
   constructor(public override control: CONTROL) {

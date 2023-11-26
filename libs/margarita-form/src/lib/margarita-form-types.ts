@@ -38,8 +38,7 @@ import {
   ControlChangeName,
 } from './typings/helper-types';
 import { NotFunction, OrAny, OrString } from './typings/util-types';
-import { Managers } from './managers/margarita-form-base-manager';
-import { ControlContext } from './typings/expandable-types';
+import { ControlContext, Managers } from './typings/expandable-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 

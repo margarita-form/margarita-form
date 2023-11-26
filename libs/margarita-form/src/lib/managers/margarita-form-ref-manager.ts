@@ -1,4 +1,4 @@
-import { BaseManager, Managers } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { MFC, MargaritaFormBaseElement } from '../margarita-form-types';
 import {
   handleFormElementFormData,
@@ -19,7 +19,7 @@ import {
 } from './ref-manager-helpers/margarita-form-ref-value-changes';
 
 // Extends types
-declare module './margarita-form-base-manager' {
+declare module '../typings/expandable-types' {
   export interface Managers {
     ref: RefManager<MFC>;
   }
@@ -31,7 +31,7 @@ interface RefEntry<CONTROL extends MFC> {
 }
 
 class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
-  public static override managerName: keyof Managers = 'ref';
+  public static override managerName: ManagerName = 'ref';
   constructor(public override control: CONTROL) {
     super(control, []);
   }
