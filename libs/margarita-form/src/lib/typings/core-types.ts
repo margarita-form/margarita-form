@@ -2,6 +2,7 @@ import type { Observable } from 'rxjs';
 import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
 import { CommonRecord, NotFunction, OrString } from './util-types';
 import { Validation, Validators } from './resolver-types';
+import { ControlContext } from './expandable-types';
 
 export interface MargaritaFormControlBuildParams {
   root?: MF | MFC;
@@ -10,7 +11,7 @@ export interface MargaritaFormControlBuildParams {
   idStore: Set<string>;
 }
 
-export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> {
+export interface MargaritaFormFieldContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends ControlContext {
   control: CONTROL;
   value?: CONTROL['value'];
   params?: PARAMS;

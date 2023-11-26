@@ -22,6 +22,7 @@ import {
   MargaritaFormStateChildren,
   GenerateKeyFunction,
   MargaritaFormValidator,
+  MargaritaFormFieldContext,
 } from './typings/core-types';
 import {
   ControlValue,
@@ -308,6 +309,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   clear(resetChildren?: boolean): void;
 
   getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;
+  get context(): MargaritaFormFieldContext<MFC<FIELD>, never>;
 }
 
 // Shorthands
@@ -337,5 +339,6 @@ export type MFCCF<FIELD extends MFF> = MFC<ChildField<FIELD>>;
 // Export types
 
 export * from './typings/core-types';
+export * from './typings/expandable-types';
 export * from './typings/helper-types';
 export * from './typings/util-types';

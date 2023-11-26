@@ -15,7 +15,7 @@ export const fromChanges = <CONTROL extends MFC, VALUE = unknown>(
     startWith(null),
     debounceTime(control?.config?.afterChangesDebounceTime || 10),
     switchMap(() => {
-      const context = control._generateContext();
+      const context = control.generateContext();
       const result = callback(context);
       const resultIsAsync = checkAsync(result);
       return resultIsAsync ? (result as any) : Promise.resolve(result);

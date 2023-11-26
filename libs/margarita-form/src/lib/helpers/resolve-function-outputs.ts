@@ -31,7 +31,7 @@ export const getResolverOutput = <OUTPUT>({
   contextData = {},
   strict = false,
 }: GetResolverOutputParams<OUTPUT>): undefined | MargaritaFormResolverOutput<OUTPUT> => {
-  const context = control._generateContext(contextData);
+  const context = control.generateContext(contextData);
 
   if (typeof getter === 'function') {
     const result = getter(context);
