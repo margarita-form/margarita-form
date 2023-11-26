@@ -3,7 +3,7 @@ import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types'
 import { CommonRecord, NotFunction, OrString } from './util-types';
 import { Validation, Validators } from './resolver-types';
 
-export interface MargaritaFormControlContext {
+export interface MargaritaFormControlBuildParams {
   root?: MF | MFC;
   parent?: MF | MFC;
   initialIndex?: number;

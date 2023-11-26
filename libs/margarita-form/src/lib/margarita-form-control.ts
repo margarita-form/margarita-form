@@ -4,7 +4,7 @@ import {
   MargaritaFormResolvers,
   MargaritaFormState,
   MargaritaFormValidators,
-  MargaritaFormControlContext,
+  MargaritaFormControlBuildParams,
   ControlLike,
   ControlValue,
   MargaritaFormResolverOutput,
@@ -36,7 +36,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   constructor(
     public field: FIELD,
-    public _buildParams: MargaritaFormControlContext = {
+    public _buildParams: MargaritaFormControlBuildParams = {
       idStore: new Set<string>(),
     }
   ) {
