@@ -2,8 +2,6 @@
 import type { BehaviorSubject, Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
-
-import { MargaritaFormExtensions } from './extensions/margarita-form-extensions';
 import {
   MargaritaFormFieldParams,
   MargaritaFormFieldAttributes,
@@ -13,7 +11,6 @@ import {
   MargaritaFormResolver,
   MargaritaFormSubmitHandler,
   MargaritaFormSubmitHandlers,
-  MargaritaFormHandleLocalize,
   StorageLike,
   BroadcastLikeConstructor,
   MargaritaFormFieldState,
@@ -33,39 +30,34 @@ import {
   ControlIdentifier,
   DeepControlIdentifier,
   ChildControl,
-  I18NField,
   ControlChange,
   ControlChangeName,
 } from './typings/helper-types';
 import { NotFunction, OrAny, OrString } from './typings/util-types';
-import { ControlContext, Managers } from './typings/expandable-types';
+import { ControlContext, Extensions, ExtensionsArray, FieldBase, FieldParams, Managers } from './typings/expandable-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
-interface MargaritaFormChildField extends MFF {
+export interface MargaritaFormChildField extends MFF {
   name: string;
 }
 
-export interface MargaritaFormField<
-  VALUE = any,
-  CHILD_FIELD extends MFF = MargaritaFormChildField,
-  LOCALES extends string = never,
-  I18N extends object = never
-> extends UserDefinedStatesField {
+export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
   name: string;
-  fields?: CHILD_FIELD[];
+  fields?: FP['fields'] extends MFF ? FP['fields'][] : MFF[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
-  initialValue?: VALUE;
-  defaultValue?: VALUE;
-  valueResolver?: MargaritaFormResolver<VALUE> | NotFunction;
+
+  initialValue?: FP['value'];
+  defaultValue?: FP['value'];
+  valueResolver?: MargaritaFormResolver<FP['value']> | NotFunction;
   params?: MargaritaFormFieldParams;
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
-  validation?: MargaritaFormFieldValidation<VALUE>;
-  dispatcher?: MargaritaFormResolver<VALUE>;
-  transformer?: MargaritaFormResolver<VALUE>;
+  validation?: MargaritaFormFieldValidation<FP['value']>;
+  dispatcher?: MargaritaFormResolver<FP['value']>;
+  transformer?: MargaritaFormResolver<FP['value']>;
   beforeSubmit?: MargaritaFormResolver;
   afterSubmit?: MargaritaFormResolver;
   onCreate?: MargaritaFormResolver;
@@ -74,24 +66,17 @@ export interface MargaritaFormField<
   onValueChanges?: MargaritaFormResolver;
   onStateChanges?: MargaritaFormResolver;
   onChildControlChanges?: MargaritaFormResolver;
-  handleSubmit?: string | MargaritaFormSubmitHandler<MFGF<VALUE>> | MargaritaFormSubmitHandlers<MFGF<VALUE>>;
-  locales?: Readonly<LOCALES[]>;
-  localize?: LOCALES extends never ? undefined : boolean;
-  currentLocale?: LOCALES extends never ? undefined : LOCALES;
-  wasLocalized?: boolean;
-  isLocaleField?: boolean;
-  handleLocalize?: MargaritaFormHandleLocalize;
-  i18n?: I18NField<LOCALES, I18N>;
+  handleSubmit?: string | MargaritaFormSubmitHandler<MFGF<FP['value']>> | MargaritaFormSubmitHandlers<MFGF<FP['value']>>;
   config?: MargaritaFormConfig;
   useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
   context?: ControlContext;
   managers?: Partial<Managers>;
-  __value?: VALUE;
-  __i18n?: I18N;
+  extensions?: ExtensionsArray;
+  __params?: FP;
 }
 
-interface MargaritaFormGeneralField<VALUE = any, CHILD_FIELD extends MFF = any> extends MFF<VALUE, CHILD_FIELD, any, any> {
+interface MargaritaFormGeneralField<FP extends FieldParams = any> extends MFF<FP> {
   [key: string]: OrAny;
 }
 
@@ -183,10 +168,9 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get isRoot(): boolean;
   get parent(): MFC;
   get config(): MargaritaFormConfig;
-  get extensions(): MargaritaFormExtensions;
+  get extensions(): Extensions;
   get locales(): Exclude<FIELD['locales'], undefined>;
   get currentLocale(): FIELD['locales'] extends string[] ? FIELD['locales'][number] : undefined;
-  get i18n(): FIELD['__i18n'];
   get useStorage(): FIELD['useStorage'];
   get name(): FIELD['name'];
   get index(): number;
@@ -315,14 +299,9 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 // Shorthands
 
 /** Shorthand for {@link MargaritaFormField}  */
-export type MFF<
-  VALUE = any,
-  CHILD_FIELD extends MFF = MargaritaFormChildField,
-  LOCALES extends string = string,
-  I18N extends object = any
-> = MargaritaFormField<VALUE, CHILD_FIELD, LOCALES, I18N>;
+export type MFF<FP extends FieldParams = FieldParams> = MargaritaFormField<FP>;
 /** Shorthand for {@link MargaritaFormGeneralField} */
-export type MFGF<VALUE = any> = MargaritaFormGeneralField<VALUE>;
+export type MFGF<FP extends FieldParams = FieldParams> = MargaritaFormGeneralField<FP>;
 /** Shorthand for {@link MargaritaForm}  */
 export type MF<FIELD extends MFF = MFGF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */

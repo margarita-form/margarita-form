@@ -9,11 +9,6 @@ export * from './lib/managers/margarita-form-core-managers';
 
 export * from './lib/resolvers/localization-resolver';
 
-export * from './lib/extensions/margarita-form-extensions';
-export * from './lib/extensions/margarita-form-i18n-extension';
-export * from './lib/extensions/margarita-form-storage-extension';
-export * from './lib/extensions/margarita-form-syncronization-extension';
-
 export * from './lib/classes/submit-error';
 
 export * from './lib/helpers/check-value';

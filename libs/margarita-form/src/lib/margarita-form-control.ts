@@ -15,20 +15,21 @@ import {
   MFC,
   ControlChangeName,
   Managers,
+  Extensions,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { isEqual, isIncluded } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
-import { MargaritaFormExtensions, initializeExtensions } from './extensions/margarita-form-extensions';
 import { removeFormFromCache } from './create-margarita-form';
 import { ManagerLike } from './managers/margarita-form-base-manager';
 
-export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIELD> {
+export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLike<FIELD> {
   public key: string;
   public uid: string;
   public syncId: string = nanoid(4);
   public managers = {} as Managers;
+  public extensions = {} as Extensions;
   public prepared = false;
   public initialized = false;
   public ready = false;
@@ -45,6 +46,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     if (!field.name) throw 'Missing name in field: ' + (this.isRoot ? 'root' : this.getPath('default').join(' > ') + '*');
 
     this.key = this._generateKey();
+    this._constructExtensions();
     this._constructManagers();
     this.uid = this._resolveUid();
 
@@ -161,13 +163,26 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     return this.managers.config.value;
   }
 
-  public get extensions(): ControlLike<FIELD>['extensions'] {
+  private _constructExtensions = () => {
     const cachedExtensions = this.cache.get('extensions');
-    if (cachedExtensions) return cachedExtensions as MargaritaFormExtensions;
-    const extensions = initializeExtensions(this);
+    const fieldExtensions = this.field.extensions;
+    if (cachedExtensions && !fieldExtensions) return cachedExtensions;
+    const _globalExtensions = Object.values(MargaritaFormControl.extensions);
+    const _fieldExtensions = this.field.extensions || [];
+    const extensions = Object.values([..._globalExtensions, ..._fieldExtensions]).reduce((acc, constructor) => {
+      try {
+        acc[constructor.extensionName] = new constructor(this);
+        return acc;
+      } catch (error) {
+        throw {
+          message: `Error while constructing extension "${constructor.extensionName}"!`,
+          error,
+        };
+      }
+    }, this.extensions);
     this.cache.set('extensions', extensions);
     return extensions;
-  }
+  };
 
   public getManager: ControlLike<FIELD>['getManager'] = (key) => {
     const found = (this.managers as any)[key];
@@ -185,14 +200,6 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
     type Locale = ControlLike<FIELD>['currentLocale'];
     if (this.isRoot) return this.field.currentLocale as Locale;
     return (this.field.currentLocale || this.parent.currentLocale) as Locale;
-  }
-
-  public get i18n(): ControlLike<FIELD>['i18n'] {
-    const { field, extensions } = this;
-    const { i18n } = field;
-    if (!i18n) return undefined;
-    const { localization } = extensions;
-    return localization.getLocalizedValue(i18n, this.currentLocale);
   }
 
   public get useStorage(): ControlLike<FIELD>['useStorage'] {
@@ -867,6 +874,7 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
   // Static
 
   public static managers = {} as Record<string, ManagerLike>;
+  public static extensions = {} as Record<string, any>;
   public static validators = {} as Record<string, MargaritaFormValidator>;
   public static context: Partial<MargaritaFormControlContext<any>> = {};
 
@@ -894,6 +902,16 @@ export class MargaritaFormControl<FIELD extends MFF> implements ControlLike<FIEL
 
   public static removeManager = (key: string): void => {
     delete MargaritaFormControl.managers[key];
+  };
+
+  public static addExtension = (extension: any): void => {
+    const { extensionName } = extension;
+    if (!extensionName) throw 'Extension must have a name!';
+    MargaritaFormControl.extensions[extensionName] = extension;
+  };
+
+  public static removeExtension = (key: string): void => {
+    delete MargaritaFormControl.extensions[key];
   };
 
   public static addValidator = (key: string, validator: MargaritaFormValidator): void => {

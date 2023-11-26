@@ -36,7 +36,7 @@ export interface MargaritaFormValidatorResult {
 export type MargaritaFormValidator<PARAMS = any, VALUE = any> = MargaritaFormResolver<
   MargaritaFormValidatorResult,
   PARAMS,
-  MFC<MFGF<VALUE>>
+  MFC<MFGF<{ value: VALUE }>>
 >;
 
 export type MargaritaFormFieldValidationsState = CommonRecord<MargaritaFormValidatorResult>;
@@ -59,23 +59,6 @@ export type MargaritaFormFieldValidation<VALUE> = {
 export type MargaritaFormValidators = Partial<Validators> & CommonRecord<MargaritaFormValidator<any>>;
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
-
-export type MargaritaFormHandleLocalizeParentFn<FIELD extends MFF = MFGF> = (params: {
-  field: FIELD;
-  parent: MFC<MFF>;
-  locales: readonly string[];
-}) => Partial<FIELD> | CommonRecord;
-
-export type MargaritaFormHandleLocalizeChildFn<FIELD extends MFF = MFGF> = (params: {
-  field: FIELD;
-  parent: MFC<MFF>;
-  locale: string;
-}) => Partial<FIELD> | CommonRecord;
-
-export interface MargaritaFormHandleLocalize<FIELD extends MFF = MFGF> {
-  parent?: MargaritaFormHandleLocalizeParentFn<FIELD>;
-  child?: MargaritaFormHandleLocalizeChildFn<FIELD>;
-}
 
 export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateAllErrors = { path: string; errors: MargaritaFormStateErrors; control: MFC }[];

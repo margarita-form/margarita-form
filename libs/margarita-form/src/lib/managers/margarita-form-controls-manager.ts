@@ -150,7 +150,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     fieldTemplate?: string | number | FIELD,
     overrides: Partial<FIELD> = {}
   ): null | MFC<FIELD> {
-    const { fields } = this.control.field as MFF<any, FIELD>;
+    const { fields } = this.control.field;
 
     const getField = (): undefined | FIELD => {
       if (fields) {

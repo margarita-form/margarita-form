@@ -24,10 +24,10 @@ declare module '../margarita-form-control' {
 // Implementation
 
 MargaritaFormControl.extend({
-  get params() {
+  get params(): Params {
     return this.managers.params.value;
   },
-  get paramsChanges() {
+  get paramsChanges(): Observable<Params> {
     return this.managers.params.changes;
   },
 });
