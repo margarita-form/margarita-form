@@ -1,4 +1,4 @@
-import { MF, BaseManager, MargaritaForm, MFC } from '@margarita-form/core';
+import { MF, BaseManager, MargaritaForm, MFC, Managers } from '@margarita-form/core';
 
 declare module '@margarita-form/core' {
   export interface Managers {
@@ -7,7 +7,7 @@ declare module '@margarita-form/core' {
 }
 
 class CustomManager<CONTROL extends MF> extends BaseManager {
-  public static override managerName = 'custom';
+  public static override managerName: keyof Managers = 'custom';
   constructor(public control: CONTROL) {
     super(control);
     if (this.control instanceof MargaritaForm) {
