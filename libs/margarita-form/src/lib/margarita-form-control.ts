@@ -19,7 +19,7 @@ import {
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
-import { isEqual, isIncluded } from './helpers/check-value';
+import { isEqual, isIncluded, valueExists } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
 import { removeFormFromCache } from './create-margarita-form';
 import { ManagerLike } from './managers/margarita-form-base-manager';
@@ -29,17 +29,16 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   public uid: string;
   public syncId: string = nanoid(4);
   public managers = {} as Managers;
-  public extensions = {} as Extensions;
   public prepared = false;
   public initialized = false;
   public ready = false;
   public changes: BehaviorSubject<ControlChange>;
-  private cache = new Map<string, unknown>();
 
   constructor(
     public field: FIELD,
     public _buildParams: MargaritaFormControlBuildParams = {
       idStore: new Set<string>(),
+      extensions: {} as Extensions,
     }
   ) {
     this.changes = new BehaviorSubject<ControlChange>({ control: this, change: undefined, name: 'initialize' });
@@ -57,6 +56,10 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
       this.managers.value.refreshSync();
     }
     if (field.onCreate) field.onCreate(this.context);
+  }
+
+  public get extensions(): ControlLike<FIELD>['extensions'] {
+    return this._buildParams.extensions;
   }
 
   private _resolveUid = (forceNew = false): string => {
@@ -84,18 +87,18 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
    * Unsubscribe from all subscriptions for current control
    */
   public cleanup: ControlLike<FIELD>['cleanup'] = () => {
-    Object.values(this.managers).forEach((manager) => manager.cleanup());
+    Object.values(this.managers).forEach((manager: any) => manager.cleanup());
     this._buildParams.idStore.delete(this.uid);
     if (this.isRoot) removeFormFromCache(this.name);
   };
 
   private initialize(initial = true, after = true) {
     if (initial) {
-      Object.values(this.managers).forEach((manager) => manager.onInitialize());
+      Object.values(this.managers).forEach((manager: any) => manager.onInitialize());
       this.controls.forEach((control) => control.initialize(true, false));
     }
     if (after) {
-      Object.values(this.managers).forEach((manager) => manager.afterInitialize());
+      Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
       this.controls.forEach((control) => control.initialize(false, true));
     }
   }
@@ -164,24 +167,27 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   }
 
   private _constructExtensions = () => {
-    const cachedExtensions = this.cache.get('extensions');
     const fieldExtensions = this.field.extensions;
-    if (cachedExtensions && !fieldExtensions) return cachedExtensions;
-    const _globalExtensions = Object.values(MargaritaFormControl.extensions);
-    const _fieldExtensions = this.field.extensions || [];
-    const extensions = Object.values([..._globalExtensions, ..._fieldExtensions]).reduce((acc, constructor) => {
-      try {
-        acc[constructor.extensionName] = new constructor(this);
-        return acc;
-      } catch (error) {
-        throw {
-          message: `Error while constructing extension "${constructor.extensionName}"!`,
-          error,
-        };
-      }
-    }, this.extensions);
-    this.cache.set('extensions', extensions);
-    return extensions;
+    const hasExistingExtensions = valueExists(this.extensions);
+    if (!hasExistingExtensions || fieldExtensions) {
+      const _globalExtensions = hasExistingExtensions ? [] : Object.values(MargaritaFormControl.extensions);
+      const _fieldExtensions = this.field.extensions || [];
+      Object.values([..._globalExtensions, ..._fieldExtensions]).reduce((acc, constructor) => {
+        try {
+          if (this.extensions && this.extensions[constructor.extensionName]) {
+            console.warn(`Extension "${constructor.extensionName}" already exists!`);
+            return acc;
+          }
+          acc[constructor.extensionName] = new constructor(this);
+          return acc;
+        } catch (error) {
+          throw {
+            message: `Error while constructing extension "${constructor.extensionName}"!`,
+            error,
+          };
+        }
+      }, this.extensions);
+    }
   };
 
   public getManager: ControlLike<FIELD>['getManager'] = (key) => {
@@ -200,12 +206,6 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     type Locale = ControlLike<FIELD>['currentLocale'];
     if (this.isRoot) return this.field.currentLocale as Locale;
     return (this.field.currentLocale || this.parent.currentLocale) as Locale;
-  }
-
-  public get useStorage(): ControlLike<FIELD>['useStorage'] {
-    if (this.isRoot) return this.field.useStorage;
-    if (this.config.storageStrategy === 'end') return this.field.useStorage || this.parent.useStorage;
-    return this.field.useStorage;
   }
 
   // Field and metadata getters
@@ -844,7 +844,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   public _startPrepareLoop = () => {
     if (!this.prepared) {
       this.prepared = true;
-      Object.values(this.managers).forEach((manager) => manager.prepare());
+      Object.values(this.managers).forEach((manager: any) => manager.prepare());
     }
     this.controls.forEach((control) => {
       control._startPrepareLoop();
@@ -854,7 +854,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   public _startOnInitializeLoop = () => {
     if (!this.initialized) {
       this.initialized = true;
-      Object.values(this.managers).forEach((manager) => manager.onInitialize());
+      Object.values(this.managers).forEach((manager: any) => manager.onInitialize());
     }
     this.controls.forEach((control) => {
       control._startOnInitializeLoop();
@@ -864,7 +864,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   public _startAfterInitializeLoop = () => {
     if (!this.ready) {
       this.ready = true;
-      Object.values(this.managers).forEach((manager) => manager.afterInitialize());
+      Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
     }
     this.controls.forEach((control) => {
       control._startAfterInitializeLoop();

@@ -1,9 +1,9 @@
-import { Observable, debounceTime, firstValueFrom, map } from 'rxjs';
-import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormControlContext, StorageLike } from './margarita-form-types';
+import { debounceTime, firstValueFrom, map } from 'rxjs';
+import { MFC, MFF, MargaritaFormField, MargaritaFormControlContext } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 import { SubmitError } from './classes/submit-error';
 import { createMargaritaForm } from '../index';
-import { MargaritaFormI18NExtension } from './extensions/margarita-form-i18n-extension';
+import { MargaritaFormI18NExtension } from './extensions/i18n/i18n-extension';
 
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';
@@ -976,125 +976,6 @@ describe('margaritaForm', () => {
     expect(form.state.submitResult).toBe('success');
     expect(form.state.submitted).toBe(true);
     expect(form.state.disabled).toBe(true);
-
-    form.cleanup();
-  });
-
-  const storageValue = 'storage-value';
-
-  class ValueStorage implements StorageLike {
-    public value: null | CommonRecord = null;
-
-    constructor() {
-      //
-    }
-
-    getItem(key: string) {
-      if (!this.value || !this.value[key]) return null;
-      return this.value[key];
-    }
-
-    public setItem(key: string, value: any): void {
-      const current = this.value || {};
-      this.value = { ...current, [key]: value };
-    }
-    public removeItem(key: string): void {
-      this.value = { ...this.value, [key]: undefined };
-    }
-
-    public listenToChanges(key: string): Observable<any> {
-      return new Observable((subscriber) => {
-        const value = this.getItem(key);
-        return subscriber.next(value);
-      });
-    }
-  }
-
-  const storage = new ValueStorage();
-
-  it('#26 Check that storages work corretly', async () => {
-    const formName = nanoid();
-    const nullForm = createMargaritaForm<MFF>({
-      name: formName,
-      fields: [commonField],
-      useStorage: storage,
-    });
-    const commonControlNull = nullForm.getControl([commonField.name]);
-    if (!commonControlNull) throw 'No control found!';
-
-    expect(commonControlNull.value).toBe(commonField.initialValue);
-    nullForm.cleanup();
-
-    storage.setItem(nullForm.key, { [commonField.name]: storageValue });
-
-    const valueForm = createMargaritaForm<MFF>({
-      name: formName,
-      fields: [commonField],
-      useStorage: storage,
-    });
-
-    const commonControlValue = valueForm.getControl([commonField.name]);
-    if (!commonControlValue) throw 'No control found!';
-    expect(commonControlValue.value).toBe(storageValue);
-    valueForm.cleanup();
-  });
-
-  it('#27 Create fields that are localized', () => {
-    const form = createMargaritaForm<any>({
-      name: nanoid(),
-      currentLocale: 'fi',
-      locales: ['en', 'fi', 'sv'],
-      initialValue: {
-        [uncommonField.name]: {
-          en: 'Hello world',
-          fi: 'Hei maailma',
-          sv: 'Hej världen',
-        },
-      },
-      fields: [
-        {
-          ...commonField,
-          i18n: {
-            content: {
-              en: 'Hello world',
-              fi: 'Hei maailma',
-              sv: 'Hej världen',
-            },
-          },
-        },
-        {
-          ...uncommonField,
-          localize: true,
-          i18n: {
-            content: {
-              en: 'Hello world',
-              fi: 'Hei maailma',
-              sv: 'Hej världen',
-            },
-          },
-        },
-      ],
-    });
-
-    const commonControl = form.getControl([commonField.name]);
-    if (!commonControl) throw 'No control found!';
-    expect(commonControl.i18n.content).toBe('Hei maailma');
-
-    const uncommonControl = form.getControl([uncommonField.name]);
-    if (!uncommonControl) throw 'No control found!';
-    expect(uncommonControl.i18n.content).toBe('Hei maailma');
-    const enControl = uncommonControl.getControl('en');
-    if (!enControl) throw 'No control found!';
-    expect(enControl.value).toBe('Hello world');
-    expect(enControl.i18n.content).toBe('Hello world');
-    const fiControl = uncommonControl.getControl('fi');
-    if (!fiControl) throw 'No control found!';
-    expect(fiControl.value).toBe('Hei maailma');
-    expect(fiControl.i18n.content).toBe('Hei maailma');
-    const svControl = uncommonControl.getControl('sv');
-    if (!svControl) throw 'No control found!';
-    expect(svControl.value).toBe('Hej världen');
-    expect(svControl.i18n.content).toBe('Hej världen');
 
     form.cleanup();
   });

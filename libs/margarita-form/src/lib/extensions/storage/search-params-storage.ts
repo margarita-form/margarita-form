@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
+import { StorageExtensionBase } from './storage-extension-base';
 
-export class SearchParamsStorage {
+export class SearchParamsStorage extends StorageExtensionBase {
   public static serverHref: string | undefined;
 
   public static get url(): URL | null {

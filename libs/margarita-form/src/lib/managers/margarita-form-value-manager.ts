@@ -1,12 +1,18 @@
-import { debounceTime, skip } from 'rxjs';
+import { Observable, debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
-import { SearchParamsStorage } from '../extensions/storages/search-params-storage';
 import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
-import { checkAsync } from '../helpers/async-checks';
+import { valueIsAsync } from '../helpers/async-checks';
+
+interface ValueGetter<V = unknown> {
+  name: string;
+  getSnapshot?: () => V;
+  getObservable?: () => Observable<V>;
+  setValue?: (value: V) => void;
+}
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -17,6 +23,17 @@ declare module '../typings/expandable-types' {
 
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   public static override managerName: ManagerName = 'value';
+
+  public static valueGetters: ValueGetter[] = [];
+
+  public static addValueGetter(getter: ValueGetter) {
+    this.valueGetters.push(getter);
+  }
+
+  public static removeValueGetter(name: string) {
+    this.valueGetters = this.valueGetters.filter((getter) => getter.name !== name);
+  }
+
   private initialized = false;
 
   constructor(public override control: CONTROL) {
@@ -32,44 +49,26 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   }
 
   public override onInitialize() {
-    const { storage, syncronization } = this.control.extensions;
     const changes = this.changes.pipe(debounceTime(500), skip(1));
-    const { useStorage } = this.control;
-    const { useSyncronization } = this.control.field;
-    const shouldListen = useStorage || useSyncronization;
-    if (shouldListen) {
-      this.createSubscription(changes, () => {
-        if (useStorage) storage.saveStorageValue(this.value);
-        if (useSyncronization) syncronization.broadcastChange(this.value);
-      });
-    }
 
-    if (useSyncronization) {
-      try {
-        const subscription = syncronization.subscribeToMessages<CONTROL['value']>(
-          (value) => this.updateValue(value, true, false),
-          () => this.value
-        );
-
-        if (subscription && subscription.observable) {
-          this.createSubscription(subscription.observable.pipe(), subscription.handler);
-        }
-      } catch (error) {
-        console.error(`Could not syncronize value!`, { control: this.control, error });
-      }
-    }
-
-    if (useStorage) {
-      try {
-        const observable = storage.getStorageValueListener<CONTROL['value']>();
-
+    ValueManager.valueGetters.forEach((getter) => {
+      const { getObservable, setValue } = getter;
+      if (getObservable) {
+        const observable = getObservable();
         if (observable) {
-          this.createSubscription(observable.pipe(skip(1)), (value) => this.updateValue(value, false, true, false));
+          this.createSubscription(observable, (value) => {
+            this.updateValue(value);
+          });
         }
-      } catch (error) {
-        console.error(`Could not subscribe to storage changes!`, { control: this.control, error });
       }
-    }
+
+      if (setValue) {
+        this.createSubscription(changes, () => {
+          const value = this.value;
+          setValue(value);
+        });
+      }
+    });
   }
 
   public override afterInitialize() {
@@ -85,7 +84,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         control: this.control,
       });
 
-      const isAsync = checkAsync(resolver);
+      const isAsync = valueIsAsync(resolver);
       if (isAsync) {
         if (resolver instanceof Promise) {
           const value = await resolver;
@@ -134,21 +133,19 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     this.emitChange(this.value);
   }
 
-  public _getInitialValue(allowStorage = true) {
+  public _getInitialValue(allowExtensionValue = true) {
     const inheritedValue = this._getInheritedValue();
     if (inheritedValue !== undefined) return inheritedValue;
-
     if (valueExists(this.control.field.initialValue)) return this.control.field.initialValue;
 
-    if (allowStorage) {
-      const storageValue = this._getStorageValue();
-      if (storageValue !== undefined) return storageValue;
-    }
-
-    if (this.control.config.resolveInitialValuesFromSearchParams) {
-      const { storage } = this.control.extensions;
-      const searchParamsValue = SearchParamsStorage.getItem(storage.storageKey);
-      if (searchParamsValue !== undefined) return searchParamsValue;
+    if (allowExtensionValue) {
+      const snapshots = ValueManager.valueGetters.map((getter) => getter.getSnapshot);
+      const result = snapshots.reduce((acc, snapshot) => {
+        if (valueExists(acc)) return acc;
+        if (!snapshot) return acc;
+        return snapshot();
+      }, undefined as unknown);
+      if (valueExists(result) && !valueIsAsync(result)) return result;
     }
 
     return this.control.field.defaultValue;
@@ -186,14 +183,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         return inheritedValue;
       }
     }
-  }
-
-  private _getStorageValue() {
-    const { storage } = this.control.extensions;
-
-    if (!storage.enabled) return undefined;
-    const storageValue = storage.getStorageValue();
-    return storageValue;
   }
 
   /**

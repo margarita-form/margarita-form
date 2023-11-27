@@ -2,7 +2,7 @@ import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
-import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
+import { MargaritaFormI18NExtension } from '../extensions/i18n/i18n-extension';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -201,6 +201,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       root: this.control.root,
       initialIndex: this.value.length,
       idStore: this.control._buildParams.idStore,
+      extensions: this.control._buildParams.extensions,
     });
 
     return this.appendControl(control as any, resetControl, emit);

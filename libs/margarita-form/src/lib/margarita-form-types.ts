@@ -11,7 +11,6 @@ import {
   MargaritaFormResolver,
   MargaritaFormSubmitHandler,
   MargaritaFormSubmitHandlers,
-  StorageLike,
   BroadcastLikeConstructor,
   MargaritaFormFieldState,
   MargaritaFormStateErrors,
@@ -47,7 +46,6 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
   fields?: FP['fields'] extends MFF ? FP['fields'][] : MFF[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
-
   initialValue?: FP['value'];
   defaultValue?: FP['value'];
   valueResolver?: MargaritaFormResolver<FP['value']> | NotFunction;
@@ -66,9 +64,11 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
   onValueChanges?: MargaritaFormResolver;
   onStateChanges?: MargaritaFormResolver;
   onChildControlChanges?: MargaritaFormResolver;
-  handleSubmit?: string | MargaritaFormSubmitHandler<MFGF<FP['value']>> | MargaritaFormSubmitHandlers<MFGF<FP['value']>>;
+  handleSubmit?:
+    | string
+    | MargaritaFormSubmitHandler<MFGF<{ value: FP['value'] }>>
+    | MargaritaFormSubmitHandlers<MFGF<{ value: FP['value'] }>>;
   config?: MargaritaFormConfig;
-  useStorage?: false | 'localStorage' | 'sessionStorage' | 'searchParams' | StorageLike;
   useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
   context?: ControlContext;
   managers?: Partial<Managers>;
@@ -171,7 +171,6 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get extensions(): Extensions;
   get locales(): Exclude<FIELD['locales'], undefined>;
   get currentLocale(): FIELD['locales'] extends string[] ? FIELD['locales'][number] : undefined;
-  get useStorage(): FIELD['useStorage'];
   get name(): FIELD['name'];
   get index(): number;
   get valueHash(): string;

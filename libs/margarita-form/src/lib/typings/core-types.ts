@@ -1,14 +1,15 @@
 import type { Observable } from 'rxjs';
 import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
 import { CommonRecord, NotFunction, OrString } from './util-types';
-import { Validation, Validators } from './resolver-types';
-import { ControlContext } from './expandable-types';
+import { Validation } from './resolver-types';
+import { ControlContext, Extensions } from './expandable-types';
 
 export interface MargaritaFormControlBuildParams {
   root?: MF | MFC;
   parent?: MF | MFC;
   initialIndex?: number;
   idStore: Set<string>;
+  extensions: Extensions;
 }
 
 export interface MargaritaFormControlContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends ControlContext {
@@ -56,7 +57,7 @@ export type MargaritaFormFieldValidation<VALUE> = {
   [key in keyof Validation]?: Validation[key] | MargaritaFormValidator | FieldValidationParams;
 } & Record<string, MargaritaFormValidator<any, VALUE> | FieldValidationParams | NotFunction>;
 
-export type MargaritaFormValidators = Partial<Validators> & CommonRecord<MargaritaFormValidator<any>>;
+export type MargaritaFormValidators = CommonRecord<MargaritaFormValidator<any>>;
 
 export type MargaritaFormResolvers = CommonRecord<MargaritaFormResolver<any>>;
 
