@@ -1,6 +1,6 @@
+import { MargaritaFormControl } from '../../margarita-form-control';
 import { CommonRecord, ExtensionName, MFC, MFF } from '../../margarita-form-types';
 import { MargaritaFormHandleLocalize } from './i18n-types';
-import { extendMargaritaForm } from './i18n-implementation';
 
 const fallbackFn = () => ({});
 
@@ -9,7 +9,15 @@ export class MargaritaFormI18NExtension {
   public static localeNames?: Record<string, string>;
 
   constructor(public control: MFC) {
-    extendMargaritaForm();
+    MargaritaFormControl.extend({
+      get i18n(): MFF['__i18n'] {
+        const { field, extensions } = this as MargaritaFormControl;
+        const { i18n } = field;
+        if (!i18n) return undefined;
+        const { localization } = extensions;
+        return localization.getLocalizedValue(i18n, this.currentLocale);
+      },
+    });
   }
 
   get locales() {

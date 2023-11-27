@@ -11,7 +11,6 @@ import {
   MargaritaFormResolver,
   MargaritaFormSubmitHandler,
   MargaritaFormSubmitHandlers,
-  BroadcastLikeConstructor,
   MargaritaFormFieldState,
   MargaritaFormStateErrors,
   MargaritaFormStateAllErrors,
@@ -69,7 +68,6 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
     | MargaritaFormSubmitHandler<MFGF<{ value: FP['value'] }>>
     | MargaritaFormSubmitHandlers<MFGF<{ value: FP['value'] }>>;
   config?: MargaritaFormConfig;
-  useSyncronization?: false | 'broadcastChannel' | BroadcastLikeConstructor;
   context?: ControlContext;
   managers?: Partial<Managers>;
   extensions?: ExtensionsArray;

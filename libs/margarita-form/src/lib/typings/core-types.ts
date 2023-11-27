@@ -77,30 +77,3 @@ export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFGF> {
   valid: MargaritaFormSubmitHandler<FIELD>;
   invalid?: MargaritaFormSubmitHandler<FIELD>;
 }
-
-export interface StorageLikeConstructor {
-  new (key: string, control: MFC): StorageLike;
-}
-
-export interface StorageLike {
-  getItem(key: string): unknown | undefined;
-  setItem(key: string, value: unknown): void;
-  removeItem(key: string): void;
-  listenToChanges<DATA>(key: string): Observable<DATA>;
-}
-
-export interface BroadcastLikeConstructor {
-  new (key: string, control: MFC): BroadcastLike;
-}
-
-export interface BroadcasterMessage<DATA = unknown> {
-  key: string;
-  uid: string;
-  value?: DATA;
-  requestSend?: boolean;
-}
-
-export interface BroadcastLike {
-  postMessage(message: BroadcasterMessage): void;
-  listenToMessages<DATA>(): void | Observable<BroadcasterMessage<DATA>>;
-}

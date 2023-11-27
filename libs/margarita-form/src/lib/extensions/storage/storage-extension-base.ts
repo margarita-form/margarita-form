@@ -1,29 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable } from 'rxjs';
 import { valueExists } from '../../helpers/check-value';
-import { ExtensionName, Extensions, MFC, MFF, StorageLike } from '../../margarita-form-types';
-import { MargaritaFormControl } from '../../margarita-form-control';
+import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
 import { ValueManager } from '../../managers/margarita-form-value-manager';
-
-declare module '../../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF = MFF> {
-    get storage(): Extensions['storage'];
-  }
-}
-
-// Implementation
-
-MargaritaFormControl.extend({
-  get storage(): Extensions['storage'] {
-    return this.extensions.storage;
-  },
-});
+import { StorageLike } from './storage-extension-types';
+import { MargaritaFormControl } from '../../margarita-form-control';
 
 export class StorageExtensionBase implements StorageLike {
   public static extensionName: ExtensionName = 'storage';
   public static source: StorageLike;
 
   constructor(public control: MFC) {
+    MargaritaFormControl.extend({
+      get storage(): Extensions['storage'] {
+        return this.extensions.storage;
+      },
+    });
+
     ValueManager.addValueGetter({
       name: 'storage',
       getSnapshot: () => this.getStorageValue(),
