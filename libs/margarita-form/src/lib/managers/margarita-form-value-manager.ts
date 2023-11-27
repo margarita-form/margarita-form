@@ -23,7 +23,6 @@ declare module '../typings/expandable-types' {
 
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   public static override managerName: ManagerName = 'value';
-
   public static valueGetters: ValueGetter[] = [];
 
   public static addValueGetter(getter: ValueGetter) {

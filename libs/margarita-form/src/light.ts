@@ -7,8 +7,6 @@ export * from './lib/validators';
 export * from './lib/managers/margarita-form-base-manager';
 export * from './lib/managers/margarita-form-core-managers';
 
-export * from './lib/resolvers/localization-resolver';
-
 export * from './lib/classes/submit-error';
 
 export * from './lib/helpers/check-value';

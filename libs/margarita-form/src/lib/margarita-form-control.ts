@@ -196,18 +196,6 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     return found;
   };
 
-  public get locales(): ControlLike<FIELD>['locales'] {
-    type ReturnType = ControlLike<FIELD>['locales'];
-    if (this.isRoot) return this.field.locales as ReturnType;
-    return (this.field.locales || this.parent.locales) as ReturnType;
-  }
-
-  public get currentLocale(): ControlLike<FIELD>['currentLocale'] {
-    type Locale = ControlLike<FIELD>['currentLocale'];
-    if (this.isRoot) return this.field.currentLocale as Locale;
-    return (this.field.currentLocale || this.parent.currentLocale) as Locale;
-  }
-
   // Field and metadata getters
 
   public get name(): ControlLike<FIELD>['name'] {

@@ -15,8 +15,6 @@ export * from './lib/managers/margarita-form-ref-manager';
 export * from './lib/managers/margarita-form-state-manager';
 export * from './lib/managers/margarita-form-value-manager';
 
-export * from './lib/resolvers/localization-resolver';
-
 export * from './lib/classes/submit-error';
 
 export * from './lib/helpers/check-value';

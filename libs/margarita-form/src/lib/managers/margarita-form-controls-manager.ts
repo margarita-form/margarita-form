@@ -2,7 +2,11 @@ import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
-import { MargaritaFormI18NExtension } from '../extensions/i18n/i18n-extension';
+
+export interface ControlModifier {
+  name: string;
+  modifier: (parent: MFC, field: MFF) => MFF | undefined;
+}
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -13,6 +17,16 @@ declare module '../typings/expandable-types' {
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   public static override managerName: ManagerName = 'controls';
+  public static controlModifiers: ControlModifier[] = [];
+
+  public static addControlModifier(modifier: ControlModifier) {
+    this.controlModifiers.push(modifier);
+  }
+
+  public static removeControlModifier(name: string) {
+    this.controlModifiers = this.controlModifiers.filter((modifier) => modifier.name !== name);
+  }
+
   private _buildWith: CONTROL['field'] | null = null;
   private _requireUniqueNames: boolean;
 
@@ -178,14 +192,19 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     });
   }
 
-  public addControl<FIELD extends MFF = CONTROL['field']>(field: FIELD, resetControl = false, emit = true): MFC<FIELD> {
+  public addControl<FIELD extends MFF = CONTROL['field']>(
+    field: FIELD,
+    resetControl = false,
+    emit = true,
+    allowModifiers = true
+  ): MFC<FIELD> {
     if (!field) throw 'No field provided!';
 
-    const shouldLocalize = field.localize && this.control.locales;
-
-    if (shouldLocalize) {
-      const localizedField = MargaritaFormI18NExtension.localizeField(this.control, field);
-      return this.addControl(localizedField as FIELD, resetControl, emit);
+    if (allowModifiers) {
+      for (const modifier of ControlsManager.controlModifiers) {
+        const modified = modifier.modifier(this.control, field) as FIELD;
+        if (modified) return this.addControl(modified, resetControl, emit, false);
+      }
     }
 
     if (this.control.expectGroup && !resetControl) {

@@ -167,8 +167,6 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get parent(): MFC;
   get config(): MargaritaFormConfig;
   get extensions(): Extensions;
-  get locales(): Exclude<FIELD['locales'], undefined>;
-  get currentLocale(): FIELD['locales'] extends string[] ? FIELD['locales'][number] : undefined;
   get name(): FIELD['name'];
   get index(): number;
   get valueHash(): string;
