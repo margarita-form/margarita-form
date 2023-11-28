@@ -53,6 +53,8 @@ describe('storage extension testing', () => {
     expect(commonControl.value).toBe(commonField.initialValue);
     form.cleanup();
 
+    expect(storage[form.key]).toBeUndefined();
+
     form.storage.setItem(form.key, { [commonField.name]: storageValue });
 
     const valueForm = createMargaritaForm<MFF>({
