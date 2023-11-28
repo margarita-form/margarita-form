@@ -1,12 +1,7 @@
 import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
-
-export interface ControlModifier {
-  name: string;
-  modifier: (parent: MFC, field: MFF) => MFF | undefined;
-}
+import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG, ExtensionLike } from '../margarita-form-types';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -17,15 +12,6 @@ declare module '../typings/expandable-types' {
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   public static override managerName: ManagerName = 'controls';
-  public static controlModifiers: ControlModifier[] = [];
-
-  public static addControlModifier(modifier: ControlModifier) {
-    this.controlModifiers.push(modifier);
-  }
-
-  public static removeControlModifier(name: string) {
-    this.controlModifiers = this.controlModifiers.filter((modifier) => modifier.name !== name);
-  }
 
   private _buildWith: CONTROL['field'] | null = null;
   private _requireUniqueNames: boolean;
@@ -201,9 +187,15 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     if (!field) throw 'No field provided!';
 
     if (allowModifiers) {
-      for (const modifier of ControlsManager.controlModifiers) {
-        const modified = modifier.modifier(this.control, field) as FIELD;
-        if (modified) return this.addControl(modified, resetControl, emit, false);
+      const extensions = Object.values<any>(this.control.extensions).filter(
+        ({ requireRoot }: ExtensionLike) => !requireRoot || this.control.isRoot
+      );
+
+      for (const extension of extensions) {
+        if (extension.modifyField) {
+          const modified = extension.modifyField(field, this.control) as FIELD;
+          if (modified) return this.addControl(modified, resetControl, emit, false);
+        }
       }
     }
 

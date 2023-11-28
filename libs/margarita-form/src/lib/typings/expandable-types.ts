@@ -20,10 +20,13 @@ export interface Managers {
 }
 
 export interface ExtensionLike {
-  requireRoot: boolean;
+  readonly requireRoot: boolean;
+  // Value manager
   getValueObservable?: <T>(control: MFC) => Observable<T>;
   handleValueUpdate?: <T>(value: T) => void;
   getValueSnapshot?: <T>() => T;
+  // Control manager
+  modifyField?: (field: any, parentControl: MFC) => any;
 }
 
 export interface Extensions {

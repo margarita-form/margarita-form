@@ -1,6 +1,5 @@
-import { ControlsManager } from '../../managers/margarita-form-controls-manager';
 import { MargaritaFormControl } from '../../margarita-form-control';
-import { CommonRecord, ExtensionName, MFC, MFF } from '../../margarita-form-types';
+import { CommonRecord, ExtensionName, MFC, MFF, MFGF } from '../../margarita-form-types';
 import { LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types';
 
 const fallbackFn = () => ({});
@@ -8,6 +7,7 @@ const fallbackFn = () => ({});
 export class I18NExtension {
   public static extensionName: ExtensionName = 'localization';
   public static localeNames?: Record<string, string>;
+  public readonly requireRoot = false;
 
   constructor(public control: MFC) {
     MargaritaFormControl.extend({
@@ -29,15 +29,12 @@ export class I18NExtension {
         return localization.getLocalizedValue(i18n, this.currentLocale);
       },
     });
-
-    ControlsManager.addControlModifier({
-      name: 'localize',
-      modifier: (parent: MFC, field: MFF) => {
-        if (!field.localize) return undefined;
-        return I18NExtension.localizeField(parent, field);
-      },
-    });
   }
+
+  public modifyField = (field: MFF, parentControl: MFC): MFGF => {
+    if (!field.localize) return field;
+    return I18NExtension.localizeField(parentControl, field);
+  };
 
   get locales() {
     return this.control.locales;
