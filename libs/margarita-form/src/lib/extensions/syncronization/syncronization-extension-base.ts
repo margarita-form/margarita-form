@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Observable } from 'rxjs';
+import { Observable, debounceTime, filter, map } from 'rxjs';
 import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
 import { BroadcastLike, BroadcasterMessage } from './syncronization-extension-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
+import { isEqual } from '../../helpers/check-value';
 
 export class SyncronizationExtensionBase implements BroadcastLike {
   public static extensionName: ExtensionName = 'syncronization';
-  private cache = new Map<string, string>();
+  public readonly requireRoot = true;
+  public readonly cache = new Map<string, string>();
 
   constructor(public root: MFC) {
     MargaritaFormControl.extend({
@@ -20,7 +22,7 @@ export class SyncronizationExtensionBase implements BroadcastLike {
     throw new Error('Method not implemented.');
   }
 
-  public listenToMessages<DATA>(): void | Observable<BroadcasterMessage<DATA>> {
+  public listenToMessages<DATA>(): Observable<BroadcasterMessage<DATA>> {
     throw new Error('Method not implemented.');
   }
 
@@ -31,42 +33,37 @@ export class SyncronizationExtensionBase implements BroadcastLike {
     return syncronizationKey;
   }
 
-  public broadcastChange<DATA = any>(value: DATA): void {
+  public handleValueUpdate = <DATA = any>(value: DATA): void => {
     const key = this.syncronizationKey;
     const cachedValue = this.cache.get(key);
-    const valueChanged = JSON.stringify(value) !== cachedValue;
+    const changed = !isEqual(value, cachedValue);
+    if (changed) {
+      const asString = JSON.stringify(value);
+      this.cache.set(key, asString);
+      this.postMessage({ key, value: value, uid: this.root.uid });
+    }
+  };
 
-    if (!valueChanged) return;
-    this.cache.set(key, JSON.stringify(value));
-    this.postMessage({ key, value, uid: this.root.uid });
-  }
-
-  public subscribeToMessages<DATA = any>(
-    callback: (message: DATA) => void | Promise<void>,
-    getCurrent: () => DATA
-  ): void | { observable: void | Observable<BroadcasterMessage<DATA>>; handler: (event: BroadcasterMessage<DATA>) => void } {
+  public getValueObservable = <DATA = any>(control: MFC): Observable<DATA | undefined> => {
     const key = this.syncronizationKey;
     this.postMessage({ key, uid: this.root.uid, requestSend: true });
-
     const observable = this.listenToMessages<DATA>();
-
-    const handler = (message: BroadcasterMessage<DATA>) => {
-      if (message.uid === this.root.uid) return;
-      const value = getCurrent();
-      if (message.requestSend) {
-        this.postMessage({ key, value, uid: this.root.uid });
-      } else if (message.key === key) {
-        const valueChanged = JSON.stringify(message.value) !== JSON.stringify(value);
-        if (valueChanged) {
-          callback(message.value as DATA);
-          this.cache.set(key, JSON.stringify(message.value));
+    return observable.pipe(
+      filter((message) => {
+        const asString = JSON.stringify(message.value);
+        const cacheValue = this.cache.get(key);
+        if (message.key !== key) return false;
+        if (message.uid === this.root.uid) return false;
+        if (message.requestSend) {
+          this.postMessage({ key, value: control.value, uid: this.root.uid });
+          return false;
         }
-      }
-    };
-
-    return {
-      observable,
-      handler,
-    };
-  }
+        const changed = !isEqual(asString, cacheValue);
+        if (!changed) return false;
+        this.cache.set(key, JSON.stringify(asString));
+        return true;
+      }),
+      map((message) => message.value)
+    );
+  };
 }

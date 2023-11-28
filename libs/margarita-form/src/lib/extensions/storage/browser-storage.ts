@@ -5,8 +5,8 @@ import { StorageExtensionBase } from './storage-extension-base';
 export class BrowserStorageBase extends StorageExtensionBase {
   private storage: Storage | undefined;
 
-  constructor(public override control: MFC, public storageName: 'localStorage' | 'sessionStorage') {
-    super(control);
+  constructor(public override root: MFC, public storageName: 'localStorage' | 'sessionStorage') {
+    super(root);
     if (typeof window !== 'undefined') {
       this.storage = window[storageName];
     }

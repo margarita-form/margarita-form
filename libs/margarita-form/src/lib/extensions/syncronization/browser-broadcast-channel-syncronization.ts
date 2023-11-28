@@ -14,12 +14,12 @@ export class BrowserBroadcastChannel extends SyncronizationExtensionBase {
   }
 
   public override postMessage(message: BroadcasterMessage): void {
-    if (!this.broadcastChannel) return;
+    if (!this.broadcastChannel) throw 'BroadcastChannel is not supported in this browser!';
     this.broadcastChannel.postMessage(message);
   }
 
-  public override listenToMessages<DATA>(): void | Observable<BroadcasterMessage<DATA>> {
-    if (!this.broadcastChannel) return;
+  public override listenToMessages<DATA>(): Observable<BroadcasterMessage<DATA>> {
+    if (!this.broadcastChannel) throw 'BroadcastChannel is not supported in this browser!';
     const observable = fromEvent<MessageEvent>(this.broadcastChannel, 'message').pipe(map((event) => event.data));
     return observable;
   }

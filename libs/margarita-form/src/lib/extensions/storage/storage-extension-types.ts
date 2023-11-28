@@ -18,6 +18,6 @@ declare module '../../margarita-form-control' {
 
 declare module '../../typings/expandable-types' {
   export interface Extensions {
-    storage?: typeof StorageExtensionBase;
+    storage: StorageExtensionBase;
   }
 }

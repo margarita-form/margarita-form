@@ -1,18 +1,11 @@
-import { Observable, debounceTime, skip } from 'rxjs';
+import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { CommonRecord, MFC, MFF } from '../margarita-form-types';
+import { CommonRecord, ExtensionLike, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
 import { valueIsAsync } from '../helpers/async-checks';
-
-interface ValueGetter<V = unknown> {
-  name: string;
-  getSnapshot?: () => V;
-  getObservable?: () => Observable<V>;
-  setValue?: (value: V) => void;
-}
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -23,16 +16,6 @@ declare module '../typings/expandable-types' {
 
 class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   public static override managerName: ManagerName = 'value';
-  public static valueGetters: ValueGetter[] = [];
-
-  public static addValueGetter(getter: ValueGetter) {
-    this.valueGetters.push(getter);
-  }
-
-  public static removeValueGetter(name: string) {
-    this.valueGetters = this.valueGetters.filter((getter) => getter.name !== name);
-  }
-
   private initialized = false;
 
   constructor(public override control: CONTROL) {
@@ -47,31 +30,24 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     this.initialized = true;
   }
 
-  public override onInitialize() {
-    const changes = this.changes.pipe(debounceTime(500), skip(1));
-
-    ValueManager.valueGetters.forEach((getter) => {
-      const { getObservable, setValue } = getter;
-      if (getObservable) {
-        const observable = getObservable();
-        if (observable) {
-          this.createSubscription(observable, (value) => {
-            this.updateValue(value);
-          });
-        }
-      }
-
-      if (setValue) {
-        this.createSubscription(changes, () => {
-          const value = this.value;
-          setValue(value);
-        });
-      }
-    });
-  }
-
   public override afterInitialize() {
     this._handleValueResolver();
+
+    Object.values<any>(this.control.extensions)
+      .filter(({ requireRoot }: ExtensionLike) => !requireRoot || this.control.isRoot)
+      .forEach((extension: ExtensionLike) => {
+        const { getValueObservable, handleValueUpdate } = extension;
+        if (getValueObservable) {
+          this.createSubscription(getValueObservable(this.control), (value) => this.updateValue(value));
+        }
+
+        if (handleValueUpdate) {
+          const changes = this.changes.pipe(debounceTime(500), skip(1));
+          this.createSubscription(changes, () => {
+            handleValueUpdate(this.value);
+          });
+        }
+      });
   }
 
   private async _handleValueResolver() {
@@ -138,7 +114,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     if (valueExists(this.control.field.initialValue)) return this.control.field.initialValue;
 
     if (allowExtensionValue) {
-      const snapshots = ValueManager.valueGetters.map((getter) => getter.getSnapshot);
+      const snapshots = Object.values<any>(this.control.extensions)
+        .filter(({ requireRoot }: ExtensionLike) => !requireRoot || this.control.isRoot)
+        .map(({ getValueSnapshot }: ExtensionLike) => getValueSnapshot);
+
       const result = snapshots.reduce((acc, snapshot) => {
         if (valueExists(acc)) return acc;
         if (!snapshot) return acc;

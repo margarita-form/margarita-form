@@ -1,28 +1,26 @@
 import { nanoid } from 'nanoid';
-import { CommonRecord, MFC, MFF, MargaritaForm, MargaritaFormField, createMargaritaForm } from '../../index';
+import { MFC, MFF, MargaritaForm, MargaritaFormField, createMargaritaForm } from '../../index';
 import { StorageExtensionBase } from '../extensions/storage/storage-extension-base';
 import { Observable, delay } from 'rxjs';
 
 const storageValue = 'storage-value';
+const storage = {} as Record<string, any>;
 
 class ValueStorage extends StorageExtensionBase {
-  public value: null | CommonRecord = null;
-
-  constructor(public override control: MFC) {
-    super(control);
+  constructor(public override root: MFC) {
+    super(root);
   }
 
   public override getItem(key: string) {
-    if (!this.value || !this.value[key]) return null;
-    return this.value[key];
+    if (!storage[key]) return null;
+    return storage[key];
   }
 
   public override setItem(key: string, value: any): void {
-    const current = this.value || {};
-    this.value = { ...current, [key]: value };
+    storage[key] = value;
   }
   public override removeItem(key: string): void {
-    this.value = { ...this.value, [key]: undefined };
+    delete storage[key];
   }
 
   public override listenToChanges(key: string): Observable<any> {
@@ -35,11 +33,6 @@ class ValueStorage extends StorageExtensionBase {
 
 MargaritaForm.addExtension(ValueStorage);
 
-declare module '../typings/expandable-types' {
-  export interface Extensions {
-    storage: InstanceType<typeof ValueStorage>;
-  }
-}
 describe('storage extension testing', () => {
   const fieldNameInitialValue = 'Hello world';
 
@@ -66,6 +59,8 @@ describe('storage extension testing', () => {
       name: formName,
       fields: [commonField],
     });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const commonControlValue = valueForm.getControl([commonField.name]);
     if (!commonControlValue) throw 'No control found!';

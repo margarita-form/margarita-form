@@ -9,46 +9,40 @@ import { MargaritaFormControl } from '../../margarita-form-control';
 export class StorageExtensionBase implements StorageLike {
   public static extensionName: ExtensionName = 'storage';
   public static source: StorageLike;
+  public readonly requireRoot = true;
 
-  constructor(public control: MFC) {
+  constructor(public root: MFC) {
     MargaritaFormControl.extend({
       get storage(): Extensions['storage'] {
         return this.extensions.storage;
       },
     });
-
-    ValueManager.addValueGetter({
-      name: 'storage',
-      getSnapshot: () => this.getStorageValue(),
-      getObservable: () => this.getStorageValueListener(),
-      setValue: (value) => this.saveStorageValue(value),
-    });
   }
 
-  getItem(key: string): unknown {
+  public getItem(key: string): unknown {
     throw new Error('Method not implemented.');
   }
 
-  setItem(key: string, value: unknown): void {
+  public setItem(key: string, value: unknown): void {
     throw new Error('Method not implemented.');
   }
 
-  removeItem(key: string): void {
+  public removeItem(key: string): void {
     throw new Error('Method not implemented.');
   }
 
-  listenToChanges<DATA>(key: string): any {
+  public listenToChanges<DATA>(key: string): any {
     throw new Error('Method not implemented.');
   }
 
   public get storageKey(): string {
-    if (typeof this.control.config.storageKey === 'function') return this.control.config.storageKey(this.control);
-    const storageKey = this.control[this.control.config.storageKey || 'key'];
+    if (typeof this.root.config.storageKey === 'function') return this.root.config.storageKey(this.root);
+    const storageKey = this.root[this.root.config.storageKey || 'key'];
     if (!storageKey) throw new Error(`Could not get storage key from control!`);
     return storageKey;
   }
 
-  public getStorageValue<TYPE = any>(): TYPE | undefined {
+  public getValueSnapshot = <TYPE = any>(): TYPE | undefined => {
     const key = this.storageKey;
     try {
       const storageValue = this.getItem(key);
@@ -56,28 +50,28 @@ export class StorageExtensionBase implements StorageLike {
       if (typeof storageValue === 'string' && /^[{[].+[}\]]$/g.test(storageValue)) return JSON.parse(storageValue);
       return storageValue as TYPE;
     } catch (error) {
-      console.error(`Could not get value!`, { control: this.control, error });
+      console.error(`Could not get value!`, { control: this.root, error });
       return undefined;
     }
-  }
+  };
 
-  public getStorageValueListener<TYPE = any>(): Observable<TYPE | undefined> {
+  public getValueObservable = <TYPE = any>(): Observable<TYPE | undefined> => {
     const key = this.storageKey;
     try {
       return this.listenToChanges<TYPE>(key);
     } catch (error) {
       throw { message: `Could not get value!`, error };
     }
-  }
+  };
 
-  public saveStorageValue(value: any): void {
+  public handleValueUpdate = (value: any): void => {
     const key = this.storageKey;
     if (!valueExists(value)) return this.clearStorageValue(key);
 
     try {
       if (typeof value === 'object') {
         const stringified = JSON.stringify(value);
-        return this.saveStorageValue(stringified);
+        return this.handleValueUpdate(stringified);
       }
 
       const validValid = valueExists(value);
@@ -86,9 +80,9 @@ export class StorageExtensionBase implements StorageLike {
 
       this.setItem(key, value);
     } catch (error) {
-      console.error(`Could not save value!`, { control: this.control, error });
+      console.error(`Could not save value!`, { control: this.root, error });
     }
-  }
+  };
 
   public clearStorage() {
     this.clearStorageValue(this.storageKey);
@@ -99,7 +93,7 @@ export class StorageExtensionBase implements StorageLike {
       const sessionStorageValue = this.getItem(key);
       if (sessionStorageValue) this.removeItem(key);
     } catch (error) {
-      console.error(`Could not clear value!`, { control: this.control, error });
+      console.error(`Could not clear value!`, { control: this.root, error });
     }
   }
 }
