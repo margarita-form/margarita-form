@@ -3,7 +3,7 @@ import { MFC, MFF, MargaritaFormField, MargaritaFormControlContext } from './mar
 import { nanoid } from 'nanoid';
 import { SubmitError } from './classes/submit-error';
 import { createMargaritaForm } from '../index';
-import { MargaritaFormI18NExtension } from './extensions/i18n/i18n-extension';
+import { I18NExtension } from './extensions/i18n/i18n-extension';
 
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';
@@ -1091,7 +1091,7 @@ describe('margaritaForm', () => {
     const form = createMargaritaForm<MFF<{ value: any; fields: MFF }>>({
       ...cmsData,
       currentLocale: 'fi',
-      extensions: [MargaritaFormI18NExtension],
+      extensions: [I18NExtension],
       validators: {
         customValidator: ({ value }) => {
           // console.log('Custom validator called!');

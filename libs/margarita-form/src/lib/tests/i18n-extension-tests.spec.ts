@@ -1,9 +1,9 @@
 import { nanoid } from 'nanoid';
 import { MFF, MargaritaForm, MargaritaFormField, createMargaritaForm } from '../../index';
-import { MargaritaFormI18NExtension } from '../extensions/i18n/i18n-extension';
+import { I18NExtension } from '../extensions/i18n/i18n-extension';
 import { Locale } from '../extensions/i18n/i18n-types';
 
-MargaritaForm.addExtension(MargaritaFormI18NExtension);
+MargaritaForm.addExtension(I18NExtension);
 
 declare module '../extensions/i18n/i18n-extension' {
   export interface Locales {

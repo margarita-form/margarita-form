@@ -5,7 +5,7 @@ import { LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types'
 
 const fallbackFn = () => ({});
 
-export class MargaritaFormI18NExtension {
+export class I18NExtension {
   public static extensionName: ExtensionName = 'localization';
   public static localeNames?: Record<string, string>;
 
@@ -34,7 +34,7 @@ export class MargaritaFormI18NExtension {
       name: 'localize',
       modifier: (parent: MFC, field: MFF) => {
         if (!field.localize) return undefined;
-        return MargaritaFormI18NExtension.localizeField(parent, field);
+        return I18NExtension.localizeField(parent, field);
       },
     });
   }

@@ -3,7 +3,7 @@ import { MFC } from '../../margarita-form-types';
 import { SyncronizationExtensionBase } from './syncronization-extension-base';
 import { BroadcasterMessage } from './syncronization-extension-types';
 
-export class BrowserBroadcastChannel extends SyncronizationExtensionBase {
+export class BrowserSyncronizationExtension extends SyncronizationExtensionBase {
   constructor(public override root: MFC) {
     super(root);
   }
