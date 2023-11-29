@@ -37,9 +37,11 @@ export default defineConfig({
       entry: {
         index: 'src/index.ts',
         'light/index': 'src/light.ts',
+        /* Validators */
         'validators/index': 'src/lib/validators/index.ts',
         'validators/add-default-validators': 'src/lib/validators/add-default-validators',
         'validators/add-all-validators': 'src/lib/validators/add-all-validators',
+        /* Managers */
         'managers/config-manager': 'src/lib/managers/margarita-form-config-manager.ts',
         'managers/controls-manager': 'src/lib/managers/margarita-form-controls-manager.ts',
         'managers/events-manager': 'src/lib/managers/margarita-form-events-manager.ts',
@@ -48,6 +50,14 @@ export default defineConfig({
         'managers/ref-manager': 'src/lib/managers/margarita-form-ref-manager.ts',
         'managers/state-manager': 'src/lib/managers/margarita-form-state-manager.ts',
         'managers/value-manager': 'src/lib/managers/margarita-form-value-manager.ts',
+        /* Extensions */
+        'extensions/i18n-extension': 'src/lib/extensions/i18n/i18n-extension.ts',
+        'extensions/storage-extension-base': 'src/lib/extensions/storage/storage-extension-base.ts',
+        'extensions/browser-local-storage': 'src/lib/extensions/storage/browser-local-storage.ts',
+        'extensions/browser-search-params-storage': 'src/lib/extensions/storage/browser-search-params-storage.ts',
+        'extensions/browser-session-storage': 'src/lib/extensions/storage/browser-session-storage.ts',
+        'extensions/syncronization-extension-base': 'src/lib/extensions/syncronization/syncronization-extension-base.ts',
+        'extensions/browser-syncronization': 'src/lib/extensions/syncronization/browser-syncronization.ts',
       },
       fileName: (format, entryName) => {
         const ext = format === 'es' ? 'js' : format;
