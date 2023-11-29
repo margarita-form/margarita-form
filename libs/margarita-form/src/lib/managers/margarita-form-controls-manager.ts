@@ -1,7 +1,7 @@
 import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG, ExtensionLike } from '../margarita-form-types';
+import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -187,11 +187,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     if (!field) throw 'No field provided!';
 
     if (allowModifiers) {
-      const extensions = Object.values<any>(this.control.extensions).filter(
-        ({ requireRoot }: ExtensionLike) => !requireRoot || this.control.isRoot
-      );
-
-      for (const extension of extensions) {
+      for (const extension of this.control.activeExtensions) {
         if (extension.modifyField) {
           const modified = extension.modifyField(field, this.control) as FIELD;
           if (modified) return this.addControl(modified, resetControl, emit, false);

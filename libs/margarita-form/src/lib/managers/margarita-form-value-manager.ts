@@ -1,7 +1,7 @@
 import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { CommonRecord, ExtensionLike, MFC, MFF } from '../margarita-form-types';
+import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
@@ -33,21 +33,19 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   public override afterInitialize() {
     this._handleValueResolver();
 
-    Object.values<any>(this.control.extensions)
-      .filter(({ requireRoot }: ExtensionLike) => !requireRoot || this.control.isRoot)
-      .forEach((extension: ExtensionLike) => {
-        const { getValueObservable, handleValueUpdate } = extension;
-        if (getValueObservable) {
-          this.createSubscription(getValueObservable(this.control), (value) => this.updateValue(value));
-        }
+    this.control.activeExtensions.forEach((extension) => {
+      const { getValueObservable, handleValueUpdate } = extension;
+      if (getValueObservable) {
+        this.createSubscription(getValueObservable(this.control), (value) => this.updateValue(value));
+      }
 
-        if (handleValueUpdate) {
-          const changes = this.changes.pipe(debounceTime(500), skip(1));
-          this.createSubscription(changes, () => {
-            handleValueUpdate(this.value);
-          });
-        }
-      });
+      if (handleValueUpdate) {
+        const changes = this.changes.pipe(debounceTime(500), skip(1));
+        this.createSubscription(changes, () => {
+          handleValueUpdate(this.value);
+        });
+      }
+    });
   }
 
   private async _handleValueResolver() {
@@ -114,9 +112,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     if (valueExists(this.control.field.initialValue)) return this.control.field.initialValue;
 
     if (allowExtensionValue) {
-      const snapshots = Object.values<any>(this.control.extensions)
-        .filter(({ requireRoot }: ExtensionLike) => !requireRoot || this.control.isRoot)
-        .map(({ getValueSnapshot }: ExtensionLike) => getValueSnapshot);
+      const snapshots = this.control.activeExtensions.map(({ getValueSnapshot }) => getValueSnapshot);
 
       const result = snapshots.reduce((acc, snapshot) => {
         if (valueExists(acc)) return acc;

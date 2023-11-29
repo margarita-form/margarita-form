@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import './storage-extension-types';
 import { Observable } from 'rxjs';
 import { valueExists } from '../../helpers/check-value';
-import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
-import { ValueManager } from '../../managers/margarita-form-value-manager';
-import { StorageLike } from './storage-extension-types';
+import { ExtensionBase, ExtensionName, Extensions, MFC } from '../../margarita-form-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 
-export class StorageExtensionBase implements StorageLike {
+export class StorageExtensionBase implements ExtensionBase {
   public static extensionName: ExtensionName = 'storage';
-  public static source: StorageLike;
   public readonly requireRoot = true;
 
   constructor(public root: MFC) {

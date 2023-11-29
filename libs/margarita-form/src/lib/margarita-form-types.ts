@@ -32,7 +32,15 @@ import {
   ControlChangeName,
 } from './typings/helper-types';
 import { NotFunction, OrAny, OrString } from './typings/util-types';
-import { ControlContext, Extensions, ExtensionsArray, FieldBase, FieldParams, Managers } from './typings/expandable-types';
+import {
+  ControlContext,
+  ExtensionInstanceLike,
+  Extensions,
+  ExtensionsArray,
+  FieldBase,
+  FieldParams,
+  Managers,
+} from './typings/expandable-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -167,6 +175,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get parent(): MFC;
   get config(): MargaritaFormConfig;
   get extensions(): Extensions;
+  get activeExtensions(): ExtensionInstanceLike[];
   get name(): FIELD['name'];
   get index(): number;
   get valueHash(): string;

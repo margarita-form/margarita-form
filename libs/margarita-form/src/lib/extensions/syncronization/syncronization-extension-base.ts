@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Observable, debounceTime, filter, map } from 'rxjs';
-import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
-import { BroadcastLike, BroadcasterMessage } from './syncronization-extension-types';
+import { Observable, filter, map } from 'rxjs';
+import { ExtensionBase, ExtensionName, Extensions, MFC } from '../../margarita-form-types';
+import { BroadcasterMessage } from './syncronization-extension-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { isEqual } from '../../helpers/check-value';
 
-export class SyncronizationExtensionBase implements BroadcastLike {
+export class SyncronizationExtensionBase implements ExtensionBase {
   public static extensionName: ExtensionName = 'syncronization';
   public readonly requireRoot = true;
   public readonly cache = new Map<string, string>();

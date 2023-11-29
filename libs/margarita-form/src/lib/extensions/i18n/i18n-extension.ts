@@ -1,15 +1,15 @@
 import { MargaritaFormControl } from '../../margarita-form-control';
-import { CommonRecord, ExtensionName, MFC, MFF, MFGF } from '../../margarita-form-types';
+import { CommonRecord, ExtensionBase, ExtensionName, MFC, MFF, MFGF } from '../../margarita-form-types';
 import { LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types';
 
 const fallbackFn = () => ({});
 
-export class I18NExtension {
+export class I18NExtension implements ExtensionBase {
   public static extensionName: ExtensionName = 'localization';
   public static localeNames?: Record<string, string>;
   public readonly requireRoot = false;
 
-  constructor(public control: MFC) {
+  constructor(public root: MFC) {
     MargaritaFormControl.extend({
       get locales(): Locales {
         if (this.isRoot) return this.field.locales;
@@ -37,11 +37,11 @@ export class I18NExtension {
   };
 
   get locales() {
-    return this.control.locales;
+    return this.root.locales;
   }
 
   get currentLocale() {
-    const { currentLocale } = this.control;
+    const { currentLocale } = this.root;
     if (!currentLocale) throw 'No current locale provided!';
     return currentLocale;
   }

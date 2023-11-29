@@ -16,6 +16,8 @@ import {
   ControlChangeName,
   Managers,
   Extensions,
+  ExtensionInstanceLike,
+  ExtensionBase,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
@@ -170,15 +172,17 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     const fieldExtensions = this.field.extensions;
     const hasExistingExtensions = valueExists(this.extensions);
     if (!hasExistingExtensions || fieldExtensions) {
-      const _globalExtensions = hasExistingExtensions ? [] : Object.values(MargaritaFormControl.extensions);
+      const _globalExtensions = hasExistingExtensions ? [] : [...MargaritaFormControl.extensions];
       const _fieldExtensions = this.field.extensions || [];
-      Object.values([..._globalExtensions, ..._fieldExtensions]).reduce((acc, constructor) => {
+      const _allExtensions = [..._globalExtensions, ..._fieldExtensions] as (typeof ExtensionBase)[];
+
+      _allExtensions.reduce((acc, constructor) => {
         try {
           if (this.extensions && this.extensions[constructor.extensionName]) {
             console.warn(`Extension "${constructor.extensionName}" already exists!`);
             return acc;
           }
-          acc[constructor.extensionName] = new constructor(this);
+          acc[constructor.extensionName] = new constructor(this.root);
           return acc;
         } catch (error) {
           throw {
@@ -189,6 +193,10 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
       }, this.extensions);
     }
   };
+
+  public get activeExtensions(): ControlLike<FIELD>['activeExtensions'] {
+    return Object.values<any>(this.extensions).filter(({ requireRoot }: ExtensionInstanceLike) => !requireRoot || this.isRoot);
+  }
 
   public getManager: ControlLike<FIELD>['getManager'] = (key) => {
     const found = (this.managers as any)[key];
@@ -862,7 +870,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   // Static
 
   public static managers = {} as Record<string, ManagerLike>;
-  public static extensions = {} as Record<string, any>;
+  public static extensions: Set<typeof ExtensionBase> = new Set();
   public static validators = {} as Record<string, MargaritaFormValidator>;
   public static context: Partial<MargaritaFormControlContext<any>> = {};
 
@@ -892,14 +900,14 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     delete MargaritaFormControl.managers[key];
   };
 
-  public static addExtension = (extension: any): void => {
+  public static addExtension = <T extends typeof ExtensionBase>(extension: T): void => {
     const { extensionName } = extension;
     if (!extensionName) throw 'Extension must have a name!';
-    MargaritaFormControl.extensions[extensionName] = extension;
+    this.extensions.add(extension);
   };
 
-  public static removeExtension = (key: string): void => {
-    delete MargaritaFormControl.extensions[key];
+  public static removeExtension = <T extends typeof ExtensionBase>(extension: T): void => {
+    this.extensions.delete(extension);
   };
 
   public static addValidator = (key: string, validator: MargaritaFormValidator): void => {
