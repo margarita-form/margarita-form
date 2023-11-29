@@ -24,3 +24,5 @@ export class BrowserSyncronizationExtension extends SyncronizationExtensionBase 
     return observable;
   }
 }
+
+export * from './syncronization-extension-base';

@@ -48,3 +48,5 @@ export class BrowserStorageBase extends StorageExtensionBase {
     });
   }
 }
+
+export * from './storage-extension-base';

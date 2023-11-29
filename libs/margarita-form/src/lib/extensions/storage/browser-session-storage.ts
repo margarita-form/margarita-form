@@ -6,3 +6,5 @@ export class SessionStorageExtension extends BrowserStorageBase {
     super(root, 'sessionStorage');
   }
 }
+
+export * from './browser-storage';

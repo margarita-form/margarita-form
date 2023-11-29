@@ -6,3 +6,5 @@ export class LocalStorageExtension extends BrowserStorageBase {
     super(root, 'localStorage');
   }
 }
+
+export * from './browser-storage';

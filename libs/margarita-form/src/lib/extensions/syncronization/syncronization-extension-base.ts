@@ -67,3 +67,5 @@ export class SyncronizationExtensionBase implements ExtensionBase {
     );
   };
 }
+
+export * from './syncronization-extension-types';

@@ -95,3 +95,5 @@ export class StorageExtensionBase implements ExtensionBase {
     }
   }
 }
+
+export * from './storage-extension-types';

@@ -51,3 +51,5 @@ export class SearchParamsStorageExtension extends StorageExtensionBase {
     });
   }
 }
+
+export * from './storage-extension-base';

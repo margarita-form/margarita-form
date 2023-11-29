@@ -131,3 +131,6 @@ export class I18NExtension implements ExtensionBase {
     return localizedObjectField;
   }
 }
+
+export * from './i18n-types';
+export * from './i18n-resolvers';
