@@ -2,14 +2,16 @@
 import './storage-extension-types';
 import { Observable } from 'rxjs';
 import { valueExists } from '../../helpers/check-value';
-import { ExtensionBase, ExtensionName, Extensions, MFC } from '../../margarita-form-types';
+import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
+import { ExtensionBase } from '../base/extension-base';
 
-export class StorageExtensionBase implements ExtensionBase {
+export class StorageExtensionBase extends ExtensionBase<any> {
   public static extensionName: ExtensionName = 'storage';
   public readonly requireRoot = true;
 
-  constructor(public root: MFC) {
+  constructor(public override root: MFC) {
+    super(root);
     MargaritaFormControl.extend({
       get storage(): Extensions['storage'] {
         return this.extensions.storage;

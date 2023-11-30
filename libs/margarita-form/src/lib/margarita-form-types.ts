@@ -32,15 +32,8 @@ import {
   ControlChangeName,
 } from './typings/helper-types';
 import { NotFunction, OrAny, OrString } from './typings/util-types';
-import {
-  ControlContext,
-  ExtensionInstanceLike,
-  Extensions,
-  ExtensionsArray,
-  FieldBase,
-  FieldParams,
-  Managers,
-} from './typings/expandable-types';
+import { ControlContext, Extensions, FieldBase, FieldParams, Managers } from './typings/expandable-types';
+import { ExtensionInstanceLike, ExtensionsArray } from './typings/derived-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -325,3 +318,4 @@ export * from './typings/core-types';
 export * from './typings/expandable-types';
 export * from './typings/helper-types';
 export * from './typings/util-types';
+export * from './typings/derived-types';

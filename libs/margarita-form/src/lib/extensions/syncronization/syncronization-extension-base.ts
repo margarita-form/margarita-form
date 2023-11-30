@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, filter, map } from 'rxjs';
-import { ExtensionBase, ExtensionName, Extensions, MFC } from '../../margarita-form-types';
+import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
 import { BroadcasterMessage } from './syncronization-extension-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { isEqual } from '../../helpers/check-value';
+import { ExtensionBase } from '../base/extension-base';
 
-export class SyncronizationExtensionBase implements ExtensionBase {
+export class SyncronizationExtensionBase extends ExtensionBase<any> {
   public static extensionName: ExtensionName = 'syncronization';
   public readonly requireRoot = true;
   public readonly cache = new Map<string, string>();
 
-  constructor(public root: MFC) {
+  constructor(public override root: MFC) {
+    super(root);
     MargaritaFormControl.extend({
       get syncronization(): Extensions['syncronization'] {
         return this.extensions.syncronization;
