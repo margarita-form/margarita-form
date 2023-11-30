@@ -1,11 +1,9 @@
 import type { MF } from '@margarita-form/core/light';
-import { useRef } from 'react';
-import { shareReplay, skip } from 'rxjs';
+import { shareReplay } from 'rxjs';
 
-export const createFormStore = (form: MF) => {
-  const changes = useRef(form.afterChanges.pipe(skip(1), shareReplay(1)));
+export const useFormStore = (form: MF) => {
   const subscribe = (listener: () => void) => {
-    const subscription = changes.current.subscribe(() => {
+    const subscription = form.afterChanges.pipe(shareReplay(1)).subscribe(() => {
       listener();
     });
     return () => {

@@ -150,7 +150,6 @@ export function App({ children }: { children?: React.ReactNode }) {
     config: {
       resetFormOnFieldChanges: shouldReset,
       handleSuccesfullSubmit: 'enable',
-      requiredNameCase: 'camel',
     },
   });
 
