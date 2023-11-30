@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { DependencyList, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { createFormStore } from '../misc/margarita-form-store';
+import { useFormStore } from '../misc/margarita-form-store';
 import { MFC, MFF, MFGF, createMargaritaForm } from '@margarita-form/core/light';
 
 type FieldOrControl = MFF | MFC<MFGF>;
@@ -37,7 +37,7 @@ export const useMargaritaForm = <FOC extends FieldOrControl = MFF>(
     }
   }, dependencies);
 
-  const store = createFormStore(form);
+  const store = useFormStore(form);
 
   useSyncExternalStore(
     store.subscribe,
