@@ -17,7 +17,6 @@ import {
   Managers,
   Extensions,
   ExtensionInstanceLike,
-  ExtensionBase,
 } from './margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
@@ -25,6 +24,7 @@ import { isEqual, isIncluded, valueExists } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
 import { removeFormFromCache } from './create-margarita-form';
 import { ManagerLike } from './managers/margarita-form-base-manager';
+import { ExtensionBase } from './extensions/base/extension-base';
 
 export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLike<FIELD> {
   public key: string;

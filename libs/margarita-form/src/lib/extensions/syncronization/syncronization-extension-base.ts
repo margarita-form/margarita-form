@@ -7,8 +7,8 @@ import { isEqual } from '../../helpers/check-value';
 import { ExtensionBase } from '../base/extension-base';
 
 export class SyncronizationExtensionBase extends ExtensionBase<any> {
-  public static extensionName: ExtensionName = 'syncronization';
-  public readonly requireRoot = true;
+  public static override extensionName: ExtensionName = 'syncronization';
+  public override readonly requireRoot = true;
   public readonly cache = new Map<string, string>();
 
   constructor(public override root: MFC) {
@@ -35,7 +35,7 @@ export class SyncronizationExtensionBase extends ExtensionBase<any> {
     return syncronizationKey;
   }
 
-  public handleValueUpdate = <DATA = any>(value: DATA): void => {
+  public override handleValueUpdate = <DATA = any>(value: DATA): void => {
     const key = this.syncronizationKey;
     const cachedValue = this.cache.get(key);
     const changed = !isEqual(value, cachedValue);
@@ -46,7 +46,7 @@ export class SyncronizationExtensionBase extends ExtensionBase<any> {
     }
   };
 
-  public getValueObservable = <DATA = any>(control: MFC): Observable<DATA | undefined> => {
+  public override getValueObservable = <DATA = any>(control: MFC): Observable<DATA | undefined> => {
     const key = this.syncronizationKey;
     this.postMessage({ key, uid: this.root.uid, requestSend: true });
     const observable = this.listenToMessages<DATA>();

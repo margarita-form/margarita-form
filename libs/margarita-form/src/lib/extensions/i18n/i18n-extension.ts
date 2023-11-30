@@ -6,9 +6,9 @@ import { LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types'
 const fallbackFn = () => ({});
 
 export class I18NExtension extends ExtensionBase<any> {
-  public static extensionName: ExtensionName = 'localization';
+  public static override extensionName: ExtensionName = 'localization';
+  public override readonly requireRoot = false;
   public static localeNames?: Record<string, string>;
-  public readonly requireRoot = false;
 
   constructor(public override root: MFC) {
     super(root);
@@ -33,7 +33,7 @@ export class I18NExtension extends ExtensionBase<any> {
     });
   }
 
-  public modifyField = (field: MFF, parentControl: MFC): MFGF => {
+  public override modifyField = (field: MFF, parentControl: MFC): MFGF => {
     if (!field.localize) return field;
     return I18NExtension.localizeField(parentControl, field);
   };

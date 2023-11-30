@@ -7,8 +7,8 @@ import { MargaritaFormControl } from '../../margarita-form-control';
 import { ExtensionBase } from '../base/extension-base';
 
 export class StorageExtensionBase extends ExtensionBase<any> {
-  public static extensionName: ExtensionName = 'storage';
-  public readonly requireRoot = true;
+  public static override extensionName: ExtensionName = 'storage';
+  public override readonly requireRoot = true;
 
   constructor(public override root: MFC) {
     super(root);
@@ -42,7 +42,7 @@ export class StorageExtensionBase extends ExtensionBase<any> {
     return storageKey;
   }
 
-  public getValueSnapshot = <TYPE = any>(): TYPE | undefined => {
+  public override getValueSnapshot = <TYPE = any>(): TYPE | undefined => {
     const key = this.storageKey;
     try {
       const storageValue = this.getItem(key);
@@ -55,7 +55,7 @@ export class StorageExtensionBase extends ExtensionBase<any> {
     }
   };
 
-  public getValueObservable = <TYPE = any>(): Observable<TYPE | undefined> => {
+  public override getValueObservable = <TYPE = any>(): Observable<TYPE | undefined> => {
     const key = this.storageKey;
     try {
       return this.listenToChanges<TYPE>(key);
@@ -64,7 +64,7 @@ export class StorageExtensionBase extends ExtensionBase<any> {
     }
   };
 
-  public handleValueUpdate = (value: any): void => {
+  public override handleValueUpdate = (value: any): void => {
     const key = this.storageKey;
     if (!valueExists(value)) return this.clearStorageValue(key);
 
