@@ -92,6 +92,9 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     Object.values(this.managers).forEach((manager: any) => manager.cleanup());
     this._buildParams.idStore.delete(this.uid);
     if (this.isRoot) removeFormFromCache(this.name);
+    this.activeExtensions.forEach(({ onCleanup }) => {
+      if (onCleanup) onCleanup(this);
+    });
   };
 
   private initialize(initial = true, after = true) {

@@ -172,7 +172,9 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
    * @internal
    */
   public _handleAfterSubmit = async () => {
-    // if (this.control.config.clearStorageOnSuccessfullSubmit) this.control.extensions.storage.clearStorage(); // TODO fix me
+    this.control.activeExtensions.forEach(({ afterSubmit }) => {
+      if (afterSubmit) afterSubmit(this.control);
+    });
     await this._resolveSubmitHandler('afterSubmit');
   };
 }

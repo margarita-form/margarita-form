@@ -96,6 +96,9 @@ describe('storage extension testing', () => {
       name: formName,
       fields: [commonField],
       extensions: [withName],
+      handleSubmit: () => {
+        /* Works */
+      },
     });
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -103,6 +106,11 @@ describe('storage extension testing', () => {
     const commonControlValue = valueForm.getControl([commonField.name]);
     if (!commonControlValue) throw 'No control found!';
     expect(commonControlValue.value).toBe(storageValue);
+
+    await valueForm.submit();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(storage[formName]).toBeUndefined();
+
     valueForm.cleanup();
   });
 

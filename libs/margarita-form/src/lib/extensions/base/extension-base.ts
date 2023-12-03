@@ -7,11 +7,16 @@ export class ExtensionBase {
   public config: object = {};
   constructor(public root: MFC) {}
 
+  // Value manager
   getValueObservable?: <T>(control: MFC) => Observable<T | undefined>;
   handleValueUpdate?: <T>(control: MFC, value: T) => void | Promise<void>;
   getValueSnapshot?: <T>(control: MFC) => T | undefined;
   // Control manager
   modifyField?: (field: any, parentControl: MFC) => any;
+  // Events manager
+  afterSubmit?: (control: MFC) => void | Promise<void>;
+  // Lifecycle
+  onCleanup?: (control: MFC) => void | Promise<void>;
 
   public getConfig(control = this.root): this['config'] {
     const staticThis = this.constructor as typeof ExtensionBase;
@@ -29,7 +34,7 @@ export const withConfig = <T extends typeof ExtensionBase>(extension: T, config:
   return new Proxy(extension, {
     construct(target: any, args: any) {
       const final = new target(...args);
-      final.config = { ...target.config, ...config };
+      final.config = { ...final.config, ...config };
       return final;
     },
   });

@@ -13,6 +13,7 @@ export const storageExtensionDefaultConfig: StorageExtensionConfig = {
   storageStrategy: 'start',
   resolveInitialValuesFromSearchParams: false,
 };
+
 export class StorageExtensionBase extends ExtensionBase {
   public override config: StorageExtensionConfig = storageExtensionDefaultConfig;
   public static override extensionName: ExtensionName = 'storage';
@@ -119,6 +120,11 @@ export class StorageExtensionBase extends ExtensionBase {
       console.error(`Could not clear value!`, { control: this.root, error });
     }
   }
+
+  public override afterSubmit = (control = this.root): void => {
+    const { clearStorageOnSuccessfullSubmit } = this.getConfig(control);
+    if (clearStorageOnSuccessfullSubmit) this.clearStorage(control);
+  };
 
   public static override withConfig(config: StorageExtensionConfig) {
     return super.withConfig(config);
