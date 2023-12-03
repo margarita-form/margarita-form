@@ -12,7 +12,7 @@ export const syncronizationExtensionDefaultConfig: SyncronizationExtensionConfig
 
 export class SyncronizationExtensionBase extends ExtensionBase {
   public static override extensionName: ExtensionName = 'syncronization';
-  public override readonly requireRoot = true;
+  public override activeCheck = (control: MFC) => control.isRoot;
   public override config: SyncronizationExtensionConfig = syncronizationExtensionDefaultConfig;
   public readonly cache = new Map<string, string>();
 

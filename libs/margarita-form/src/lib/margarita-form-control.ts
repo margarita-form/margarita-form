@@ -195,9 +195,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   };
 
   public get activeExtensions(): ControlLike<FIELD>['activeExtensions'] {
-    return Object.values<any>(this.extensions).filter(({ requireRoot, activeCheck }: ExtensionInstanceLike) =>
-      activeCheck ? activeCheck(this) : !requireRoot || this.isRoot
-    );
+    return Object.values<any>(this.extensions).filter(({ activeCheck }: ExtensionInstanceLike) => (activeCheck ? activeCheck(this) : true));
   }
 
   public getManager: ControlLike<FIELD>['getManager'] = (key) => {

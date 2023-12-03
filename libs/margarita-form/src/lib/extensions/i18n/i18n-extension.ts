@@ -11,7 +11,6 @@ export const i18nExtensionDefaultConfig: I18NExtensionConfig = {
 
 export class I18NExtension extends ExtensionBase {
   public static override extensionName: ExtensionName = 'localization';
-  public override readonly requireRoot = false;
   public override config: I18NExtensionConfig = i18nExtensionDefaultConfig;
   public static localeNames?: Record<string, string>;
 

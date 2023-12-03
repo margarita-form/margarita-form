@@ -17,7 +17,7 @@ export class StorageExtensionBase extends ExtensionBase {
   public override config: StorageExtensionConfig = storageExtensionDefaultConfig;
   public static override extensionName: ExtensionName = 'storage';
 
-  public override readonly activeCheck = (control: MFC) => {
+  public override activeCheck = (control: MFC) => {
     const { storageStrategy } = this.getConfig(control);
     // Allow storage if strategy is 'end' and control has no child controls
     if (storageStrategy === 'end') {

@@ -3,8 +3,7 @@ import { ExtensionName, MFC } from '../../margarita-form-types';
 
 export class ExtensionBase {
   public static extensionName: ExtensionName;
-  readonly requireRoot?: boolean;
-  readonly activeCheck?: (control: MFC) => boolean;
+  public activeCheck?: (control: MFC) => boolean;
   public config: object = {};
   constructor(public root: MFC) {}
 
