@@ -7,14 +7,14 @@ import { MargaritaFormControl } from '../../margarita-form-control';
 import { ExtensionBase } from '../base/extension-base';
 import { StorageExtensionConfig } from './storage-extension-types';
 
+export const storageExtensionDefaultConfig: StorageExtensionConfig = {
+  clearStorageOnSuccessfullSubmit: true,
+  storageKey: 'key',
+  storageStrategy: 'start',
+  resolveInitialValuesFromSearchParams: false,
+};
 export class StorageExtensionBase extends ExtensionBase {
-  public override config: StorageExtensionConfig = {
-    clearStorageOnSuccessfullSubmit: true,
-    storageKey: 'key',
-    storageStrategy: 'start',
-    resolveInitialValuesFromSearchParams: false,
-  };
-
+  public override config: StorageExtensionConfig = storageExtensionDefaultConfig;
   public static override extensionName: ExtensionName = 'storage';
   public override readonly requireRoot = true;
 
@@ -43,11 +43,12 @@ export class StorageExtensionBase extends ExtensionBase {
     throw new Error('Method not implemented.');
   }
 
-  public get storageKey(): string {
-    if (typeof this.config.storageKey === 'function') return this.config.storageKey(this.root);
-    const storageKey = this.root[this.config.storageKey || 'key'];
-    if (!storageKey) throw new Error(`Could not get storage key from control!`);
-    return storageKey;
+  public getStorageKey(control = this.root): string {
+    const { storageKey } = this.getConfig(control);
+    if (typeof storageKey === 'function') return storageKey(this.root);
+    const key = this.root[storageKey || 'key'];
+    if (!key) throw new Error(`Could not get storage key from control!`);
+    return key;
   }
 
   public transformFromStorageValue = <TYPE = any>(value: any): TYPE | undefined => {
@@ -60,15 +61,15 @@ export class StorageExtensionBase extends ExtensionBase {
     }
   };
 
-  public override getValueSnapshot = <TYPE = any>(): TYPE | undefined => {
-    const key = this.storageKey;
+  public override getValueSnapshot = <TYPE = any>(control = this.root): TYPE | undefined => {
+    const key = this.getStorageKey(control);
 
     const storageValue = this.getItem(key);
     return this.transformFromStorageValue(storageValue);
   };
 
-  public override getValueObservable = <TYPE = any>(): Observable<TYPE | undefined> => {
-    const key = this.storageKey;
+  public override getValueObservable = <TYPE = any>(control = this.root): Observable<TYPE | undefined> => {
+    const key = this.getStorageKey(control);
     try {
       return this.listenToChanges<TYPE>(key).pipe(filter(valueExists), map(this.transformFromStorageValue));
     } catch (error) {
@@ -76,14 +77,14 @@ export class StorageExtensionBase extends ExtensionBase {
     }
   };
 
-  public override handleValueUpdate = (value: any): void => {
-    const key = this.storageKey;
+  public override handleValueUpdate = (control = this.root, value: any): void => {
+    const key = this.getStorageKey(control);
     if (!valueExists(value)) return this.clearStorageValue(key);
 
     try {
       if (typeof value === 'object') {
         const stringified = JSON.stringify(value);
-        return this.handleValueUpdate(stringified);
+        return this.handleValueUpdate(control, stringified);
       }
 
       const validValid = valueExists(value);
@@ -96,8 +97,8 @@ export class StorageExtensionBase extends ExtensionBase {
     }
   };
 
-  public clearStorage() {
-    this.clearStorageValue(this.storageKey);
+  public clearStorage(control = this.root) {
+    this.clearStorageValue(this.getStorageKey(control));
   }
 
   public clearStorageValue(key: string): void {

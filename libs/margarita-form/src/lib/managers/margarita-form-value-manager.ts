@@ -42,7 +42,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       if (handleValueUpdate) {
         const changes = this.changes.pipe(debounceTime(500), skip(1));
         this.createSubscription(changes, () => {
-          handleValueUpdate(this.value);
+          handleValueUpdate(this.control, this.value);
         });
       }
     });
@@ -117,7 +117,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       const result = snapshots.reduce((acc, snapshot) => {
         if (valueExists(acc)) return acc;
         if (!snapshot) return acc;
-        return snapshot();
+        return snapshot(this.control);
       }, undefined as unknown);
       if (valueExists(result) && !valueIsAsync(result)) return result;
     }

@@ -5,12 +5,14 @@ import { I18NExtensionConfig, LocaleNames, Locales, MargaritaFormHandleLocalize 
 
 const fallbackFn = () => ({});
 
+export const i18nExtensionDefaultConfig: I18NExtensionConfig = {
+  localizationOutput: 'object',
+};
+
 export class I18NExtension extends ExtensionBase {
   public static override extensionName: ExtensionName = 'localization';
   public override readonly requireRoot = false;
-  public override config: I18NExtensionConfig = {
-    localizationOutput: 'object',
-  };
+  public override config: I18NExtensionConfig = i18nExtensionDefaultConfig;
   public static localeNames?: Record<string, string>;
 
   constructor(public override root: MFC) {
@@ -67,7 +69,7 @@ export class I18NExtension extends ExtensionBase {
   }
 
   public localizeField<FIELD extends MFC['field']>(parent: MFC, field: FIELD): MFF {
-    const { localizationOutput } = this.config;
+    const { localizationOutput } = this.getConfig(parent);
     const locales = parent.locales || [];
     const localeNames = Object.keys(locales);
     const getValue = (key: 'defaultValue' | 'initialValue') => (field[key] && typeof field[key] === 'object' ? field[key] : undefined);

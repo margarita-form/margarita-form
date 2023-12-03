@@ -6,13 +6,14 @@ import { MargaritaFormControl } from '../../margarita-form-control';
 import { isEqual } from '../../helpers/check-value';
 import { ExtensionBase } from '../base/extension-base';
 
+export const syncronizationExtensionDefaultConfig: SyncronizationExtensionConfig = {
+  syncronizationKey: 'key',
+};
+
 export class SyncronizationExtensionBase extends ExtensionBase {
   public static override extensionName: ExtensionName = 'syncronization';
   public override readonly requireRoot = true;
-  public override config: SyncronizationExtensionConfig = {
-    syncronizationKey: 'key',
-  };
-
+  public override config: SyncronizationExtensionConfig = syncronizationExtensionDefaultConfig;
   public readonly cache = new Map<string, string>();
 
   constructor(public override root: MFC) {
@@ -32,15 +33,16 @@ export class SyncronizationExtensionBase extends ExtensionBase {
     throw new Error('Method not implemented.');
   }
 
-  private get syncronizationKey(): string {
-    if (typeof this.config.syncronizationKey === 'function') return this.config.syncronizationKey(this.root);
-    const syncronizationKey = this.root[this.config.syncronizationKey || 'key'];
-    if (!syncronizationKey) throw new Error(`Could not get syncronization key from control!`);
-    return syncronizationKey;
+  private getSyncronizationKey(control = this.root): string {
+    const { syncronizationKey } = this.getConfig(control);
+    if (typeof syncronizationKey === 'function') return syncronizationKey(this.root);
+    const key = this.root[syncronizationKey || 'key'];
+    if (!key) throw new Error(`Could not get syncronization key from control!`);
+    return key;
   }
 
-  public override handleValueUpdate = <DATA = any>(value: DATA): void => {
-    const key = this.syncronizationKey;
+  public override handleValueUpdate = <DATA = any>(control = this.root, value: DATA): void => {
+    const key = this.getSyncronizationKey(control);
     const cachedValue = this.cache.get(key);
     const changed = !isEqual(value, cachedValue);
     if (changed) {
@@ -51,7 +53,7 @@ export class SyncronizationExtensionBase extends ExtensionBase {
   };
 
   public override getValueObservable = <DATA = any>(control: MFC): Observable<DATA | undefined> => {
-    const key = this.syncronizationKey;
+    const key = this.getSyncronizationKey(control);
     this.postMessage({ key, uid: this.root.uid, requestSend: true });
     const observable = this.listenToMessages<DATA>();
     return observable.pipe(
