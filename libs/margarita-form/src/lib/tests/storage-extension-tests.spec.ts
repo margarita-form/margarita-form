@@ -132,4 +132,28 @@ describe('storage extension testing', () => {
     expect(storage[formName]).toBe(`{"${commonField.name}":"${storageValue}"}`);
     form.cleanup();
   });
+
+  it('should save end values if strategy is set as "end"', async () => {
+    const formName = nanoid();
+    const withEnd = ValueStorage.withConfig({ storageStrategy: 'end', storageKey: 'name' });
+    const form = createMargaritaForm<MFF>({
+      name: formName,
+      fields: [commonField],
+      extensions: [withEnd],
+    });
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+
+    expect(storage[commonField.name]).toBeUndefined();
+    expect(commonControl.value).toBe(commonField.initialValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(commonControl.value).toBe(commonField.initialValue);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    commonControl.setValue(storageValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(storage[commonField.name]).not.toBeUndefined();
+    expect(storage[commonField.name]).toBe(storageValue);
+    expect(storage[formName]).toBeUndefined();
+    form.cleanup();
+  });
 });

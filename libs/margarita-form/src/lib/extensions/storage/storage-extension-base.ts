@@ -16,7 +16,18 @@ export const storageExtensionDefaultConfig: StorageExtensionConfig = {
 export class StorageExtensionBase extends ExtensionBase {
   public override config: StorageExtensionConfig = storageExtensionDefaultConfig;
   public static override extensionName: ExtensionName = 'storage';
-  public override readonly requireRoot = true;
+
+  public override readonly activeCheck = (control: MFC) => {
+    const { storageStrategy } = this.getConfig(control);
+    // Allow storage if strategy is 'end' and control has no child controls
+    if (storageStrategy === 'end') {
+      if (control.expectChildControls) return false;
+      return true;
+    }
+    // Allow storage if strategy is 'start' and control is the root control
+    if (control.isRoot) return true;
+    return false;
+  };
 
   constructor(public override root: MFC) {
     super(root);
@@ -45,8 +56,8 @@ export class StorageExtensionBase extends ExtensionBase {
 
   public getStorageKey(control = this.root): string {
     const { storageKey } = this.getConfig(control);
-    if (typeof storageKey === 'function') return storageKey(this.root);
-    const key = this.root[storageKey || 'key'];
+    if (typeof storageKey === 'function') return storageKey(control);
+    const key = control[storageKey || 'key'];
     if (!key) throw new Error(`Could not get storage key from control!`);
     return key;
   }
@@ -63,7 +74,6 @@ export class StorageExtensionBase extends ExtensionBase {
 
   public override getValueSnapshot = <TYPE = any>(control = this.root): TYPE | undefined => {
     const key = this.getStorageKey(control);
-
     const storageValue = this.getItem(key);
     return this.transformFromStorageValue(storageValue);
   };
@@ -93,7 +103,7 @@ export class StorageExtensionBase extends ExtensionBase {
 
       this.setItem(key, value);
     } catch (error) {
-      console.error(`Could not save value!`, { control: this.root, error });
+      console.error(`Could not save value!`, { control, error });
     }
   };
 

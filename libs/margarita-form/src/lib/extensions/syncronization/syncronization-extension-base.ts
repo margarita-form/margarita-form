@@ -36,7 +36,7 @@ export class SyncronizationExtensionBase extends ExtensionBase {
   private getSyncronizationKey(control = this.root): string {
     const { syncronizationKey } = this.getConfig(control);
     if (typeof syncronizationKey === 'function') return syncronizationKey(this.root);
-    const key = this.root[syncronizationKey || 'key'];
+    const key = control[syncronizationKey || 'key'];
     if (!key) throw new Error(`Could not get syncronization key from control!`);
     return key;
   }
