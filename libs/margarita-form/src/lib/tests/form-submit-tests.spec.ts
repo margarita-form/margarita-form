@@ -10,7 +10,7 @@ declare module '@margarita-form/core' {
 
 const fieldNameInitialValue = 'Hello world';
 
-const commonField: MFF<string, MFF> = {
+const commonField: MFF<{ value: string; fields: MFF }> = {
   name: 'fieldName',
   initialValue: fieldNameInitialValue,
 };

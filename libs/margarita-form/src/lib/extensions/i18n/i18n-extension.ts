@@ -1,13 +1,16 @@
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { CommonRecord, ExtensionName, MFC, MFF, MFGF } from '../../margarita-form-types';
 import { ExtensionBase } from '../base/extension-base';
-import { LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types';
+import { I18NExtensionConfig, LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types';
 
 const fallbackFn = () => ({});
 
-export class I18NExtension extends ExtensionBase<any> {
+export class I18NExtension extends ExtensionBase {
   public static override extensionName: ExtensionName = 'localization';
   public override readonly requireRoot = false;
+  public override config: I18NExtensionConfig = {
+    localizationOutput: 'object',
+  };
   public static localeNames?: Record<string, string>;
 
   constructor(public override root: MFC) {
@@ -35,7 +38,7 @@ export class I18NExtension extends ExtensionBase<any> {
 
   public override modifyField = (field: MFF, parentControl: MFC): MFGF => {
     if (!field.localize) return field;
-    return I18NExtension.localizeField(parentControl, field);
+    return this.localizeField(parentControl, field);
   };
 
   get locales() {
@@ -63,8 +66,8 @@ export class I18NExtension extends ExtensionBase<any> {
     return Object.fromEntries(entries);
   }
 
-  public static localizeField<FIELD extends MFC['field']>(parent: MFC, field: FIELD): MFF {
-    const { localizationOutput } = field.config || parent.config;
+  public localizeField<FIELD extends MFC['field']>(parent: MFC, field: FIELD): MFF {
+    const { localizationOutput } = this.config;
     const locales = parent.locales || [];
     const localeNames = Object.keys(locales);
     const getValue = (key: 'defaultValue' | 'initialValue') => (field[key] && typeof field[key] === 'object' ? field[key] : undefined);
@@ -131,6 +134,10 @@ export class I18NExtension extends ExtensionBase<any> {
     };
 
     return localizedObjectField;
+  }
+
+  static override withConfig(config: I18NExtensionConfig) {
+    return super.withConfig(config);
   }
 }
 

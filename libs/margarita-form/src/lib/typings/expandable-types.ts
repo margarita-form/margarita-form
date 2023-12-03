@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { ExtensionName } from './derived-types';
+
 export interface FieldParams {
   value?: any;
   fields?: any;
@@ -19,4 +21,8 @@ export interface Managers {
 
 export interface Extensions {
   [key: string]: unknown;
+}
+
+export interface Configs {
+  //
 }

@@ -1,10 +1,10 @@
 import { Observable } from 'rxjs';
 import { ExtensionName, MFC } from '../../margarita-form-types';
 
-export class ExtensionBase<C extends object> {
+export class ExtensionBase {
   public static extensionName: ExtensionName;
   readonly requireRoot?: boolean;
-  public config: C = {} as C;
+  public config: unknown = {};
   constructor(public root: MFC) {}
 
   getValueObservable?: <T>(control: MFC) => Observable<T | undefined>;
@@ -13,12 +13,12 @@ export class ExtensionBase<C extends object> {
   // Control manager
   modifyField?: (field: any, parentControl: MFC) => any;
 
-  static withConfig<C>(config: C) {
+  static withConfig<C extends object>(config: C) {
     return withConfig<any>(this, config as any);
   }
 }
 
-export const withConfig = <T extends typeof ExtensionBase<any>>(extension: T, config: Partial<InstanceType<T>['config']>) => {
+export const withConfig = <T extends typeof ExtensionBase>(extension: T, config: Partial<InstanceType<T>['config']>) => {
   return new Proxy(extension, {
     construct(target: any, args: any) {
       const final = new target(...args);

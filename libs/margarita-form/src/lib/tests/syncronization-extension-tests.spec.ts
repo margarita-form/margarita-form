@@ -64,4 +64,97 @@ describe('syncronization extension testing', () => {
     expect(form1.value).toEqual(form3.value);
     expect(form2.value).not.toEqual(form3.value);
   });
+  it('Key can be changed to name', async () => {
+    const formName = nanoid();
+
+    const withName = ValueSyncronization.withConfig({ syncronizationKey: 'name' });
+
+    const logFn = vitest.fn((message: BroadcasterMessage<unknown>) => {
+      expect(message.key).toEqual(formName);
+      return true;
+    });
+
+    const sub = behaviorSubject.subscribe((message) => {
+      if (message?.value === 'withName') logFn(message);
+    });
+
+    const form1 = createMargaritaForm<MFF>(
+      {
+        name: formName,
+        initialValue: '',
+        extensions: [withName],
+      },
+      false
+    );
+
+    const form2 = createMargaritaForm<MFF>(
+      {
+        name: formName,
+        initialValue: '',
+        extensions: [withName],
+      },
+      false
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    form1.setValue('withName');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    expect(logFn).toHaveBeenCalled();
+    expect(logFn).toHaveReturned();
+
+    expect(form1.value).toEqual('withName');
+    expect(form1.value).toEqual(form2.value);
+
+    sub.unsubscribe();
+    form1.cleanup();
+    form2.cleanup();
+  });
+  it('Key can be a function', async () => {
+    const formName = nanoid();
+
+    const withFunctionName = ValueSyncronization.withConfig({ syncronizationKey: (c) => c.name.toUpperCase() + '-custom' });
+
+    const logFn = vitest.fn((message: BroadcasterMessage<unknown>) => {
+      expect(message.key).not.toEqual(formName);
+      expect(message.key).toEqual(formName.toUpperCase() + '-custom');
+      return true;
+    });
+
+    const sub = behaviorSubject.subscribe((message) => {
+      if (message?.value === 'withFunctionName') logFn(message);
+    });
+
+    const form1 = createMargaritaForm<MFF>(
+      {
+        name: formName,
+        initialValue: '',
+        extensions: [withFunctionName],
+      },
+      false
+    );
+
+    const form2 = createMargaritaForm<MFF>(
+      {
+        name: formName,
+        initialValue: '',
+        extensions: [withFunctionName],
+      },
+      false
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    form1.setValue('withFunctionName');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    expect(logFn).toHaveBeenCalled();
+    expect(logFn).toHaveReturned();
+
+    expect(form1.value).toEqual('withFunctionName');
+    expect(form1.value).toEqual(form2.value);
+
+    sub.unsubscribe();
+    form1.cleanup();
+    form2.cleanup();
+  });
 });

@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Extensions, MFF } from '../../margarita-form-types';
+import { Extensions, GenerateKeyFunction, MFF } from '../../margarita-form-types';
 import { SyncronizationExtensionBase } from './syncronization-extension-base';
+
+export interface SyncronizationExtensionConfig {
+  syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
+}
 
 export interface BroadcasterMessage<DATA = unknown> {
   key: string;
@@ -18,5 +22,9 @@ declare module '../../margarita-form-control' {
 declare module '../../typings/expandable-types' {
   export interface Extensions {
     syncronization?: typeof SyncronizationExtensionBase;
+  }
+
+  export interface Configs {
+    syncronization?: SyncronizationExtensionConfig;
   }
 }

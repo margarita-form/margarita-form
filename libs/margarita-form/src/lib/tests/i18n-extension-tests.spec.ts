@@ -1,9 +1,7 @@
 import { nanoid } from 'nanoid';
-import { MFF, MargaritaForm, MargaritaFormField, createMargaritaForm } from '../../index';
+import { MFF, MargaritaFormField, createMargaritaForm } from '../../index';
 import { I18NExtension } from '../extensions/i18n/i18n-extension';
 import { Locale } from '../extensions/i18n/i18n-types';
-
-MargaritaForm.addExtension(I18NExtension);
 
 declare module '../extensions/i18n/i18n-extension' {
   export interface Locales {
@@ -25,6 +23,7 @@ describe('i18n extension testing', () => {
       name: nanoid(),
       initialValue: 'test',
       currentLocale: 'fi',
+      extensions: [I18NExtension],
       i18n: {
         title: {
           en: 'Hello',
@@ -68,6 +67,7 @@ describe('i18n extension testing', () => {
     >({
       name: nanoid(),
       currentLocale: 'fi',
+      extensions: [I18NExtension],
       locales: {
         en: { title: 'English' },
         fi: { title: 'Suomi' },
@@ -118,5 +118,71 @@ describe('i18n extension testing', () => {
     expect(fiControl.i18n.content).toBe('Hei maailma');
 
     form.cleanup();
+  });
+
+  it('should allow localization output to be an array', () => {
+    const asArray = I18NExtension.withConfig({ localizationOutput: 'array' });
+    const form = createMargaritaForm({
+      name: 'localizedArray',
+      extensions: [asArray],
+      currentLocale: 'fi',
+      locales: {
+        en: { title: 'English' },
+        fi: { title: 'Suomi' },
+        sv: { title: 'Svenska' },
+        no: { title: 'Norsk' },
+      },
+      fields: [
+        {
+          ...uncommonField,
+          localize: true,
+          i18n: {
+            content: {
+              en: 'Hello world',
+              fi: 'Hei maailma',
+            },
+          },
+        },
+      ],
+      initialValue: {
+        [uncommonField.name]: [
+          {
+            _name: 'en',
+            [uncommonField.name]: 'Hello world',
+          },
+          {
+            _name: 'fi',
+            [uncommonField.name]: 'Hei maailma',
+          },
+          {
+            _name: 'sv',
+            [uncommonField.name]: 'Hej världen',
+          },
+          {
+            _name: 'no',
+            [uncommonField.name]: 'Hei verden',
+          },
+        ],
+      },
+    });
+
+    const uncommonControl = form.getControl([uncommonField.name]);
+    if (!uncommonControl) throw 'No control found!';
+
+    const enControl = uncommonControl.getControl('en');
+    if (!enControl) throw 'No control found!';
+    expect(enControl.value[uncommonControl.name]).toBe('Hello world');
+
+    const fiControl = uncommonControl.getControl('fi');
+    if (!fiControl) throw 'No control found!';
+    expect(fiControl.value[uncommonControl.name]).toBe('Hei maailma');
+
+    const svControl = uncommonControl.getControl('sv');
+    if (!svControl) throw 'No control found!';
+    expect(svControl.value[uncommonControl.name]).toBe('Hej världen');
+
+    const noControl = uncommonControl.getControl('no');
+    if (!noControl) throw 'No control found!';
+    expect(noControl.value[uncommonControl.name]).toBe('Hei verden');
   });
 });

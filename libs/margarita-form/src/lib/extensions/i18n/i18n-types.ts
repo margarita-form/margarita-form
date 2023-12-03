@@ -2,6 +2,10 @@
 import { CommonRecord, MFC, MFF, MFGF } from '../../margarita-form-types';
 import { I18NExtension } from './i18n-extension';
 
+export interface I18NExtensionConfig {
+  localizationOutput?: 'object' | 'array';
+}
+
 export interface Locale {
   title: string;
 }
@@ -41,6 +45,10 @@ export type I18NField<I18NType extends object> = {
 declare module '../../typings/expandable-types' {
   export interface Extensions {
     localization: I18NExtension;
+  }
+
+  export interface Configs {
+    localization: I18NExtensionConfig;
   }
 
   export interface FieldParams {

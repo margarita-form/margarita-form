@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import './storage-extension-types';
-import { Observable } from 'rxjs';
+import { Observable, filter, map } from 'rxjs';
 import { valueExists } from '../../helpers/check-value';
 import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { ExtensionBase } from '../base/extension-base';
+import { StorageExtensionConfig } from './storage-extension-types';
 
-export class StorageExtensionBase extends ExtensionBase<any> {
+export class StorageExtensionBase extends ExtensionBase {
+  public override config: StorageExtensionConfig = {
+    clearStorageOnSuccessfullSubmit: true,
+    storageKey: 'key',
+    storageStrategy: 'start',
+    resolveInitialValuesFromSearchParams: false,
+  };
+
   public static override extensionName: ExtensionName = 'storage';
   public override readonly requireRoot = true;
 
@@ -36,29 +44,33 @@ export class StorageExtensionBase extends ExtensionBase<any> {
   }
 
   public get storageKey(): string {
-    if (typeof this.root.config.storageKey === 'function') return this.root.config.storageKey(this.root);
-    const storageKey = this.root[this.root.config.storageKey || 'key'];
+    if (typeof this.config.storageKey === 'function') return this.config.storageKey(this.root);
+    const storageKey = this.root[this.config.storageKey || 'key'];
     if (!storageKey) throw new Error(`Could not get storage key from control!`);
     return storageKey;
   }
 
+  public transformFromStorageValue = <TYPE = any>(value: any): TYPE | undefined => {
+    try {
+      if (!valueExists(value)) return undefined;
+      if (typeof value === 'string' && /^[{[].+[}\]]$/g.test(value)) return JSON.parse(value);
+      return value as TYPE;
+    } catch (error) {
+      return value as TYPE;
+    }
+  };
+
   public override getValueSnapshot = <TYPE = any>(): TYPE | undefined => {
     const key = this.storageKey;
-    try {
-      const storageValue = this.getItem(key);
-      if (!storageValue) return undefined;
-      if (typeof storageValue === 'string' && /^[{[].+[}\]]$/g.test(storageValue)) return JSON.parse(storageValue);
-      return storageValue as TYPE;
-    } catch (error) {
-      console.error(`Could not get value!`, { control: this.root, error });
-      return undefined;
-    }
+
+    const storageValue = this.getItem(key);
+    return this.transformFromStorageValue(storageValue);
   };
 
   public override getValueObservable = <TYPE = any>(): Observable<TYPE | undefined> => {
     const key = this.storageKey;
     try {
-      return this.listenToChanges<TYPE>(key);
+      return this.listenToChanges<TYPE>(key).pipe(filter(valueExists), map(this.transformFromStorageValue));
     } catch (error) {
       throw { message: `Could not get value!`, error };
     }
@@ -95,6 +107,10 @@ export class StorageExtensionBase extends ExtensionBase<any> {
     } catch (error) {
       console.error(`Could not clear value!`, { control: this.root, error });
     }
+  }
+
+  public static override withConfig(config: StorageExtensionConfig) {
+    return super.withConfig(config);
   }
 }
 

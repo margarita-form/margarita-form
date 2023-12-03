@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { MFC, MFF, MargaritaForm, MargaritaFormField, createMargaritaForm } from '../../index';
+import { MFC, MFF, MargaritaFormField, createMargaritaForm } from '../../index';
 import { StorageExtensionBase } from '../extensions/storage/storage-extension-base';
 import { Observable, delay } from 'rxjs';
 
@@ -31,8 +31,6 @@ class ValueStorage extends StorageExtensionBase {
   }
 }
 
-MargaritaForm.addExtension(ValueStorage);
-
 describe('storage extension testing', () => {
   const fieldNameInitialValue = 'Hello world';
 
@@ -46,6 +44,7 @@ describe('storage extension testing', () => {
     const form = createMargaritaForm<MFF>({
       name: formName,
       fields: [commonField],
+      extensions: [ValueStorage],
     });
     const commonControl = form.getControl([commonField.name]);
     if (!commonControl) throw 'No control found!';
@@ -60,6 +59,43 @@ describe('storage extension testing', () => {
     const valueForm = createMargaritaForm<MFF>({
       name: formName,
       fields: [commonField],
+      extensions: [ValueStorage],
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const commonControlValue = valueForm.getControl([commonField.name]);
+    if (!commonControlValue) throw 'No control found!';
+    expect(commonControlValue.value).toBe(storageValue);
+    valueForm.cleanup();
+  });
+
+  it('Check that storage key can be name', async () => {
+    const formName = nanoid();
+    const withName = ValueStorage.withConfig({ storageKey: 'name' });
+    const form = createMargaritaForm<MFF>({
+      name: formName,
+      fields: [commonField],
+      extensions: [withName],
+    });
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+
+    expect(storage[formName]).toBeUndefined();
+    expect(commonControl.value).toBe(commonField.initialValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(commonControl.value).toBe(commonField.initialValue);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    commonControl.setValue(storageValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(storage[formName]).not.toBeUndefined();
+    expect(storage[formName]).toBe(`{"${commonField.name}":"${storageValue}"}`);
+    form.cleanup();
+
+    const valueForm = createMargaritaForm<MFF>({
+      name: formName,
+      fields: [commonField],
+      extensions: [withName],
     });
 
     await new Promise((resolve) => setTimeout(resolve, 1000));

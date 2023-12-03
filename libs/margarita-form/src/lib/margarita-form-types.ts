@@ -15,7 +15,6 @@ import {
   MargaritaFormStateErrors,
   MargaritaFormStateAllErrors,
   MargaritaFormStateChildren,
-  GenerateKeyFunction,
   MargaritaFormValidator,
   MargaritaFormControlContext,
 } from './typings/core-types';
@@ -32,7 +31,7 @@ import {
   ControlChangeName,
 } from './typings/helper-types';
 import { NotFunction, OrAny, OrString } from './typings/util-types';
-import { ControlContext, Extensions, FieldBase, FieldParams, Managers } from './typings/expandable-types';
+import { Configs, ControlContext, Extensions, FieldBase, FieldParams, Managers } from './typings/expandable-types';
 import { ExtensionInstanceLike, ExtensionsArray } from './typings/derived-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
@@ -114,13 +113,12 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   control?: MFC;
 }
 
-export interface MargaritaFormConfig {
+export interface MargaritaFormConfig extends Partial<Configs> {
   addMetadata?: boolean;
   afterChangesDebounceTime?: number;
   allowUnresolvedArrayChildNames?: boolean;
   allowConcurrentSubmits?: boolean;
   asyncFunctionWarningTimeout?: number;
-  clearStorageOnSuccessfullSubmit?: boolean;
   appendNodeValidationsToControl?: boolean;
   appendControlValidationsToNode?: boolean;
   resolveNodeTypeValidationsToControl?: boolean;
@@ -129,14 +127,9 @@ export interface MargaritaFormConfig {
   handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
-  storageKey?: 'key' | 'name' | GenerateKeyFunction;
-  storageStrategy?: 'start' | 'end';
-  syncronizationKey?: 'key' | 'name' | GenerateKeyFunction;
   transformUndefinedToNull?: boolean;
   allowEmptyString?: boolean;
-  localizationOutput?: 'object' | 'array';
   requiredNameCase?: false | 'camel' | 'snake' | 'kebab';
-  resolveInitialValuesFromSearchParams?: boolean;
   runTransformersForInitialValues?: boolean;
 }
 
