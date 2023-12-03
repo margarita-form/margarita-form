@@ -27,6 +27,23 @@
       "@margarita-form/core/managers/ref-manager": ["libs/margarita-form/src/lib/managers/margarita-form-ref-manager.ts"],
       "@margarita-form/core/managers/state-manager": ["libs/margarita-form/src/lib/managers/margarita-form-state-manager.ts"],
       "@margarita-form/core/managers/value-manager": ["libs/margarita-form/src/lib/managers/margarita-form-value-manager.ts"],
+      "@margarita-form/core/extensions/i18n-extension": ["libs/margarita-form/src/lib/extensions/i18n/i18n-extension.ts"],
+      "@margarita-form/core/extensions/storage-extension-base": [
+        "libs/margarita-form/src/lib/extensions/storage/storage-extension-base.ts"
+      ],
+      "@margarita-form/core/extensions/browser-local-storage": ["libs/margarita-form/src/lib/extensions/storage/browser-local-storage.ts"],
+      "@margarita-form/core/extensions/browser-search-params-storage": [
+        "libs/margarita-form/src/lib/extensions/storage/browser-search-params-storage.ts"
+      ],
+      "@margarita-form/core/extensions/browser-session-storage": [
+        "libs/margarita-form/src/lib/extensions/storage/browser-session-storage.ts"
+      ],
+      "@margarita-form/core/extensions/syncronization-extension-base": [
+        "libs/margarita-form/src/lib/extensions/syncronization/syncronization-extension-base.ts"
+      ],
+      "@margarita-form/core/extensions/browser-syncronization": [
+        "libs/margarita-form/src/lib/extensions/syncronization/browser-syncronization.ts"
+      ],
       "@margarita-form/react": ["libs/margarita-form-react/src/index.ts"]
     }
   },

@@ -1,6 +1,6 @@
 import { debounceTime, filter, startWith, switchMap } from 'rxjs';
 import { MFC, MargaritaFormControlContext, MargaritaFormResolverOutput } from '../margarita-form-types';
-import { checkAsync } from './async-checks';
+import { valueIsAsync } from './async-checks';
 
 type EffectCallback<VALUE = unknown> = (context: MargaritaFormControlContext) => MargaritaFormResolverOutput<VALUE>;
 type Unsubscribe = () => void;
@@ -17,7 +17,7 @@ export const fromChanges = <CONTROL extends MFC, VALUE = unknown>(
     switchMap(() => {
       const context = control.generateContext();
       const result = callback(context);
-      const resultIsAsync = checkAsync(result);
+      const resultIsAsync = valueIsAsync(result);
       return resultIsAsync ? (result as any) : Promise.resolve(result);
     })
   );

@@ -13,7 +13,7 @@ interface Person {
   emailAddresses: string[];
 }
 
-interface CustomFieldBase<Type, Value, Field extends MFF = never> extends MFF<Value, Field> {
+interface CustomFieldBase<Type, Value, Field extends MFF = never> extends MFF<{ value: Value; fields: Field }> {
   title: string;
   type: Type;
 }
@@ -23,17 +23,17 @@ type NumberField = CustomFieldBase<'number', number>;
 type AddressField = CustomFieldBase<'address', Address, StringField>;
 type StringArrayField = CustomFieldBase<'array', string[], StringField>;
 type PersonChildFields = StringField | NumberField | AddressField | StringArrayField;
-type PersonField = MFF<Person, PersonChildFields>;
+type PersonField = MFF<{ value: Person; fields: PersonChildFields }>;
 
 const form = createMargaritaForm<PersonField>({
   name: 'form-1',
   handleSubmit: ({ control, value }) => {
-    expectType<MFC<MFGF<Person>>>(control);
+    expectType<MFC<MFGF<{ value: Person }>>>(control);
     expectType<Person | undefined>(value);
   },
   validation: {
     custom: (context) => {
-      expectType<MFC<MFGF<Person>>>(context.control);
+      expectType<MFC<MFGF<{ value: Person }>>>(context.control);
       expectType<Person | undefined>(context.value);
     },
   },

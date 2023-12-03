@@ -2,7 +2,6 @@ import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
-import { MargaritaFormI18NExtension } from '../extensions/margarita-form-i18n-extension';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -13,6 +12,7 @@ declare module '../typings/expandable-types' {
 
 class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   public static override managerName: ManagerName = 'controls';
+
   private _buildWith: CONTROL['field'] | null = null;
   private _requireUniqueNames: boolean;
 
@@ -150,7 +150,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     fieldTemplate?: string | number | FIELD,
     overrides: Partial<FIELD> = {}
   ): null | MFC<FIELD> {
-    const { fields } = this.control.field as MFF<any, FIELD>;
+    const { fields } = this.control.field;
 
     const getField = (): undefined | FIELD => {
       if (fields) {
@@ -178,14 +178,21 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     });
   }
 
-  public addControl<FIELD extends MFF = CONTROL['field']>(field: FIELD, resetControl = false, emit = true): MFC<FIELD> {
+  public addControl<FIELD extends MFF = CONTROL['field']>(
+    field: FIELD,
+    resetControl = false,
+    emit = true,
+    allowModifiers = true
+  ): MFC<FIELD> {
     if (!field) throw 'No field provided!';
 
-    const shouldLocalize = field.localize && this.control.locales;
-
-    if (shouldLocalize) {
-      const localizedField = MargaritaFormI18NExtension.localizeField(this.control, field);
-      return this.addControl(localizedField as FIELD, resetControl, emit);
+    if (allowModifiers) {
+      for (const extension of this.control.activeExtensions) {
+        if (extension.modifyField) {
+          const modified = extension.modifyField(field, this.control) as FIELD;
+          if (modified) return this.addControl(modified, resetControl, emit, false);
+        }
+      }
     }
 
     if (this.control.expectGroup && !resetControl) {
@@ -201,6 +208,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       root: this.control.root,
       initialIndex: this.value.length,
       idStore: this.control._buildParams.idStore,
+      extensions: this.control._buildParams.extensions,
     });
 
     return this.appendControl(control as any, resetControl, emit);

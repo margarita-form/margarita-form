@@ -1,5 +1,5 @@
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { MFC } from '../margarita-form-types';
+import { MFC, MargaritaFormControlContext } from '../margarita-form-types';
 import { getResolverOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';
 
@@ -107,7 +107,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
       throw 'No submit handler for valid submit!';
     }
 
-    const context = this.control.generateContext(params);
+    const context = this.control.generateContext(params) as MargaritaFormControlContext<any>;
 
     if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(context));
 
@@ -137,7 +137,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   private async _resolveInvalidSubmitHandler<T>(params: T): Promise<any> {
     const { handleSubmit } = this.control.field;
-    const context = this.control.generateContext(params);
+    const context = this.control.generateContext(params) as MargaritaFormControlContext<any>;
     const defaultHandler = () => console.log('Form is invalid!', { form: this });
     if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
     if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(context));
@@ -172,7 +172,9 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
    * @internal
    */
   public _handleAfterSubmit = async () => {
-    if (this.control.config.clearStorageOnSuccessfullSubmit) this.control.extensions.storage.clearStorage();
+    this.control.activeExtensions.forEach(({ afterSubmit }) => {
+      if (afterSubmit) afterSubmit(this.control);
+    });
     await this._resolveSubmitHandler('afterSubmit');
   };
 }

@@ -1,13 +1,13 @@
 import { combineLatest, firstValueFrom, from, map, Observable, of } from 'rxjs';
 import { CommonRecord, MargaritaFormResolver, MargaritaFormResolverOutput, MFC, ResolverParams } from '../margarita-form-types';
-import { checkAsync } from './async-checks';
+import { valueIsAsync } from './async-checks';
 
 const stringMatcher = /\$\$([^:]+):?([^:]*)?:?([^:]*)/gi;
 
 type ResolverEntry<O = unknown> = [string, O];
 type ResolverOutputMap<O> = Record<PropertyKey, MargaritaFormResolverOutput<O>>;
 type ResolverOutputResultMap<O> = Record<PropertyKey, O>;
-type Resolvers<O> = Record<string, MargaritaFormResolver<O>>;
+type Resolvers<O> = CommonRecord<MargaritaFormResolver<O, any, any>>;
 type StrictResultFn = (getter: unknown, resolvers: unknown) => unknown;
 type Strict = boolean | StrictResultFn;
 
@@ -132,7 +132,7 @@ export const getResolverOutputPromise = <OUTPUT = unknown>(
 };
 
 export const getResolverOutputSyncronous = <OUTPUT = unknown>(resolver: MargaritaFormResolverOutput<undefined | OUTPUT>) => {
-  const isAsync = checkAsync(resolver);
+  const isAsync = valueIsAsync(resolver);
   if (isAsync) return undefined;
   return resolver;
 };

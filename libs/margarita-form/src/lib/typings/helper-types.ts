@@ -49,7 +49,7 @@ type ValueFromParent<PARENT_FIELD extends MFF, IDENTIFIER extends PropertyKey> =
 /**
  * Identifies the type of a child field based on value type.
  */
-type GetFieldOfType<FIELD_UNION, VALUE> = Extract<FIELD_UNION, MFF<VALUE>>;
+type GetFieldOfType<FIELD_UNION, VALUE> = Extract<FIELD_UNION, MFF<{ value: VALUE }>>;
 type WithValue<VALUE> = { initialValue: VALUE };
 
 /**
@@ -88,14 +88,6 @@ export type ChildControl<
     : never
   : never;
 
-/**
- * Transform i18n object to a record of where each value is mapped into a record of locales.
- */
-export type I18NField<LOCALES extends string, I18NType extends object> = {
-  [K in keyof I18NType]: {
-    [L in LOCALES]: I18NType[K];
-  };
-};
 export type OwnControlChangeName = ManagerName | 'initialize';
 export type ChildControlChangeName = `${string}-${OwnControlChangeName}`;
 export type ControlChangeName = OwnControlChangeName | ChildControlChangeName;

@@ -1,22 +1,23 @@
-import { Observable, debounceTime, firstValueFrom, map } from 'rxjs';
-import { CommonRecord, MFC, MFF, MargaritaFormField, MargaritaFormControlContext, StorageLike } from './margarita-form-types';
+import { debounceTime, firstValueFrom, map } from 'rxjs';
+import { MFC, MFF, MargaritaFormField, MargaritaFormControlContext } from './margarita-form-types';
 import { nanoid } from 'nanoid';
 import { SubmitError } from './classes/submit-error';
 import { createMargaritaForm } from '../index';
+import { I18NExtension } from './extensions/i18n/i18n-extension';
 
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';
 
-const commonField: MargaritaFormField<string, MFF> = {
+const commonField: MargaritaFormField<{ value: string; fields: MFF }> = {
   name: 'fieldName',
   initialValue: fieldNameInitialValue,
 };
 
-const undefinedField: MargaritaFormField<any, MFF> = {
+const undefinedField: MargaritaFormField<{ value: any; fields: MFF }> = {
   name: 'undefinedField',
 };
 
-const invalidField: MargaritaFormField<any, MFF> = {
+const invalidField: MargaritaFormField<{ value: any; fields: MFF }> = {
   name: 'invalidField',
   validation: {
     required: true,
@@ -56,7 +57,7 @@ const invalidField: MargaritaFormField<any, MFF> = {
   },
 };
 
-const uncommonField: MargaritaFormField<any, MFF> = {
+const uncommonField: MargaritaFormField<{ value: any; fields: MFF }> = {
   name: 'anotherOne',
   initialValue: anotherInitialValue,
 };
@@ -135,15 +136,13 @@ const withDoubleFlatField: MargaritaFormField = {
   fields: [doubleFlatField],
 };
 
-type ArrayField = { arrayName: unknown[] };
+type ArrayFieldValue = { arrayName: unknown[] };
 
 describe('margaritaForm', () => {
   it('#0-a Common getters', () => {
-    const locales = ['en', 'fi'];
     const form = createMargaritaForm<MFF>({
       name: nanoid(),
       fields: [groupField, arrayField, doubleValueField, onlyDefaultValueField, withFlatField, withDoubleFlatField],
-      locales,
     });
     const groupControl = form.getControl([groupField.name]);
     const arrayControl = form.getControl([arrayField.name]);
@@ -165,8 +164,6 @@ describe('margaritaForm', () => {
     expect(commonControl.root).toBe(form);
     expect(commonControl.parent).toBe(groupControl);
     expect(commonControl.config).toBe(form.config);
-    expect(commonControl.locales).toBe(form.locales);
-    expect(commonControl.locales).toBe(locales);
     expect(commonControl.name).toBe(commonField.name);
     expect(commonControl.field).toBe(commonField);
     expect(commonControl.index).toBe(0);
@@ -255,7 +252,7 @@ describe('margaritaForm', () => {
   });
 
   it('#4 Create two level schema with first level being an "array". Starting with 1 child.', () => {
-    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [arrayField] });
+    const form = createMargaritaForm<MFF<{ value: ArrayFieldValue }>>({ name: nanoid(), fields: [arrayField] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
 
     form.cleanup();
@@ -263,14 +260,14 @@ describe('margaritaForm', () => {
 
   it('#5 Create two level schema with first level being an "array". Starting with 0 children.', () => {
     const repeat0 = { ...arrayField, startWith: 0 };
-    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [repeat0] });
+    const form = createMargaritaForm<MFF<{ value: ArrayFieldValue }>>({ name: nanoid(), fields: [repeat0] });
     expect(form.value).not.toHaveProperty([arrayField.name]);
     form.cleanup();
   });
 
   it('#6 Create two level schema with first level being an "array". Starting with 2 children created with "startWith" property', () => {
     const repeat2 = { ...arrayField, startWith: 2 };
-    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [repeat2] });
+    const form = createMargaritaForm<MFF<{ value: ArrayFieldValue }>>({ name: nanoid(), fields: [repeat2] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fromParentValue);
     expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fromParentValue);
     expect(form.value.arrayName).toHaveLength(2);
@@ -280,7 +277,7 @@ describe('margaritaForm', () => {
   it('#7 Create two level schema with first level being an "array". Starting with 3 children created with parent\'s initial value', () => {
     const initialValue = { fieldName: fieldNameInitialValue };
     const initialValueOf3 = { ...arrayField, initialValue: [initialValue, initialValue, initialValue] };
-    const form = createMargaritaForm<MFF<ArrayField>>({ name: nanoid(), fields: [initialValueOf3] });
+    const form = createMargaritaForm<MFF<{ value: ArrayFieldValue }>>({ name: nanoid(), fields: [initialValueOf3] });
     expect(form.value).toHaveProperty([arrayField.name, '0', commonField.name], fieldNameInitialValue);
     expect(form.value).toHaveProperty([arrayField.name, '1', commonField.name], fieldNameInitialValue);
     expect(form.value).toHaveProperty([arrayField.name, '2', commonField.name], fieldNameInitialValue);
@@ -983,132 +980,13 @@ describe('margaritaForm', () => {
     form.cleanup();
   });
 
-  const storageValue = 'storage-value';
-
-  class ValueStorage implements StorageLike {
-    public value: null | CommonRecord = null;
-
-    constructor() {
-      //
-    }
-
-    getItem(key: string) {
-      if (!this.value || !this.value[key]) return null;
-      return this.value[key];
-    }
-
-    public setItem(key: string, value: any): void {
-      const current = this.value || {};
-      this.value = { ...current, [key]: value };
-    }
-    public removeItem(key: string): void {
-      this.value = { ...this.value, [key]: undefined };
-    }
-
-    public listenToChanges(key: string): Observable<any> {
-      return new Observable((subscriber) => {
-        const value = this.getItem(key);
-        return subscriber.next(value);
-      });
-    }
-  }
-
-  const storage = new ValueStorage();
-
-  it('#26 Check that storages work corretly', async () => {
-    const formName = nanoid();
-    const nullForm = createMargaritaForm<MFF>({
-      name: formName,
-      fields: [commonField],
-      useStorage: storage,
-    });
-    const commonControlNull = nullForm.getControl([commonField.name]);
-    if (!commonControlNull) throw 'No control found!';
-
-    expect(commonControlNull.value).toBe(commonField.initialValue);
-    nullForm.cleanup();
-
-    storage.setItem(nullForm.key, { [commonField.name]: storageValue });
-
-    const valueForm = createMargaritaForm<MFF>({
-      name: formName,
-      fields: [commonField],
-      useStorage: storage,
-    });
-
-    const commonControlValue = valueForm.getControl([commonField.name]);
-    if (!commonControlValue) throw 'No control found!';
-    expect(commonControlValue.value).toBe(storageValue);
-    valueForm.cleanup();
-  });
-
-  it('#27 Create fields that are localized', () => {
-    const form = createMargaritaForm<any>({
-      name: nanoid(),
-      currentLocale: 'fi',
-      locales: ['en', 'fi', 'sv'],
-      initialValue: {
-        [uncommonField.name]: {
-          en: 'Hello world',
-          fi: 'Hei maailma',
-          sv: 'Hej världen',
-        },
-      },
-      fields: [
-        {
-          ...commonField,
-          i18n: {
-            content: {
-              en: 'Hello world',
-              fi: 'Hei maailma',
-              sv: 'Hej världen',
-            },
-          },
-        },
-        {
-          ...uncommonField,
-          localize: true,
-          i18n: {
-            content: {
-              en: 'Hello world',
-              fi: 'Hei maailma',
-              sv: 'Hej världen',
-            },
-          },
-        },
-      ],
-    });
-
-    const commonControl = form.getControl([commonField.name]);
-    if (!commonControl) throw 'No control found!';
-    expect(commonControl.i18n.content).toBe('Hei maailma');
-
-    const uncommonControl = form.getControl([uncommonField.name]);
-    if (!uncommonControl) throw 'No control found!';
-    expect(uncommonControl.i18n.content).toBe('Hei maailma');
-    const enControl = uncommonControl.getControl('en');
-    if (!enControl) throw 'No control found!';
-    expect(enControl.value).toBe('Hello world');
-    expect(enControl.i18n.content).toBe('Hello world');
-    const fiControl = uncommonControl.getControl('fi');
-    if (!fiControl) throw 'No control found!';
-    expect(fiControl.value).toBe('Hei maailma');
-    expect(fiControl.i18n.content).toBe('Hei maailma');
-    const svControl = uncommonControl.getControl('sv');
-    if (!svControl) throw 'No control found!';
-    expect(svControl.value).toBe('Hej världen');
-    expect(svControl.i18n.content).toBe('Hej världen');
-
-    form.cleanup();
-  });
-
   it('#28 Check for TypeScript errors', () => {
-    interface CustomField extends MFF<string> {
+    interface CustomField extends MFF<{ value: string }> {
       type: 'custom';
       lorem?: 'ipsum';
       maybe?: boolean;
     }
-    interface OtherCustomField extends MFF<number> {
+    interface OtherCustomField extends MFF<{ value: number }> {
       type: 'joku-muu';
       lorem?: 'ipsum';
       maybe?: boolean;
@@ -1116,7 +994,7 @@ describe('margaritaForm', () => {
 
     type ChildField = CustomField | OtherCustomField;
 
-    interface RootField extends MFF<CustomValue, ChildField> {
+    interface RootField extends MFF<{ value: CustomValue; fields: ChildField }> {
       type: 'root';
       fields: ChildField[];
     }
@@ -1156,7 +1034,7 @@ describe('margaritaForm', () => {
   });
 
   it('#29 Test config overrides', () => {
-    const form = createMargaritaForm<MFF<any, MFF>>({
+    const form = createMargaritaForm<MFF<{ value: any; fields: MFF }>>({
       name: nanoid(),
       fields: [
         {
@@ -1182,7 +1060,7 @@ describe('margaritaForm', () => {
   });
 
   it('#29 Check that CMS like forms work', async () => {
-    const cmsData: MFF<any, MFF> = {
+    const cmsData: MFF<{ value: any; fields: MFF }> = {
       name: nanoid(),
       handleSubmit: '$$handleSubmitResolver',
       fields: [
@@ -1210,10 +1088,10 @@ describe('margaritaForm', () => {
       ],
     };
 
-    const form = createMargaritaForm<MFF<any, MFF>>({
+    const form = createMargaritaForm<MFF<{ value: any; fields: MFF }>>({
       ...cmsData,
       currentLocale: 'fi',
-      locales: ['en', 'fi'],
+      extensions: [I18NExtension],
       validators: {
         customValidator: ({ value }) => {
           // console.log('Custom validator called!');
@@ -1312,7 +1190,7 @@ describe('margaritaForm', () => {
   });
 
   it('#31-a Check that resets and clears work as should', async () => {
-    const form = createMargaritaForm<MFF<any, MFF<any>>>({
+    const form = createMargaritaForm({
       name: nanoid(),
       fields: [
         {
@@ -1427,7 +1305,7 @@ describe('margaritaForm', () => {
   });
 
   it('#31-b Check that resets and clears work as should', async () => {
-    const form = createMargaritaForm<MFF<any, MFF<any>>>({
+    const form = createMargaritaForm({
       name: nanoid(),
       initialValue: {
         text: 'text',

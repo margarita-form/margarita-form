@@ -1,4 +1,4 @@
-import { MargaritaFormResolver } from '../margarita-form-types';
+import { MargaritaFormResolver } from '../../margarita-form-types';
 
 export const localizeResolver: MargaritaFormResolver = (context) => {
   const { control, params } = context;

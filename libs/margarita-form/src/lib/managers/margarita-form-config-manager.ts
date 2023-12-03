@@ -8,13 +8,12 @@ declare module '../typings/expandable-types' {
   }
 }
 
-export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
+export const getDefaultConfig = (): MargaritaFormConfig => ({
   addMetadata: false,
   afterChangesDebounceTime: 10,
   allowUnresolvedArrayChildNames: false,
   allowConcurrentSubmits: false,
   asyncFunctionWarningTimeout: 5000,
-  clearStorageOnSuccessfullSubmit: true,
   appendNodeValidationsToControl: true,
   appendControlValidationsToNode: true,
   resolveNodeTypeValidationsToControl: true,
@@ -22,15 +21,10 @@ export const getDefaultConfig = (): Required<MargaritaFormConfig> => ({
   handleSuccesfullSubmit: 'disable',
   resetFormOnFieldChanges: false,
   showDebugMessages: false,
-  storageKey: 'key',
-  storageStrategy: 'start',
-  syncronizationKey: 'key',
   allowInvalidSubmit: false,
   transformUndefinedToNull: false,
   allowEmptyString: false,
-  localizationOutput: 'object',
   requiredNameCase: false,
-  resolveInitialValuesFromSearchParams: false,
   runTransformersForInitialValues: true,
 });
 

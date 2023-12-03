@@ -4,9 +4,8 @@ import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { CommonRecord, MFC, MFF } from '../margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
-import { SearchParamsStorage } from '../extensions/storages/search-params-storage';
 import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
-import { checkAsync } from '../helpers/async-checks';
+import { valueIsAsync } from '../helpers/async-checks';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -31,49 +30,22 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     this.initialized = true;
   }
 
-  public override onInitialize() {
-    const { storage, syncronization } = this.control.extensions;
-    const changes = this.changes.pipe(debounceTime(500), skip(1));
-    const { useStorage } = this.control;
-    const { useSyncronization } = this.control.field;
-    const shouldListen = useStorage || useSyncronization;
-    if (shouldListen) {
-      this.createSubscription(changes, () => {
-        if (useStorage) storage.saveStorageValue(this.value);
-        if (useSyncronization) syncronization.broadcastChange(this.value);
-      });
-    }
-
-    if (useSyncronization) {
-      try {
-        const subscription = syncronization.subscribeToMessages<CONTROL['value']>(
-          (value) => this.updateValue(value, true, false),
-          () => this.value
-        );
-
-        if (subscription && subscription.observable) {
-          this.createSubscription(subscription.observable.pipe(), subscription.handler);
-        }
-      } catch (error) {
-        console.error(`Could not syncronize value!`, { control: this.control, error });
-      }
-    }
-
-    if (useStorage) {
-      try {
-        const observable = storage.getStorageValueListener<CONTROL['value']>();
-
-        if (observable) {
-          this.createSubscription(observable.pipe(skip(1)), (value) => this.updateValue(value, false, true, false));
-        }
-      } catch (error) {
-        console.error(`Could not subscribe to storage changes!`, { control: this.control, error });
-      }
-    }
-  }
-
   public override afterInitialize() {
     this._handleValueResolver();
+
+    this.control.activeExtensions.forEach((extension) => {
+      const { getValueObservable, handleValueUpdate } = extension;
+      if (getValueObservable) {
+        this.createSubscription(getValueObservable(this.control), (value) => this.updateValue(value));
+      }
+
+      if (handleValueUpdate) {
+        const changes = this.changes.pipe(debounceTime(500), skip(1));
+        this.createSubscription(changes, () => {
+          handleValueUpdate(this.control, this.value);
+        });
+      }
+    });
   }
 
   private async _handleValueResolver() {
@@ -85,7 +57,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         control: this.control,
       });
 
-      const isAsync = checkAsync(resolver);
+      const isAsync = valueIsAsync(resolver);
       if (isAsync) {
         if (resolver instanceof Promise) {
           const value = await resolver;
@@ -134,21 +106,20 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     this.emitChange(this.value);
   }
 
-  public _getInitialValue(allowStorage = true) {
+  public _getInitialValue(allowExtensionValue = true) {
     const inheritedValue = this._getInheritedValue();
     if (inheritedValue !== undefined) return inheritedValue;
-
     if (valueExists(this.control.field.initialValue)) return this.control.field.initialValue;
 
-    if (allowStorage) {
-      const storageValue = this._getStorageValue();
-      if (storageValue !== undefined) return storageValue;
-    }
+    if (allowExtensionValue) {
+      const snapshots = this.control.activeExtensions.map(({ getValueSnapshot }) => getValueSnapshot);
 
-    if (this.control.config.resolveInitialValuesFromSearchParams) {
-      const { storage } = this.control.extensions;
-      const searchParamsValue = SearchParamsStorage.getItem(storage.storageKey);
-      if (searchParamsValue !== undefined) return searchParamsValue;
+      const result = snapshots.reduce((acc, snapshot) => {
+        if (valueExists(acc)) return acc;
+        if (!snapshot) return acc;
+        return snapshot(this.control);
+      }, undefined as unknown);
+      if (valueExists(result) && !valueIsAsync(result)) return result;
     }
 
     return this.control.field.defaultValue;
@@ -186,14 +157,6 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         return inheritedValue;
       }
     }
-  }
-
-  private _getStorageValue() {
-    const { storage } = this.control.extensions;
-
-    if (!storage.enabled) return undefined;
-    const storageValue = storage.getStorageValue();
-    return storageValue;
   }
 
   /**
