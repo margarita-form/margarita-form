@@ -16,6 +16,8 @@ import {
   getResolverOutputMapPromise,
   getResolverOutputMapSyncronous,
 } from '../helpers/resolve-function-outputs';
+import { createStates } from './state-manager-helpers/state-value';
+import { StateClass } from './state-manager-helpers/state-classes';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -36,155 +38,30 @@ export const fieldStateKeys: (keyof UserDefinedStates)[] = [
   'hidden',
 ];
 
-export class MargaritaFormStateValue implements MargaritaFormState {
-  constructor(public control: MFC) {}
-
-  // Single states
-
-  public errors: MargaritaFormStateErrors = {};
-  public allErrors: MargaritaFormStateAllErrors = [];
-  public children: MargaritaFormStateChildren = [];
-  public focus = false;
-
-  // Pair states
-
-  // Valid & invalid
-  public validating = true;
-  public validated = false;
-  public valid = true;
-  get invalid() {
-    return !this.valid;
-  }
-  set invalid(val: boolean) {
-    this.valid = !val;
-  }
-
-  // Pristine & dirty
-  public pristine = true;
-  get dirty() {
-    return !this.pristine;
-  }
-  set dirty(val: boolean) {
-    this.pristine = !val;
-  }
-
-  // Untouched & touched
-  public untouched = true;
-  get touched() {
-    return !this.untouched;
-  }
-  set touched(val: boolean) {
-    this.untouched = !val;
-  }
-
-  // Enabled & disabled
-  public enabled = true;
-  get disabled() {
-    return !this.enabled;
-  }
-  set disabled(val: boolean) {
-    this.enabled = !val;
-  }
-
-  // Editable & readonly
-  public editable = true;
-  get readOnly() {
-    return !this.editable;
-  }
-  set readOnly(val: boolean) {
-    this.editable = !val;
-  }
-
-  // Active & inactive
-  public active = true;
-  get inactive() {
-    return !this.active;
-  }
-  set inactive(val: boolean) {
-    this.active = !val;
-  }
-
-  // Visible & hidden
-  public visible = true;
-  get hidden() {
-    return !this.visible;
-  }
-  set hidden(val: boolean) {
-    this.visible = !val;
-  }
-
-  // Computed states
-
-  // Has value
-  get hasValue() {
-    return valueExists(this.control.value);
-  }
-
-  // Show error
-  private _shouldShowError: boolean | undefined = undefined;
-  get shouldShowError() {
-    if (this._shouldShowError === undefined) {
-      const interacted = this.touched || (this.dirty && !this.focus);
-      return this.validated && this.invalid && interacted;
-    }
-    return this._shouldShowError;
-  }
-  set shouldShowError(value) {
-    if (this._shouldShowError === undefined && value !== undefined) {
-      console.warn(
-        'Automatic value for "shouldShowError" disabled due to manual override! Enable automatic value by setting "shouldShowError" to "undefined"',
-        this
-      );
-    }
-    this._shouldShowError = value;
-  }
-
-  // Root states
-
-  get parentIsActive() {
-    if (this.control.isRoot) return this.active;
-    return this.control.parent.state.active;
-  }
-
-  private _submitted = false;
-  get submitted() {
-    return this._submitted;
-  }
-  set submitted(value: boolean) {
-    this._submitted = value;
-  }
-
-  private _submitting = false;
-  get submitting() {
-    return this._submitting;
-  }
-  set submitting(value: boolean) {
-    this._submitting = value;
-  }
-
-  private _submitResult: MargaritaFormState['submitResult'] = 'not-submitted';
-  get submitResult() {
-    return this._submitResult;
-  }
-  set submitResult(value: MargaritaFormState['submitResult']) {
-    this._submitResult = value;
-  }
-
-  private _submits = 0;
-  get submits() {
-    return this._submits;
-  }
-  set submits(value: number) {
-    this._submits = value;
-  }
-}
-
-class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateValue> {
+class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormState> {
   public static override managerName: ManagerName = 'state';
+  private states: StateClass[] = [];
 
   constructor(public override control: CONTROL) {
-    const value = new MargaritaFormStateValue(control);
-    super(control, value);
+    super(control, undefined);
+    createStates(this);
+  }
+
+  override get value(): any {
+    const json = this.toJSON();
+    return new Proxy(json, {
+      get: (target, key) => {
+        const state = this.findState(key as keyof MargaritaFormState);
+        if (!state) return undefined;
+        const json = state.toJSON();
+        return json[key as any];
+      },
+    }) as MargaritaFormState;
+  }
+  override set value(value) {
+    if (value) {
+      console.log('Setting value on state manager is not allowed', value);
+    }
   }
 
   public override prepare(): void {
@@ -305,7 +182,15 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   }
 
   private _setInitialState() {
-    const state = getResolverOutputMapSyncronous(this._mappedFieldState, this.control);
+    const mapped = this._mappedFieldState;
+    const state = getResolverOutputMapSyncronous(mapped, this.control);
+    Object.keys(mapped).reduce((acc, key) => {
+      if (acc[key] === undefined) {
+        const state = this.findState(key as keyof MargaritaFormState);
+        if (state) acc[key] = state.snapshotValue;
+      }
+      return acc;
+    }, state);
     this.updateStates(state);
     this._setInitialValidationState();
   }
@@ -345,7 +230,9 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
   private _updateStateValue(key: keyof MargaritaFormState, value: MargaritaFormState[typeof key]) {
     const changed = !isEqual(this.value[key], value);
     if (!changed) return false;
-    Object.assign(this.value, { [key]: value });
+    const state = this.findState(key);
+    if (!state) return false;
+    state.setValue(key, value as any);
     if (key === 'enabled') this._enableChildren(!!value);
     if (key === 'disabled') this._enableChildren(!value);
     if (key === 'dirty' && value === true) this._setParentDirty();
@@ -431,6 +318,34 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormStateVa
     if (!this.control.isRoot) {
       this.control.parent.updateStateValue('dirty', true);
     }
+  }
+
+  /**
+   * @internal
+   */
+  registerState(state: StateClass) {
+    this.states.push(state);
+  }
+
+  /**
+   * @internal
+   */
+  registerStates(states: StateClass[]) {
+    this.states.push(...states);
+  }
+
+  /**
+   * @internal
+   */
+  findState(key: keyof MargaritaFormState) {
+    return this.states.find((state) => state.matches(key));
+  }
+
+  toJSON(internal = false): MargaritaFormState {
+    return this.states.reduce((acc, state) => {
+      acc = { ...acc, ...state.toJSON(internal) };
+      return acc;
+    }, {} as MargaritaFormState);
   }
 }
 

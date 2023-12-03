@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import { createMargaritaForm } from '../../index';
 
 describe('State changes testing', () => {
@@ -36,6 +37,19 @@ describe('State changes testing', () => {
     expect(eventTriggered).toBe(true);
 
     sub.unsubscribe();
+    form.cleanup();
+  });
+
+  it('user defined active states should initally result to false when form is created', async () => {
+    const form = createMargaritaForm({
+      name: nanoid(),
+      active: async () => true,
+    });
+
+    expect(form.state.active).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(form.state.active).toBe(true);
+
     form.cleanup();
   });
 });

@@ -111,6 +111,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   children?: MargaritaFormStateChildren;
   hasValue?: boolean;
   control?: MFC;
+  parentIsActive?: boolean;
 }
 
 export interface MargaritaFormConfig extends Partial<Configs> {

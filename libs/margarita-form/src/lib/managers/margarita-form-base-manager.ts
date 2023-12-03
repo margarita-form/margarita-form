@@ -11,7 +11,13 @@ type ManagerChanges<VALUE> = Observable<ControlChange<MFF, VALUE>>;
 
 export class BaseManager<VALUE = unknown> {
   public static managerName: ManagerName;
-  public value: VALUE = undefined as any;
+  public _value: VALUE = undefined as any;
+  public get value(): VALUE {
+    return this._value;
+  }
+  public set value(value: VALUE) {
+    this._value = value;
+  }
   public subscriptions: Subscription[] = [];
 
   constructor(public control: MFC, public initialValue?: VALUE) {
