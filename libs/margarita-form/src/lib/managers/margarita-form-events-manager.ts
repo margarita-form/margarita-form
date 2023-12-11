@@ -42,10 +42,10 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
         const handleValidSubmit = async () => {
           try {
             await this._handleBeforeSubmit();
-            const submitResponse = await this._resolveValidSubmitHandler(params);
-            if (submitResponse instanceof SubmitError) {
+            const submitOutput = await this._resolveValidSubmitHandler(params);
+            if (submitOutput instanceof SubmitError) {
               await updateState({ submitResult: 'error', disabled: false });
-              return submitResponse.value;
+              return submitOutput.value;
             } else {
               await updateStateValue('submitResult', 'success');
               switch (config.handleSuccesfullSubmit) {
@@ -60,7 +60,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
                   break;
               }
               await this._handleAfterSubmit();
-              return submitResponse;
+              return submitOutput;
             }
           } catch (error) {
             console.error('Could not handle valid submit!', { formName: this.name, error });
@@ -69,28 +69,29 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
           }
         };
 
-        const submitResponse = await handleValidSubmit();
+        const submitOutput = await handleValidSubmit();
         const submits = state.submits || 0;
         await updateState({
           submitted: true,
           submitting: false,
           submits: submits + 1,
+          submitOutput,
         });
-        return submitResponse;
+        return submitOutput;
       }
 
       // Handle invalid submit
-      const invalidSubmitHandler = this._resolveInvalidSubmitHandler(params);
-      return await invalidSubmitHandler.finally(async () => {
-        const submits = state.submits || 0;
-        await updateState({
-          submitting: false,
-          submitted: true,
-          submitResult: 'form-invalid',
-          disabled: false,
-          submits: submits + 1,
-        });
+      const submitOutput = await this._resolveInvalidSubmitHandler(params);
+      const submits = state.submits || 0;
+      await updateState({
+        submitting: false,
+        submitted: true,
+        submitResult: 'form-invalid',
+        disabled: false,
+        submits: submits + 1,
+        submitOutput,
       });
+      return submitOutput;
     } catch (error) {
       return console.error('Could not handle form submit! Error: ', error);
     }

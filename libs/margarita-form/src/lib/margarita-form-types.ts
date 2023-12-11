@@ -97,6 +97,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   untouched: boolean;
   focus: boolean;
   touched: boolean;
+  valueChanged: boolean;
   validating: boolean;
   validated: boolean;
   valid: boolean;
@@ -106,6 +107,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   submitted: boolean;
   submits: number;
   submitResult: 'not-submitted' | 'form-invalid' | 'error' | 'success';
+  submitOutput: unknown;
   errors: MargaritaFormStateErrors;
   allErrors: MargaritaFormStateAllErrors;
   children?: MargaritaFormStateChildren;

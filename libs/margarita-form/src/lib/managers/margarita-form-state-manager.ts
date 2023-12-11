@@ -1,4 +1,4 @@
-import { combineLatest, distinctUntilChanged, map, shareReplay, skip, switchMap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, shareReplay, skip, switchMap, tap } from 'rxjs';
 import {
   MargaritaFormState,
   MargaritaFormStateErrors,
@@ -85,6 +85,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormState> 
     });
 
     const validationStateSubscriptionObservable = this.control.valueChanges.pipe(
+      tap(() => this.updateState('valueChanged', true)),
       switchMap(() => {
         if (!this.value.validating) this.updateState('validating', true);
         const validators = this.control.validators;

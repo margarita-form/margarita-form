@@ -8,21 +8,24 @@ export const createStates = (state: StateManager<MFC>) => {
   const allErrorsState = new GeneralState<MargaritaFormStateAllErrors>(state, 'allErrors', []);
   const childrenState = new GeneralState<MargaritaFormStateChildren>(state, 'children', []);
   const focusState = new GeneralState<boolean>(state, 'focus', false);
+  const valueChangedState = new GeneralState<boolean>(state, 'valueChanged', false);
   const validatingState = new GeneralState<boolean>(state, 'validating', false);
+  const validatedState = new GeneralState<boolean>(state, 'validated', false);
   const submittedState = new GeneralState<boolean>(state, 'submitted', false);
   const submittingState = new GeneralState<boolean>(state, 'submitting', false);
   const submitResultState = new GeneralState<unknown>(state, 'submitResult', 'not-submitted');
+  const submitOutputState = new GeneralState<unknown>(state, 'submitOutput', undefined);
   const submits = new GeneralState<number>(state, 'submits', 0);
 
   // Boolean pair states with current value only
   const validState = new BooleanPairState(state, 'valid', 'invalid');
   const pristineState = new BooleanPairState(state, 'pristine', 'dirty');
   const touchedState = new BooleanPairState(state, 'untouched', 'touched');
-  // With snapshot value override
   const activeState = new BooleanPairState(state, 'active', 'inactive').setSnapshotValue(false);
   const enabledState = new BooleanPairState(state, 'enabled', 'disabled').setSnapshotValue(false);
   const editableState = new BooleanPairState(state, 'editable', 'readOnly').setSnapshotValue(false);
   const visibleState = new BooleanPairState(state, 'visible', 'hidden').setSnapshotValue(false);
+
   // Derived states
   const hasValueState = new DerivedState<boolean>(state, 'hasValue', (state) => valueExists(state.control.value));
   const shouldShowErrorsState = new DerivedState<boolean>(state, 'shouldShowError', (state) => {
@@ -41,10 +44,13 @@ export const createStates = (state: StateManager<MFC>) => {
     allErrorsState,
     childrenState,
     focusState,
+    valueChangedState,
     validatingState,
+    validatedState,
     submittedState,
     submittingState,
     submitResultState,
+    submitOutputState,
     submits,
     activeState,
     validState,
