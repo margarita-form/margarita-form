@@ -24,14 +24,7 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "libs/margarita-form-angular/**/*.ts",
-          "libs/margarita-form-angular/**/*.html",
-          "libs/margarita-form-angular/package.json"
-        ]
-      }
+      "outputs": ["{options.outputFile}"]
     }
   }
 }
