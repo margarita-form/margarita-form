@@ -63,7 +63,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
               return submitOutput;
             }
           } catch (error) {
-            console.error('Could not handle valid submit!', { formName: this.name, error });
+            console.error('Could not handle valid submit!', { formName: this.control.name, error });
             await updateState({ submitResult: 'error', disabled: false });
             return error;
           }
