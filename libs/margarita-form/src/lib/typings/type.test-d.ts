@@ -167,3 +167,13 @@ const advField: AdvGroupField = {
 
 expectType<AdvGroupField>(advField);
 expectType<AdvField>(advField.fields![0]);
+
+const advForm = createMargaritaForm<AdvGroupField>(advField);
+
+expectType<AdvGroupField>(advForm.field);
+expectType<MFC<AdvField>[]>(advForm.controls);
+expectType<MFC<AdvField>[]>(advForm.activeControls);
+
+advForm.activeControls.map((control) => {
+  expectType<MFC<AdvField>>(control);
+});
