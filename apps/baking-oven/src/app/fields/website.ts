@@ -50,11 +50,11 @@ const websiteFields: CustomField[] = [
     },
   },
   {
-    type: 'text',
+    type: 'group',
     name: 'content',
     title: 'Page content array',
     localize: true,
-    config: { localizationOutput: 'array' },
+    config: { localization: { localizationOutput: 'array' } },
     handleLocalize: {
       parent: () => {
         return {
