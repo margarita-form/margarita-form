@@ -23,11 +23,11 @@
     "build:core": "nx run margarita-form:build",
     "build:react": "nx run margarita-form-react:build",
     "build:angular": "nx run margarita-form-angular:build",
-    "build:all": "npm run build:core && npm run build:react && npm run build:angular",
+    "build:all": "nx run-many -t build -p margarita-form-core margarita-form-react margarita-form-angular --skipNxCache --nxBail",
     "publish:core": "cd dist/libs/margarita-form && npm publish",
     "publish:react": "cd dist/libs/margarita-form-react && npm publish",
     "publish:angular": "cd dist/libs/margarita-form-angular && npm publish",
-    "publish:all-dev": "npm run test:all && npm run create-docs && lerna version --force-publish -m \"chore(release-dev): version %v\" && npm run build:all && node ./scripts/add-readme.mjs && node ./scripts/update-dependencies.mjs && npm run publish:core --tag dev && npm run publish:react --tag dev && npm run publish:angular --tag dev",
+    "publish:all-dev": "npm run test:all && npm run create-docs && lerna version --force-publish -m \"chore(release-dev): version %v\" && rm -rf dist && npm run build:all && node ./scripts/add-readme.mjs && node ./scripts/update-dependencies.mjs && npm run publish:core --tag dev && npm run publish:react --tag dev && npm run publish:angular --tag dev",
     "publish:all": "npm run test:all && npm run create-docs && lerna version --force-publish -m \"chore(release): version %v\" && npm run build:all && node ./scripts/add-readme.mjs && node ./scripts/update-dependencies.mjs && npm run publish:core && npm run publish:react && npm run publish:angular",
     "create-docs": "typedoc"
   },
@@ -121,4 +121,3 @@
     "packages/*"
   ]
 }
-
