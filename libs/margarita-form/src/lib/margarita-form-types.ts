@@ -42,7 +42,7 @@ export interface MargaritaFormChildField extends MFF {
 
 export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
   name: string;
-  fields?: FP['fields'] extends MFF ? FP['fields'][] : MFF[];
+  fields?: FP['fields'] extends object ? FP['fields'][] : MFF[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: FP['value'];

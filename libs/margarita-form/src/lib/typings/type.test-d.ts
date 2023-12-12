@@ -124,3 +124,46 @@ expectType<StringControl>(fieldSpecifiedControl);
 
 const controlSpecifiedControl = form.getControl<StringControl>(['address', 'street']);
 expectType<StringControl>(controlSpecifiedControl);
+
+// Advanced usage
+
+interface FieldBase<V = unknown, F extends MFF = never> extends MFF<{ value: V; fields: F }> {
+  title: string;
+}
+
+interface AdvStringField extends FieldBase<string> {
+  type: 'text';
+}
+
+interface AdvNumberField extends FieldBase<number> {
+  type: 'number';
+  min: number;
+}
+
+interface AdvGroupField extends FieldBase<object, AdvField> {
+  type: 'group';
+}
+
+type AdvField = AdvStringField | AdvNumberField | AdvGroupField;
+
+const advField: AdvGroupField = {
+  name: 'advField',
+  title: 'Adv field',
+  type: 'group',
+  fields: [
+    {
+      name: 'advStringField',
+      title: 'Adv string field',
+      type: 'text',
+    },
+    {
+      name: 'advNumberField',
+      title: 'Adv number field',
+      type: 'number',
+      min: 0,
+    },
+  ],
+};
+
+expectType<AdvGroupField>(advField);
+expectType<AdvField>(advField.fields![0]);
