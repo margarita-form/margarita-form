@@ -6,11 +6,7 @@ import { MFC, MFF, MFGF, createMargaritaForm } from '@margarita-form/core/light'
 type FieldOrControl = MFF | MFC<MFGF>;
 type AsField<T extends FieldOrControl> = T extends MFC ? T['field'] : T;
 
-export const useMargaritaForm = <FOC extends FieldOrControl = MFF>(
-  field: AsField<FOC>,
-  dependencies: DependencyList = [],
-  useCache = true
-) => {
+export const useMargaritaForm = <FOC extends MFGF = MFF>(field: AsField<FOC>, dependencies: DependencyList = [], useCache = true) => {
   type FIELD = AsField<FOC>;
 
   const fieldRef = useRef<null | FIELD>(null);
