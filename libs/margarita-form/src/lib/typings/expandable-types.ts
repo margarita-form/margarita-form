@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { ExtensionName } from './derived-types';
-
 export interface FieldParams {
   value?: any;
   fields?: any;
@@ -9,7 +7,7 @@ export interface FieldParams {
 }
 
 export interface FieldBase<PARAMS extends FieldParams> {
-  [key: string]: any;
+  // Empty by default
 }
 export interface ControlContext {
   [key: string]: unknown;
