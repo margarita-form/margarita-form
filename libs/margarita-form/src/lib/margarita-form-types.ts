@@ -3,7 +3,6 @@ import type { BehaviorSubject, Observable } from 'rxjs';
 import type { MargaritaFormControl } from './margarita-form-control';
 import type { MargaritaForm } from './margarita-form';
 import {
-  MargaritaFormFieldParams,
   MargaritaFormFieldAttributes,
   MargaritaFormResolvers,
   MargaritaFormValidators,
@@ -48,7 +47,6 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
   initialValue?: FP['value'];
   defaultValue?: FP['value'];
   valueResolver?: MargaritaFormResolver<FP['value']> | NotFunction;
-  params?: MargaritaFormFieldParams;
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;

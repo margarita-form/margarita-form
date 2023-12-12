@@ -25,8 +25,6 @@ export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL ex
   context: MargaritaFormControlContext<CONTROL, PARAMS>
 ) => MargaritaFormResolverOutput<OUTPUT>;
 
-export type MargaritaFormFieldParams = CommonRecord<NotFunction | MargaritaFormResolver<any>>;
-
 export type MargaritaFormFieldAttributes = CommonRecord<any | MargaritaFormResolver<any>>;
 
 export interface MargaritaFormValidatorResult {

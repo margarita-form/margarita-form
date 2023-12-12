@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, switchMap } from 'rxjs';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { CommonRecord, MFC, MFF } from '../margarita-form-types';
+import { CommonRecord, FieldParams, MFC, MFF, MargaritaFormResolver, NotFunction } from '../margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';
 
 export type Params = CommonRecord;
+export type MargaritaFormFieldParams = CommonRecord<NotFunction | MargaritaFormResolver<any>>;
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -21,21 +22,25 @@ declare module '../margarita-form-control' {
   }
 }
 
-// Implementation
-
-MargaritaFormControl.extend({
-  get params(): Params {
-    return this.managers.params.value;
-  },
-  get paramsChanges(): Observable<Params> {
-    return this.managers.params.changes;
-  },
-});
+declare module '../margarita-form-types' {
+  export interface MargaritaFormField<FP extends FieldParams = FieldParams> {
+    params?: MargaritaFormFieldParams;
+  }
+}
 
 export class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
   public static override managerName: ManagerName = 'params';
   constructor(public override control: CONTROL) {
     super(control, {});
+
+    MargaritaFormControl.extend({
+      get params(): Params {
+        return this.managers.params.value;
+      },
+      get paramsChanges(): Observable<Params> {
+        return this.managers.params.changes;
+      },
+    });
   }
 
   public override onInitialize() {
