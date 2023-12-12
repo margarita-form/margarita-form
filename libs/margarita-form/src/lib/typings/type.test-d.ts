@@ -140,16 +140,36 @@ interface AdvNumberField extends FieldBase<number> {
   min: number;
 }
 
+interface AdvOptionsField extends FieldBase<string> {
+  type: 'options';
+  options: string[];
+}
+
+interface AdvPreNamedField extends FieldBase<string> {
+  name: 'advPreNamedField';
+  type: 'static';
+}
+
 interface AdvGroupField extends FieldBase<object, AdvField> {
   type: 'group';
 }
 
-type AdvField = AdvStringField | AdvNumberField | AdvGroupField;
+type AdvField = AdvStringField | AdvNumberField | AdvOptionsField | AdvGroupField | AdvPreNamedField;
 
-const advField: AdvGroupField = {
-  name: 'advField',
+interface AdvFormValue {
+  advStringField: string;
+  advNumberField: number;
+  advOptionsField: string;
+  advPreNamedField: string;
+}
+
+interface AdvRootField extends FieldBase<AdvFormValue, AdvField> {
+  name: 'advRootField';
+}
+
+const advField: AdvRootField = {
+  name: 'advRootField',
   title: 'Adv field',
-  type: 'group',
   fields: [
     {
       name: 'advStringField',
@@ -162,18 +182,65 @@ const advField: AdvGroupField = {
       type: 'number',
       min: 0,
     },
+    {
+      name: 'advOptionsField',
+      title: 'Adv options field',
+      type: 'options',
+      options: ['a', 'b', 'c'],
+    },
   ],
 };
 
-expectType<AdvGroupField>(advField);
+expectType<AdvRootField>(advField);
 expectType<AdvField>(advField.fields![0]);
 
-const advForm = createMargaritaForm<AdvGroupField>(advField);
+const advForm = createMargaritaForm<AdvRootField>(advField);
 
-expectType<AdvGroupField>(advForm.field);
+expectType<AdvRootField>(advForm.field);
 expectType<MFC<AdvField>[]>(advForm.controls);
 expectType<MFC<AdvField>[]>(advForm.activeControls);
 
+const advStringFieldControl = advForm.getControl('advStringField');
+if (advStringFieldControl) {
+  expectType<AdvStringField | AdvOptionsField | AdvPreNamedField>(advStringFieldControl.field);
+  expectType<string>(advStringFieldControl.value);
+}
+
+const advNumberFieldControl = advForm.getControl('advNumberField');
+if (advNumberFieldControl) {
+  expectType<AdvNumberField>(advNumberFieldControl.field);
+  expectType<number>(advNumberFieldControl.value);
+}
+
+const advOptionsFieldControl = advForm.getControl<AdvOptionsField>('advOptionsField');
+if (advOptionsFieldControl) {
+  expectType<AdvOptionsField>(advOptionsFieldControl.field);
+  expectType<string>(advOptionsFieldControl.value);
+}
+
+const advPreNamedFieldControl = advForm.getControl('advPreNamedField');
+if (advPreNamedFieldControl) {
+  expectType<AdvPreNamedField>(advPreNamedFieldControl.field);
+  expectType<string>(advPreNamedFieldControl.value);
+}
+
 advForm.activeControls.map((control) => {
   expectType<MFC<AdvField>>(control);
+  const { field } = control;
+
+  if (field.type === 'options') {
+    expectType<AdvOptionsField>(field);
+  }
+
+  function isAdvOptionsField(field: AdvField): field is AdvOptionsField {
+    return 'options' in field;
+  }
+
+  if (isAdvOptionsField(field)) {
+    expectType<AdvOptionsField>(field);
+  }
+
+  if ('options' in field) {
+    expectType<AdvOptionsField>(field);
+  }
 });
