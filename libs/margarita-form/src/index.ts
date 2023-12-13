@@ -14,6 +14,8 @@ export * from './managers/params-manager';
 export * from './managers/ref-manager';
 export * from './managers/state-manager';
 export * from './managers/value-manager';
+export * from './managers/state-manager-helpers/state-classes';
+export * from './managers/state-manager-helpers/state-factory';
 
 export * from './classes/submit-error';
 
