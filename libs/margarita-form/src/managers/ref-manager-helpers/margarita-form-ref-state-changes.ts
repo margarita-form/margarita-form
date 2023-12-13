@@ -1,5 +1,5 @@
 import { combineLatest, distinctUntilChanged, fromEvent, map, switchMap } from 'rxjs';
-import type { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
+import type { MFC, MargaritaFormBaseElement } from '../../typings/margarita-form-types';
 import { getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../../helpers/resolve-function-outputs';
 
 export const handleElementBlur = <CONTROL extends MFC = MFC>({

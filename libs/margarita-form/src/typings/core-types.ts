@@ -1,5 +1,5 @@
 import type { Observable } from 'rxjs';
-import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
+import { MF, MFC, MFF, MFGF, MargaritaFormState } from './margarita-form-types';
 import { CommonRecord, NotFunction, OrString } from './util-types';
 import { Validation } from './resolver-types';
 import { ControlContext, Extensions } from './expandable-types';

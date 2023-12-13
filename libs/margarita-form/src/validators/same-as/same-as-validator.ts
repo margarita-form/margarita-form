@@ -1,5 +1,5 @@
 import { combineLatest, map } from 'rxjs';
-import { MargaritaFormValidator } from '../../margarita-form-types';
+import { MargaritaFormValidator } from '../../typings/margarita-form-types';
 
 declare module '../../typings/resolver-types' {
   export interface Validators {

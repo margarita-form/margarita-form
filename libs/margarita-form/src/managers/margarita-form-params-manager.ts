@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, switchMap } from 'rxjs';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { CommonRecord, FieldParams, MFC, MFF, MargaritaFormResolver, NotFunction } from '../margarita-form-types';
+import { CommonRecord, FieldParams, MFC, MFF, MargaritaFormResolver, NotFunction } from '../typings/margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';
 
@@ -22,7 +22,7 @@ declare module '../margarita-form-control' {
   }
 }
 
-declare module '../margarita-form-types' {
+declare module '../typings/margarita-form-types' {
   export interface MargaritaFormField<FP extends FieldParams = FieldParams> {
     params?: MargaritaFormFieldParams;
   }

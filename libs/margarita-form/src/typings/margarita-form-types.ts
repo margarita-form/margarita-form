@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { BehaviorSubject, Observable } from 'rxjs';
-import type { MargaritaFormControl } from './margarita-form-control';
-import type { MargaritaForm } from './margarita-form';
+import type { MargaritaFormControl } from '../margarita-form-control';
+import type { MargaritaForm } from '../margarita-form';
 import {
   MargaritaFormFieldAttributes,
   MargaritaFormResolvers,
@@ -16,7 +16,7 @@ import {
   MargaritaFormStateChildren,
   MargaritaFormValidator,
   MargaritaFormControlContext,
-} from './typings/core-types';
+} from './core-types';
 import {
   ControlValue,
   ChildField,
@@ -28,10 +28,10 @@ import {
   ChildControl,
   ControlChange,
   ControlChangeName,
-} from './typings/helper-types';
-import { NotFunction, OrAny, OrString } from './typings/util-types';
-import { Configs, ControlContext, Extensions, FieldBase, FieldParams, Managers } from './typings/expandable-types';
-import { ExtensionInstanceLike, ExtensionsArray } from './typings/derived-types';
+} from './helper-types';
+import { NotFunction, OrAny, OrString } from './util-types';
+import { Configs, ControlContext, Extensions, FieldBase, FieldParams, Managers } from './expandable-types';
+import { ExtensionInstanceLike, ExtensionsArray } from './derived-types';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
@@ -308,8 +308,8 @@ export type MFCCF<FIELD extends MFF> = MFC<ChildField<FIELD>>;
 
 // Export types
 
-export * from './typings/core-types';
-export * from './typings/expandable-types';
-export * from './typings/helper-types';
-export * from './typings/util-types';
-export * from './typings/derived-types';
+export * from './core-types';
+export * from './expandable-types';
+export * from './helper-types';
+export * from './util-types';
+export * from './derived-types';

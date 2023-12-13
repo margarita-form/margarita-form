@@ -1,4 +1,4 @@
-import { MFC, MargaritaFormBaseElement } from '../../margarita-form-types';
+import { MFC, MargaritaFormBaseElement } from '../../typings/margarita-form-types';
 
 export const setControlValidationFromNode = <CONTROL extends MFC = MFC>({
   node,

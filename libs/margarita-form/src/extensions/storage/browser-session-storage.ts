@@ -1,4 +1,4 @@
-import { MFC } from '../../margarita-form-types';
+import { MFC } from '../../typings/margarita-form-types';
 import { BrowserStorageBase } from './browser-storage';
 
 export class SessionStorageExtension extends BrowserStorageBase {

@@ -17,7 +17,7 @@ import {
   Managers,
   Extensions,
   ExtensionInstanceLike,
-} from './margarita-form-types';
+} from './typings/margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/margarita-form-config-manager';
 import { isEqual, isIncluded, valueExists } from './helpers/check-value';

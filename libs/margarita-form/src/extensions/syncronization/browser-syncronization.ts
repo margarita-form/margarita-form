@@ -1,5 +1,5 @@
 import { Observable, fromEvent, map } from 'rxjs';
-import { MFC } from '../../margarita-form-types';
+import { MFC } from '../../typings/margarita-form-types';
 import { SyncronizationExtensionBase } from './syncronization-extension-base';
 import { BroadcasterMessage } from './syncronization-extension-types';
 

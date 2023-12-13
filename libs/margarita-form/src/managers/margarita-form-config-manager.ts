@@ -1,5 +1,5 @@
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { MFC, MargaritaFormConfig } from '../margarita-form-types';
+import { MFC, MargaritaFormConfig } from '../typings/margarita-form-types';
 
 // Extends types
 declare module '../typings/expandable-types' {

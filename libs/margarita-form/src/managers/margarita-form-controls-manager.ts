@@ -1,7 +1,7 @@
 import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../margarita-form-types';
+import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../typings/margarita-form-types';
 
 // Extends types
 declare module '../typings/expandable-types' {

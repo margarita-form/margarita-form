@@ -1,4 +1,4 @@
-import type { MFF } from './margarita-form-types';
+import type { MFF } from './typings/margarita-form-types';
 import { MargaritaForm } from './margarita-form';
 
 /**

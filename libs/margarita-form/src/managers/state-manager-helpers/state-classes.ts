@@ -1,4 +1,4 @@
-import { MFC, MargaritaFormState } from '../../margarita-form-types';
+import { MFC, MargaritaFormState } from '../../typings/margarita-form-types';
 import { StateManager } from '../margarita-form-state-manager';
 
 export class GeneralState<V> {

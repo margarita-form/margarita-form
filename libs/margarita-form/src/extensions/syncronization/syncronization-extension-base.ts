@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, filter, map } from 'rxjs';
-import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
+import { ExtensionName, Extensions, MFC } from '../../typings/margarita-form-types';
 import { BroadcasterMessage, SyncronizationExtensionConfig } from './syncronization-extension-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { isEqual } from '../../helpers/check-value';

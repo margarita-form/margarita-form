@@ -1,5 +1,5 @@
 import { valueExists } from '../../helpers/check-value';
-import { MFC, MargaritaFormStateAllErrors, MargaritaFormStateChildren, MargaritaFormStateErrors } from '../../margarita-form-types';
+import { MFC, MargaritaFormStateAllErrors, MargaritaFormStateChildren, MargaritaFormStateErrors } from '../../typings/margarita-form-types';
 import { StateManager } from '../margarita-form-state-manager';
 import { BooleanPairState, DerivedState, GeneralState } from './state-classes';
 

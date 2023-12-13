@@ -1,7 +1,7 @@
 import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { CommonRecord, MFC, MFF } from '../margarita-form-types';
+import { CommonRecord, MFC, MFF } from '../typings/margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';

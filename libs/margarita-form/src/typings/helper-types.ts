@@ -1,5 +1,5 @@
 import { ManagerName } from '../managers/margarita-form-base-manager';
-import { MF, MFC, MFF, MFGF, MargaritaFormState } from '../margarita-form-types';
+import { MF, MFC, MFF, MFGF, MargaritaFormState } from './margarita-form-types';
 import { OrString, OrNumber, OrT } from './util-types';
 
 export type StateKey = keyof MargaritaFormState;

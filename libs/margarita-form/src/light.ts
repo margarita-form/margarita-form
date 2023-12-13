@@ -1,7 +1,7 @@
 export * from './margarita-form';
 export * from './create-margarita-form';
 export * from './margarita-form-control';
-export * from './margarita-form-types';
+export * from './typings/margarita-form-types';
 export * from './validators';
 
 export * from './managers/margarita-form-base-manager';

@@ -1,5 +1,5 @@
 import { MargaritaFormControl } from '../../margarita-form-control';
-import { CommonRecord, ExtensionName, MFC, MFF, MFGF } from '../../margarita-form-types';
+import { CommonRecord, ExtensionName, MFC, MFF, MFGF } from '../../typings/margarita-form-types';
 import { ExtensionBase } from '../base/extension-base';
 import { I18NExtensionConfig, LocaleNames, Locales, MargaritaFormHandleLocalize } from './i18n-types';
 

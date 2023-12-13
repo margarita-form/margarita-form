@@ -1,5 +1,5 @@
 import { combineLatest, firstValueFrom, from, map, Observable, of } from 'rxjs';
-import { CommonRecord, MargaritaFormResolver, MargaritaFormResolverOutput, MFC, ResolverParams } from '../margarita-form-types';
+import { CommonRecord, MargaritaFormResolver, MargaritaFormResolverOutput, MFC, ResolverParams } from '../typings/margarita-form-types';
 import { valueIsAsync } from './async-checks';
 
 const stringMatcher = /\$\$([^:]+):?([^:]*)?:?([^:]*)/gi;

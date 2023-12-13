@@ -8,7 +8,7 @@ import {
   UserDefinedStates,
   MargaritaFormStateAllErrors,
   MargaritaFormValidatorResult,
-} from '../margarita-form-types';
+} from '../typings/margarita-form-types';
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
 import {

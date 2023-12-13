@@ -1,5 +1,5 @@
 import { map } from 'rxjs';
-import { MargaritaFormValidator, MargaritaFormValidatorResult } from '../../margarita-form-types';
+import { MargaritaFormValidator, MargaritaFormValidatorResult } from '../../typings/margarita-form-types';
 import { getResolverOutputMapObservable } from '../../helpers/resolve-function-outputs';
 
 declare module '../../typings/resolver-types' {

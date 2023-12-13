@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Observable, Subscription, debounceTime, filter, firstValueFrom, map, shareReplay, startWith } from 'rxjs';
-import { ControlChange, MFC, MFF, Managers } from '../margarita-form-types';
+import { ControlChange, MFC, MFF, Managers } from '../typings/margarita-form-types';
 
 export interface Subscribable<VALUE = unknown> {
   observable: Observable<VALUE>;

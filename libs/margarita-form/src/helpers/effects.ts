@@ -1,5 +1,5 @@
 import { debounceTime, filter, startWith, switchMap } from 'rxjs';
-import { MFC, MargaritaFormControlContext, MargaritaFormResolverOutput } from '../margarita-form-types';
+import { MFC, MargaritaFormControlContext, MargaritaFormResolverOutput } from '../typings/margarita-form-types';
 import { valueIsAsync } from './async-checks';
 
 type EffectCallback<VALUE = unknown> = (context: MargaritaFormControlContext) => MargaritaFormResolverOutput<VALUE>;

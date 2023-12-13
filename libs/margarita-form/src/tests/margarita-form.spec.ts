@@ -1,9 +1,9 @@
 import { debounceTime, firstValueFrom, map } from 'rxjs';
-import { MFC, MFF, MargaritaFormField, MargaritaFormControlContext } from './margarita-form-types';
+import { MFC, MFF, MargaritaFormField, MargaritaFormControlContext } from '../typings/margarita-form-types';
 import { nanoid } from 'nanoid';
-import { SubmitError } from './classes/submit-error';
-import { createMargaritaForm } from './index';
-import { I18NExtension } from './extensions/i18n/i18n-extension';
+import { SubmitError } from '../classes/submit-error';
+import { createMargaritaForm } from '../index';
+import { I18NExtension } from '../extensions/i18n/i18n-extension';
 
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';

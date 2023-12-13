@@ -1,4 +1,4 @@
-import type { Extensions, MFF } from './margarita-form-types';
+import type { Extensions, MFF } from './typings/margarita-form-types';
 import { MargaritaFormControl } from './margarita-form-control';
 
 export class MargaritaForm<FIELD extends MFF = MFF> extends MargaritaFormControl<FIELD> {

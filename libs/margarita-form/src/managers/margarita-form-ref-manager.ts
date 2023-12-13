@@ -1,5 +1,5 @@
 import { BaseManager, ManagerName } from './margarita-form-base-manager';
-import { MFC, MargaritaFormBaseElement } from '../margarita-form-types';
+import { MFC, MargaritaFormBaseElement } from '../typings/margarita-form-types';
 import {
   handleFormElementFormData,
   handleFormElementReset,

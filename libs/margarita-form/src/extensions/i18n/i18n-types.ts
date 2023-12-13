@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CommonRecord, MFC, MFF, MFGF } from '../../margarita-form-types';
+import { CommonRecord, MFC, MFF, MFGF } from '../../typings/margarita-form-types';
 import { I18NExtension } from './i18n-extension';
 
 export interface I18NExtensionConfig {

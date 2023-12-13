@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ExtensionName, MFC } from '../../margarita-form-types';
+import { ExtensionName, MFC } from '../../typings/margarita-form-types';
 
 export class ExtensionBase {
   public static extensionName: ExtensionName;

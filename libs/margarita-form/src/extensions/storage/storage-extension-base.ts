@@ -2,7 +2,7 @@
 import './storage-extension-types';
 import { Observable, filter, map } from 'rxjs';
 import { valueExists } from '../../helpers/check-value';
-import { ExtensionName, Extensions, MFC } from '../../margarita-form-types';
+import { ExtensionName, Extensions, MFC } from '../../typings/margarita-form-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { ExtensionBase } from '../base/extension-base';
 import { StorageExtensionConfig } from './storage-extension-types';

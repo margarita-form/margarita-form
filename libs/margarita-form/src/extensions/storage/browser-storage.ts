@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { MFC } from '../../margarita-form-types';
+import { MFC } from '../../typings/margarita-form-types';
 import { StorageExtensionBase } from './storage-extension-base';
 
 export class BrowserStorageBase extends StorageExtensionBase {
