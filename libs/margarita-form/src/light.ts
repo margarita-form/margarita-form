@@ -6,6 +6,13 @@ export * from './validators';
 
 export * from './managers/base-manager';
 export * from './managers/core-managers';
+export * from './managers/config-manager';
+export * from './managers/controls-manager';
+export * from './managers/field-manager';
+export * from './managers/state-manager';
+export * from './managers/value-manager';
+export * from './managers/state-manager-helpers/state-classes';
+export * from './managers/state-manager-helpers/state-factory';
 
 export * from './classes/submit-error';
 
