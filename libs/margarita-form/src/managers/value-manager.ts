@@ -1,6 +1,6 @@
 import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
-import { BaseManager, ManagerName } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './base-manager';
 import { CommonRecord, MFC, MFF } from '../typings/margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';

@@ -1,5 +1,5 @@
 import { MFC, MargaritaFormState } from '../../typings/margarita-form-types';
-import { StateManager } from '../margarita-form-state-manager';
+import { StateManager } from '../state-manager';
 
 export class GeneralState<V> {
   public currentValue: V = undefined as V;

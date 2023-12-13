@@ -1,4 +1,4 @@
-import { BaseManager, ManagerName } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './base-manager';
 import { MFC, MFF } from '../typings/margarita-form-types';
 
 // Extends types

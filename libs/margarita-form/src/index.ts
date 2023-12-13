@@ -5,15 +5,15 @@ export * from './typings/margarita-form-types';
 export * from './validators';
 export * from './validators/add-default-validators';
 
-export * from './managers/margarita-form-base-manager';
-export * from './managers/margarita-form-default-managers';
-export * from './managers/margarita-form-config-manager';
-export * from './managers/margarita-form-controls-manager';
-export * from './managers/margarita-form-field-manager';
-export * from './managers/margarita-form-params-manager';
-export * from './managers/margarita-form-ref-manager';
-export * from './managers/margarita-form-state-manager';
-export * from './managers/margarita-form-value-manager';
+export * from './managers/base-manager';
+export * from './managers/default-managers';
+export * from './managers/config-manager';
+export * from './managers/controls-manager';
+export * from './managers/field-manager';
+export * from './managers/params-manager';
+export * from './managers/ref-manager';
+export * from './managers/state-manager';
+export * from './managers/value-manager';
 
 export * from './classes/submit-error';
 

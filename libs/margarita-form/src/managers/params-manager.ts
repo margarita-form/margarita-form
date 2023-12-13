@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Observable, switchMap } from 'rxjs';
-import { BaseManager, ManagerName } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './base-manager';
 import { CommonRecord, FieldParams, MFC, MFF, MargaritaFormResolver, NotFunction } from '../typings/margarita-form-types';
 import { getResolverOutputMapObservable } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';

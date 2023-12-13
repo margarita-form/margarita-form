@@ -4,8 +4,8 @@ export * from './margarita-form-control';
 export * from './typings/margarita-form-types';
 export * from './validators';
 
-export * from './managers/margarita-form-base-manager';
-export * from './managers/margarita-form-core-managers';
+export * from './managers/base-manager';
+export * from './managers/core-managers';
 
 export * from './classes/submit-error';
 

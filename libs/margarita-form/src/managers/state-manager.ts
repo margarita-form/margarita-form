@@ -9,7 +9,7 @@ import {
   MargaritaFormStateAllErrors,
   MargaritaFormValidatorResult,
 } from '../typings/margarita-form-types';
-import { BaseManager, ManagerName } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
 import {
   getResolverOutputMapObservable,

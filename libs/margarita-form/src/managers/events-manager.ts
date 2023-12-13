@@ -1,4 +1,4 @@
-import { BaseManager, ManagerName } from './margarita-form-base-manager';
+import { BaseManager, ManagerName } from './base-manager';
 import { MFC, MargaritaFormControlContext } from '../typings/margarita-form-types';
 import { getResolverOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';

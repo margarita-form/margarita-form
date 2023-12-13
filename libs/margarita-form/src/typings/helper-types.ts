@@ -1,4 +1,4 @@
-import { ManagerName } from '../managers/margarita-form-base-manager';
+import { ManagerName } from '../managers/base-manager';
 import { MF, MFC, MFF, MFGF, MargaritaFormState } from './margarita-form-types';
 import { OrString, OrNumber, OrT } from './util-types';
 
