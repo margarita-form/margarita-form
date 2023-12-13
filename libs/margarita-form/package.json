@@ -36,63 +36,63 @@
       "import": "./validators/add-all-validators.js",
       "require": "./validators/add-all-validators.cjs"
     },
-    "./managers/config": {
+    "./managers/config-manager": {
       "import": "./managers/config-manager.js",
       "require": "./managers/config-manager.cjs"
     },
-    "./managers/controls": {
+    "./managers/controls-manager": {
       "import": "./managers/controls-manager.js",
       "require": "./managers/controls-manager.cjs"
     },
-    "./managers/events": {
+    "./managers/events-manager": {
       "import": "./managers/events-manager.js",
       "require": "./managers/events-manager.cjs"
     },
-    "./managers/field": {
+    "./managers/field-manager": {
       "import": "./managers/field-manager.js",
       "require": "./managers/field-manager.cjs"
     },
-    "./managers/params": {
+    "./managers/params-manager": {
       "import": "./managers/params-manager.js",
       "require": "./managers/params-manager.cjs"
     },
-    "./managers/ref": {
+    "./managers/ref-manager": {
       "import": "./managers/ref-manager.js",
       "require": "./managers/ref-manager.cjs"
     },
-    "./managers/state": {
+    "./managers/state-manager": {
       "import": "./managers/state-manager.js",
       "require": "./managers/state-manager.cjs"
     },
-    "./managers/value": {
+    "./managers/value-manager": {
       "import": "./managers/value-manager.js",
       "require": "./managers/value-manager.cjs"
     },
-    "./extensions/i18n-extension": {
+    "./extensions/i18n/i18n-extension": {
       "import": "./extensions/i18n-extension.js",
       "require": "./extensions/i18n-extension.cjs"
     },
-    "./extensions/storage-extension-base": {
+    "./extensions/storage/storage-extension-base": {
       "import": "./extensions/storage-extension-base.js",
       "require": "./extensions/storage-extension-base.cjs"
     },
-    "./extensions/browser-local-storage": {
+    "./extensions/storage/browser-local-storage": {
       "import": "./extensions/browser-local-storage.js",
       "require": "./extensions/browser-local-storage.cjs"
     },
-    "./extensions/browser-search-params-storage": {
+    "./extensions/storage/browser-search-params-storage": {
       "import": "./extensions/browser-search-params-storage.js",
       "require": "./extensions/browser-search-params-storage.cjs"
     },
-    "./extensions/browser-session-storage": {
+    "./extensions/storage/browser-session-storage": {
       "import": "./extensions/browser-session-storage.js",
       "require": "./extensions/browser-session-storage.cjs"
     },
-    "./extensions/syncronization-extension-base": {
+    "./extensions/syncronization/syncronization-extension-base": {
       "import": "./extensions/syncronization-extension-base.js",
       "require": "./extensions/syncronization-extension-base.cjs"
     },
-    "./extensions/browser-syncronization": {
+    "./extensions/syncronization/browser-syncronization": {
       "import": "./extensions/browser-syncronization.js",
       "require": "./extensions/browser-syncronization.cjs"
     }

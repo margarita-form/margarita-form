@@ -55,13 +55,13 @@ export default defineConfig({
         'managers/state-manager': 'src/managers/state-manager.ts',
         'managers/value-manager': 'src/managers/value-manager.ts',
         /* Extensions */
-        'extensions/i18n-extension': 'src/extensions/i18n/i18n-extension.ts',
-        'extensions/storage-extension-base': 'src/extensions/storage/storage-extension-base.ts',
-        'extensions/browser-local-storage': 'src/extensions/storage/browser-local-storage.ts',
-        'extensions/browser-search-params-storage': 'src/extensions/storage/browser-search-params-storage.ts',
-        'extensions/browser-session-storage': 'src/extensions/storage/browser-session-storage.ts',
-        'extensions/syncronization-extension-base': 'src/extensions/syncronization/syncronization-extension-base.ts',
-        'extensions/browser-syncronization': 'src/extensions/syncronization/browser-syncronization.ts',
+        'extensions/i18n/i18n-extension': 'src/extensions/i18n/i18n-extension.ts',
+        'extensions/storage/storage-extension-base': 'src/extensions/storage/storage-extension-base.ts',
+        'extensions/storage/browser-local-storage': 'src/extensions/storage/browser-local-storage.ts',
+        'extensions/storage/browser-search-params-storage': 'src/extensions/storage/browser-search-params-storage.ts',
+        'extensions/storage/browser-session-storage': 'src/extensions/storage/browser-session-storage.ts',
+        'extensions/syncronization/syncronization-extension-base': 'src/extensions/syncronization/syncronization-extension-base.ts',
+        'extensions/syncronization/browser-syncronization': 'src/extensions/syncronization/browser-syncronization.ts',
       },
       fileName: (format, entryName) => {
         const ext = format === 'es' ? 'js' : format;
