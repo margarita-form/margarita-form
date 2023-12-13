@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MF, MFF, addFormToCache, createMargaritaForm, getFormFromCache, removeFormFromCache } from '@margarita-form/core/light';
+import { MF, MFF, MFGF, addFormToCache, createMargaritaForm, getFormFromCache, removeFormFromCache } from '@margarita-form/core/light';
 
 @Injectable()
 export class MargaritaFormService {
@@ -13,7 +13,7 @@ export class MargaritaFormService {
     this._currentForm = form;
   };
 
-  public createForm = <F extends MFF>(formField: F): MF<F> => {
+  public createForm = <F extends MFGF = MFF>(formField: F): MF<F> => {
     const form = createMargaritaForm(formField);
     this.setForm(form);
     return this.form as MF<F>;

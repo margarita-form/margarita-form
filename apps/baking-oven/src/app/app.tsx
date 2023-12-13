@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useMargaritaForm, MargaritaFormField, Form, MFC, MargaritaFormControl } from '@margarita-form/react';
+import { useMargaritaForm, MargaritaFormField, Form, MFC, MargaritaFormControl, MFF } from '@margarita-form/react';
 import { useState } from 'react';
 import { recipeConfig } from './fields/receipe';
 import { websiteConfig } from './fields/website';
@@ -8,8 +8,17 @@ import { ControlError } from './components/error';
 import { lifecycleConfig } from './fields/lifecycle';
 import { conditionalsConfig } from './fields/conditionals';
 import { helloWorldConfig } from './fields/hello-world';
+import { I18NExtension, Locale } from '@margarita-form/core/extensions/i18n-extension';
+
+declare module '@margarita-form/core/extensions/i18n-extension' {
+  export interface Locales {
+    en: Locale;
+    fi: Locale;
+  }
+}
 
 MargaritaFormControl.addManager(CustomManager);
+MargaritaFormControl.addExtension(I18NExtension);
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;
@@ -87,28 +96,28 @@ interface I18NContent {
   description?: string;
 }
 
-export interface CustomFieldBase {
-  type: 'text' | 'number' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group' | 'repeatable' | 'group' | 'localized' | 'localized-array';
+type DefaultTypes = 'text' | 'number' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group';
+export interface CustomFieldBase<TYPE extends string = DefaultTypes, VALUE = unknown, FIELDS extends MFF = any>
+  extends MargaritaFormField<{ value: VALUE; fields: FIELDS; i18n: I18NContent }> {
+  type: TYPE;
   title: string;
   options?: { label: string; value: string }[];
 }
 
-const locales = ['en', 'fi'] as const;
-type Locales = (typeof locales)[number];
-
-export interface ConditionalsField extends CustomFieldBase, MargaritaFormField<unknown, GroupField, Locales, I18NContent> {}
-
-export interface GroupField extends CustomFieldBase, MargaritaFormField<unknown, CustomField, Locales, I18NContent> {}
-
-export interface StepsField extends CustomFieldBase, MargaritaFormField<unknown, OtherField, Locales, I18NContent> {}
-
-export interface OtherField extends CustomFieldBase, MargaritaFormField<unknown, StepsField, Locales, I18NContent> {}
-
-export type CustomField = StepsField | OtherField;
+export type CommonField = CustomFieldBase<DefaultTypes, unknown, never>;
+export type GroupField = CustomFieldBase<'group', unknown, CustomField>;
+export type StepsField = CustomFieldBase<'repeatable', unknown, CustomField>;
+export type LocalizedField = CustomFieldBase<'localized', unknown, CustomField>;
+export type LocalizedArrayField = CustomFieldBase<'localized-array', unknown, CustomField>;
+export type CustomField = CommonField | GroupField | StepsField | LocalizedField | LocalizedArrayField;
 
 type FormValue = Record<string, unknown>;
+type RootField = MargaritaFormField<{ value: FormValue; fields: CustomField }>;
 
-type RootField = MargaritaFormField<FormValue, CustomField, Locales>;
+const locales = {
+  en: { title: 'English' },
+  fi: { title: 'Finnish' },
+} as const;
 
 export function App({ children }: { children?: React.ReactNode }) {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
@@ -129,7 +138,7 @@ export function App({ children }: { children?: React.ReactNode }) {
       },
       child: ({ locale }) => {
         return {
-          title: locale.toUpperCase(),
+          title: locale.title.toUpperCase(),
         };
       },
     },

@@ -1,16 +1,23 @@
-export * from './lib/margarita-form';
-export * from './lib/create-margarita-form';
-export * from './lib/margarita-form-control';
-export * from './lib/margarita-form-types';
-export * from './lib/validators';
+export * from './margarita-form';
+export * from './create-margarita-form';
+export * from './margarita-form-control';
+export * from './typings/margarita-form-types';
+export * from './validators';
 
-export * from './lib/managers/margarita-form-base-manager';
-export * from './lib/managers/margarita-form-core-managers';
+export * from './managers/base-manager';
+export * from './managers/core-managers';
+export * from './managers/config-manager';
+export * from './managers/controls-manager';
+export * from './managers/field-manager';
+export * from './managers/state-manager';
+export * from './managers/value-manager';
+export * from './managers/state-manager-helpers/state-classes';
+export * from './managers/state-manager-helpers/state-factory';
 
-export * from './lib/classes/submit-error';
+export * from './classes/submit-error';
 
-export * from './lib/helpers/check-value';
-export * from './lib/helpers/to-hash';
-export * from './lib/helpers/async-checks';
-export * from './lib/helpers/resolve-function-outputs';
-export * from './lib/helpers/effects';
+export * from './helpers/check-value';
+export * from './helpers/to-hash';
+export * from './helpers/async-checks';
+export * from './helpers/resolve-function-outputs';
+export * from './helpers/effects';

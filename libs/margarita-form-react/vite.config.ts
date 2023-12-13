@@ -5,6 +5,7 @@ import dts from 'vite-plugin-dts';
 import { join } from 'path';
 
 export default defineConfig({
+  root: __dirname,
   cacheDir: '../../node_modules/.vite/margarita-form-react',
 
   plugins: [
@@ -32,6 +33,9 @@ export default defineConfig({
   // Configuration for building your library.
   // See: https://vitejs.dev/guide/build.html#library-mode
   build: {
+    outDir: '../../dist/libs/margarita-form-react',
+    reportCompressedSize: true,
+    commonjsOptions: { transformMixedEsModules: true },
     lib: {
       name: 'margarita-form-react',
       entry: {
@@ -70,6 +74,11 @@ export default defineConfig({
     minifyWhitespace: true,
   },
   test: {
+    reporters: ['default'],
+    coverage: {
+      reportsDirectory: '../../coverage/libs/margarita-form-react',
+      provider: 'v8',
+    },
     globals: true,
     cache: {
       dir: '../../node_modules/.vitest',

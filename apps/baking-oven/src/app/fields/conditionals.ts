@@ -1,11 +1,12 @@
 import { MargaritaFormField, MargaritaFormFieldState } from '@margarita-form/core';
-import { ConditionalsField, CustomField, CustomFieldBase } from '../app';
 import { map } from 'rxjs';
+import { CustomField } from '../app';
 
 const activeArea =
   (name: string): MargaritaFormFieldState =>
   ({ control }) => {
-    type ExperienceControl = MargaritaFormField<{ areas?: string[] }>;
+    type Value = { areas?: string[] };
+    type ExperienceControl = MargaritaFormField<{ value: Value }>;
     const experienceControl = control.parent.getControl<ExperienceControl>('experience');
     if (!experienceControl) return false;
     return experienceControl.valueChanges.pipe(
@@ -16,7 +17,7 @@ const activeArea =
     );
   };
 
-const conditionalsFields: ConditionalsField[] = [
+const conditionalsFields: CustomField[] = [
   {
     type: 'group',
     name: 'questions',
