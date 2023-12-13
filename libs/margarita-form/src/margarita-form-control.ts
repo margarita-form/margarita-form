@@ -25,6 +25,7 @@ import { toHash } from './helpers/to-hash';
 import { removeFormFromCache } from './create-margarita-form';
 import { ManagerLike } from './managers/base-manager';
 import { ExtensionBase } from './extensions/base/extension-base';
+import { StateFactoryFunction } from './managers/state-manager-helpers/state-factory';
 
 export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLike<FIELD> {
   public key: string;
@@ -876,6 +877,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   public static extensions: Set<typeof ExtensionBase> = new Set();
   public static validators = {} as Record<string, MargaritaFormValidator>;
   public static context: Partial<MargaritaFormControlContext<any>> = {};
+  public static states: Set<StateFactoryFunction> = new Set();
 
   public static extend = (source: Partial<MargaritaFormControl<any>> & ThisType<MargaritaFormControl<any>>): void => {
     const target = MargaritaFormControl.prototype;
@@ -927,5 +929,9 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
 
   public static extendContext = (context: Partial<MargaritaFormControlContext>): void => {
     MargaritaFormControl.context = { ...MargaritaFormControl.context, ...context };
+  };
+
+  public static addState = (state: StateFactoryFunction): void => {
+    MargaritaFormControl.states.add(state);
   };
 }

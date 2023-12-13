@@ -33,17 +33,12 @@ export class GeneralState<V> {
 
 export class BooleanPairState {
   public currentValue = true;
-  public snapshotValue = true;
   constructor(
     public state: StateManager<MFC>,
     public primaryKey: keyof MargaritaFormState,
-    public secondaryKey: keyof MargaritaFormState
+    public secondaryKey: keyof MargaritaFormState,
+    public snapshotValue = true
   ) {}
-
-  public setSnapshotValue(value: boolean) {
-    this.snapshotValue = value;
-    return this;
-  }
 
   public setValue(key: keyof MargaritaFormState, value: boolean) {
     if (key === this.primaryKey) {

@@ -9,3 +9,4 @@ export type OrString = OrT<string>;
 export type OrNumber = OrT<number>;
 export type BothTrue<T, U> = T extends true ? (U extends true ? true : false) : false;
 export type EitherTrue<T, U> = T extends true ? true : U extends true ? true : false;
+export type Tail<T extends any[]> = ((...args: T) => any) extends (arg: any, ...rest: infer R) => any ? R : never;

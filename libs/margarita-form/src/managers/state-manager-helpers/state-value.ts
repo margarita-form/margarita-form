@@ -1,67 +1,51 @@
 import { valueExists } from '../../helpers/check-value';
-import { MFC, MargaritaFormStateAllErrors, MargaritaFormStateChildren, MargaritaFormStateErrors } from '../../typings/margarita-form-types';
+import { MargaritaForm } from '../../margarita-form';
+import { MFC } from '../../typings/margarita-form-types';
 import { StateManager } from '../state-manager';
 import { BooleanPairState, DerivedState, GeneralState } from './state-classes';
+import { createState } from './state-factory';
 
-export const createStates = (state: StateManager<MFC>) => {
-  const errorsState = new GeneralState<MargaritaFormStateErrors>(state, 'errors', {});
-  const allErrorsState = new GeneralState<MargaritaFormStateAllErrors>(state, 'allErrors', []);
-  const childrenState = new GeneralState<MargaritaFormStateChildren>(state, 'children', []);
-  const focusState = new GeneralState<boolean>(state, 'focus', false);
-  const valueChangedState = new GeneralState<boolean>(state, 'valueChanged', false);
-  const validatingState = new GeneralState<boolean>(state, 'validating', false);
-  const validatedState = new GeneralState<boolean>(state, 'validated', false);
-  const submittedState = new GeneralState<boolean>(state, 'submitted', false);
-  const submittingState = new GeneralState<boolean>(state, 'submitting', false);
-  const submitResultState = new GeneralState<unknown>(state, 'submitResult', 'not-submitted');
-  const submitOutputState = new GeneralState<unknown>(state, 'submitOutput', undefined);
-  const submits = new GeneralState<number>(state, 'submits', 0);
+const defaultStateFactories = [
+  // General states
+  createState(GeneralState, 'errors', {}),
+  createState(GeneralState, 'allErrors', []),
+  createState(GeneralState, 'children', []),
+  createState(GeneralState, 'focus', false),
+  createState(GeneralState, 'valueChanged', false),
+  createState(GeneralState, 'validating', false),
+  createState(GeneralState, 'validated', false),
+  createState(GeneralState, 'submitted', false),
+  createState(GeneralState, 'submitting', false),
+  createState(GeneralState, 'submitResult', 'not-submitted'),
+  createState(GeneralState, 'submitOutput', undefined),
+  createState(GeneralState, 'submits', 0),
 
-  // Boolean pair states with current value only
-  const validState = new BooleanPairState(state, 'valid', 'invalid');
-  const pristineState = new BooleanPairState(state, 'pristine', 'dirty');
-  const touchedState = new BooleanPairState(state, 'untouched', 'touched');
-  const activeState = new BooleanPairState(state, 'active', 'inactive').setSnapshotValue(false);
-  const enabledState = new BooleanPairState(state, 'enabled', 'disabled').setSnapshotValue(false);
-  const editableState = new BooleanPairState(state, 'editable', 'readOnly').setSnapshotValue(false);
-  const visibleState = new BooleanPairState(state, 'visible', 'hidden').setSnapshotValue(false);
+  // Boolean pair states
+  createState(BooleanPairState, 'valid', 'invalid'),
+  createState(BooleanPairState, 'pristine', 'dirty'),
+  createState(BooleanPairState, 'untouched', 'touched'),
+  createState(BooleanPairState, 'active', 'inactive', false),
+  createState(BooleanPairState, 'enabled', 'disabled', false),
+  createState(BooleanPairState, 'editable', 'readOnly', false),
+  createState(BooleanPairState, 'visible', 'hidden', false),
 
   // Derived states
-  const hasValueState = new DerivedState<boolean>(state, 'hasValue', (state) => valueExists(state.control.value));
-  const shouldShowErrorsState = new DerivedState<boolean>(state, 'shouldShowError', (state) => {
+  createState(DerivedState, 'hasValue', (state) => valueExists(state.control.value)),
+  createState(DerivedState, 'shouldShowError', (state) => {
     const { touched, dirty, focus, validated, invalid } = state.toJSON(true);
     const interacted = touched || (dirty && !focus);
     return interacted && validated && invalid;
-  });
-  const parentIsActiveState = new DerivedState<boolean>(state, 'parentIsActive', (state) => {
+  }),
+  createState(DerivedState, 'parentIsActive', (state) => {
     const { active } = state.toJSON(true);
     if (state.control.isRoot) return active;
     return state.control.parent.state.active;
-  });
+  }),
+];
 
-  state.registerStates([
-    errorsState,
-    allErrorsState,
-    childrenState,
-    focusState,
-    valueChangedState,
-    validatingState,
-    validatedState,
-    submittedState,
-    submittingState,
-    submitResultState,
-    submitOutputState,
-    submits,
-    activeState,
-    validState,
-    pristineState,
-    touchedState,
-    enabledState,
-    editableState,
-    visibleState,
-    hasValueState,
-    shouldShowErrorsState,
-    parentIsActiveState,
-  ]);
+export const createStates = (state: StateManager<MFC>) => {
+  const defaultStates = defaultStateFactories.map((factory) => factory(state));
+  const customStates = [...MargaritaForm.states].map((factory) => factory(state));
+  state.registerStates([...defaultStates, ...customStates]);
   return state;
 };
