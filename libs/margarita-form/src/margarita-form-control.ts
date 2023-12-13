@@ -931,7 +931,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     MargaritaFormControl.context = { ...MargaritaFormControl.context, ...context };
   };
 
-  public static addState = (state: StateFactoryFunction): void => {
-    MargaritaFormControl.states.add(state);
+  public static addStates = (...states: StateFactoryFunction[]): void => {
+    states.forEach((state) => MargaritaFormControl.states.add(state));
   };
 }

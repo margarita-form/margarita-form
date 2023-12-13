@@ -1,5 +1,4 @@
 import { valueExists } from '../../helpers/check-value';
-import { MargaritaForm } from '../../margarita-form';
 import { MFC } from '../../typings/margarita-form-types';
 import { StateManager } from '../state-manager';
 import { BooleanPairState, DerivedState, GeneralState } from './state-classes';
@@ -45,7 +44,7 @@ const defaultStateFactories = [
 
 export const createStates = (state: StateManager<MFC>) => {
   const defaultStates = defaultStateFactories.map((factory) => factory(state));
-  const customStates = [...MargaritaForm.states].map((factory) => factory(state));
+  const customStates = state.control._getStateFactories().map((factory) => factory(state));
   state.registerStates([...defaultStates, ...customStates]);
   return state;
 };

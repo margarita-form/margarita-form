@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { combineLatest, distinctUntilChanged, map, shareReplay, skip, switchMap, tap } from 'rxjs';
 import {
   MargaritaFormState,
@@ -8,6 +9,8 @@ import {
   UserDefinedStates,
   MargaritaFormStateAllErrors,
   MargaritaFormValidatorResult,
+  MFF,
+  FieldParams,
 } from '../typings/margarita-form-types';
 import { BaseManager, ManagerName } from './base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
@@ -18,11 +21,25 @@ import {
 } from '../helpers/resolve-function-outputs';
 import { createStates } from './state-manager-helpers/state-value';
 import { StateClass } from './state-manager-helpers/state-classes';
+import { StateFactoryFunction } from './state-manager-helpers/state-factory';
+import { MargaritaFormControl } from '../margarita-form-control';
 
 // Extends types
 declare module '../typings/expandable-types' {
   export interface Managers {
     state: StateManager<MFC>;
+  }
+}
+
+declare module '../margarita-form-control' {
+  export interface MargaritaFormControl<FIELD extends MFF> {
+    _getStateFactories(global?: boolean): StateFactoryFunction[];
+  }
+}
+
+declare module '../typings/margarita-form-types' {
+  export interface MargaritaFormField<FP extends FieldParams = FieldParams> {
+    customStates?: StateFactoryFunction[];
   }
 }
 
@@ -44,6 +61,17 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormState> 
 
   constructor(public override control: CONTROL) {
     super(control, undefined);
+
+    MargaritaFormControl.extend({
+      _getStateFactories(global = true): StateFactoryFunction[] {
+        const fieldStates = this.field.customStates || [];
+        const parentStates = this.isRoot ? [] : this.parent._getStateFactories(false);
+        if (!global) return [...parentStates, ...fieldStates];
+        const globalStates = [...MargaritaFormControl.states];
+        return [...globalStates, ...parentStates, ...fieldStates];
+      },
+    });
+
     createStates(this);
   }
 
