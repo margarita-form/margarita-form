@@ -3,14 +3,13 @@ import { StateManager } from '../state-manager';
 
 export class GeneralState<V> {
   public currentValue: V = undefined as V;
-  public snapshotValue: V = undefined as V;
-  constructor(public state: StateManager<MFC>, public key: keyof MargaritaFormState, public initialValue?: V) {
+  constructor(
+    public state: StateManager<MFC>,
+    public key: keyof MargaritaFormState,
+    public initialValue?: V,
+    public snapshotValue = initialValue as V
+  ) {
     this.currentValue = initialValue as V;
-  }
-
-  public setSnapshotValue(value: V) {
-    this.snapshotValue = value;
-    return this;
   }
 
   public setValue(key: keyof MargaritaFormState, value: V) {
