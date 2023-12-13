@@ -69,32 +69,32 @@
       "require": "./managers/value-manager.cjs"
     },
     "./extensions/i18n/i18n-extension": {
-      "import": "./extensions/i18n-extension.js",
-      "require": "./extensions/i18n-extension.cjs"
+      "import": "./extensions/i18n/i18n-extension.js",
+      "require": "./extensions/i18n/i18n-extension.cjs"
     },
     "./extensions/storage/storage-extension-base": {
-      "import": "./extensions/storage-extension-base.js",
-      "require": "./extensions/storage-extension-base.cjs"
+      "import": "./extensions/storage/storage-extension-base.js",
+      "require": "./extensions/storage/storage-extension-base.cjs"
     },
     "./extensions/storage/browser-local-storage": {
-      "import": "./extensions/browser-local-storage.js",
-      "require": "./extensions/browser-local-storage.cjs"
+      "import": "./extensions/storage/browser-local-storage.js",
+      "require": "./extensions/storage/browser-local-storage.cjs"
     },
     "./extensions/storage/browser-search-params-storage": {
-      "import": "./extensions/browser-search-params-storage.js",
-      "require": "./extensions/browser-search-params-storage.cjs"
+      "import": "./extensions/storage/browser-search-params-storage.js",
+      "require": "./extensions/storage/browser-search-params-storage.cjs"
     },
     "./extensions/storage/browser-session-storage": {
-      "import": "./extensions/browser-session-storage.js",
-      "require": "./extensions/browser-session-storage.cjs"
+      "import": "./extensions/storage/browser-session-storage.js",
+      "require": "./extensions/storage/browser-session-storage.cjs"
     },
     "./extensions/syncronization/syncronization-extension-base": {
-      "import": "./extensions/syncronization-extension-base.js",
-      "require": "./extensions/syncronization-extension-base.cjs"
+      "import": "./extensions/syncronization/syncronization-extension-base.js",
+      "require": "./extensions/syncronization/syncronization-extension-base.cjs"
     },
     "./extensions/syncronization/browser-syncronization": {
-      "import": "./extensions/browser-syncronization.js",
-      "require": "./extensions/browser-syncronization.cjs"
+      "import": "./extensions/syncronization/browser-syncronization.js",
+      "require": "./extensions/syncronization/browser-syncronization.cjs"
     }
   },
   "typedoc": {
