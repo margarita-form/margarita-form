@@ -21,9 +21,15 @@ export interface MargaritaFormControlContext<CONTROL extends MFC = MFC<MFGF>, PA
 
 export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
-export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = (
+export type MargaritaFormContextFunction<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = (
   context: MargaritaFormControlContext<CONTROL, PARAMS>
-) => MargaritaFormResolverOutput<OUTPUT>;
+) => OUTPUT;
+
+export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = MargaritaFormContextFunction<
+  MargaritaFormResolverOutput<OUTPUT>,
+  PARAMS,
+  CONTROL
+>;
 
 export type MargaritaFormFieldAttributes = CommonRecord<any | MargaritaFormResolver<any>>;
 
