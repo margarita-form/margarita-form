@@ -4,12 +4,16 @@ import { StorageExtensionBase } from './storage-extension-base';
 export class SearchParamsStorageExtension extends StorageExtensionBase {
   public static serverHref: string | undefined;
 
-  public static get url(): URL | null {
+  private get serverHref(): string | undefined {
+    return SearchParamsStorageExtension.serverHref;
+  }
+
+  public get url(): URL | null {
     if (typeof window !== 'undefined' && this.serverHref) new URL(this.serverHref);
     return typeof window !== 'undefined' ? new URL(window.location.href) : null;
   }
 
-  public static getItem<DATA = string>(key: string): DATA | undefined {
+  public override getItem<DATA = string>(key: string): DATA | undefined {
     const url = this.url;
     if (!url) return;
     const value = url.searchParams.get(key);
@@ -21,7 +25,7 @@ export class SearchParamsStorageExtension extends StorageExtensionBase {
     }
   }
 
-  public static setItem<DATA = string>(key: string, value: DATA): void {
+  public override setItem<DATA = string>(key: string, value: DATA): void {
     const url = this.url;
     if (!url) return;
     const string = String(value);
@@ -32,14 +36,14 @@ export class SearchParamsStorageExtension extends StorageExtensionBase {
     window.history.pushState({}, '', url.href);
   }
 
-  public static removeItem(key: string): void {
+  public override removeItem(key: string): void {
     const url = this.url;
     if (!url) return;
     url.searchParams.delete(key);
     window.history.pushState({}, '', url.href);
   }
 
-  public static listenToChanges<DATA>(key: string): Observable<DATA> {
+  public override listenToChanges<DATA>(key: string): Observable<DATA> {
     return new Observable((subscriber) => {
       if (typeof window === 'undefined') return;
       const listener = () => {
