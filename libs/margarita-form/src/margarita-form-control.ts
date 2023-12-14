@@ -17,6 +17,7 @@ import {
   Managers,
   Extensions,
   ExtensionInstanceLike,
+  MargaritaFormConfig,
 } from './typings/margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
@@ -166,8 +167,9 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   }
 
   public get config(): ControlLike<FIELD>['config'] {
+    const globalConfig = MargaritaFormControl.config;
     const parentConfig = this.isRoot ? {} : this.parent.config;
-    if (!this.managers.config) return ConfigManager.joinConfigs(parentConfig, this.field.config);
+    if (!this.managers.config) return ConfigManager.joinConfigs(globalConfig, parentConfig, this.field.config);
     if (!this.field.config) return this.isRoot ? this.managers.config.value : this.parent.config;
     return this.managers.config.value;
   }
@@ -873,6 +875,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
 
   // Static
 
+  public static config: Partial<MargaritaFormConfig> = {};
   public static managers = {} as Record<string, ManagerLike>;
   public static extensions: Set<typeof ExtensionBase> = new Set();
   public static validators = {} as Record<string, MargaritaFormValidator>;
@@ -893,6 +896,10 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
       if (descriptor && descriptor.enumerable) descriptors[sym] = descriptor;
     });
     Object.defineProperties(target, descriptors as any);
+  };
+
+  public static setGlobalConfig = (config: Partial<MargaritaFormConfig>): void => {
+    MargaritaFormControl.config = config;
   };
 
   public static addManager = <T extends ManagerLike>(manager: T): void => {

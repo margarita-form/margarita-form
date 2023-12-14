@@ -1,5 +1,6 @@
 import { BaseManager, ManagerName } from './base-manager';
 import { MFC, MargaritaFormConfig } from '../typings/margarita-form-types';
+import { MargaritaFormControl } from '../margarita-form-control';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -43,8 +44,9 @@ class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager<MargaritaForm
   }
 
   public updateConfig() {
+    const globalConfig = MargaritaFormControl.config;
     const parentConfig = this.control.isRoot ? {} : this.control.parent.config;
-    const config = ConfigManager.joinConfigs(parentConfig, this.control.config);
+    const config = ConfigManager.joinConfigs(globalConfig, parentConfig, this.control.config);
     this.value = config;
   }
 
