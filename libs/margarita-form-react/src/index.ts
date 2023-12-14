@@ -1,4 +1,4 @@
-export * from '@margarita-form/core/light';
+export * from '@margarita-form/core';
 
 // Components
 export * from './components/form-component';
