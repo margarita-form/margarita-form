@@ -1,6 +1,6 @@
 import { BaseManager, ManagerName } from './base-manager';
 import { MFC, MargaritaFormControlContext } from '../typings/margarita-form-types';
-import { getResolverOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
+import { resolveOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';
 
 // Extends types
@@ -117,7 +117,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
     if (typeof handleSubmit === 'object' && handleSubmit.valid) return await Promise.resolve(handleSubmit.valid(context));
 
-    const resolver = getResolverOutput({ getter: handleSubmit, control: this.control, strict: true });
+    const resolver = resolveOutput({ getter: handleSubmit, control: this.control, strict: true });
 
     if (resolver) return await getResolverOutputPromise('handleSubmit', resolver, this.control);
 
@@ -152,7 +152,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
    */
   public _resolveSubmitHandler = async (key: 'beforeSubmit' | 'afterSubmit'): Promise<void> => {
     const { field, controls } = this.control;
-    const resolver = getResolverOutput({ getter: field[key], control: this.control });
+    const resolver = resolveOutput({ getter: field[key], control: this.control });
     if (resolver) await getResolverOutputPromise(key, resolver, this.control);
     const childHandlers = controls.map((control) => {
       const eventsManager = control.managers.events;

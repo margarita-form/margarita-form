@@ -4,7 +4,7 @@ import { BaseManager, ManagerName } from './base-manager';
 import { CommonRecord, MFC, MFF } from '../typings/margarita-form-types';
 import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
-import { getResolverOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
+import { resolveOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
 import { valueIsAsync } from '../helpers/async-checks';
 
 // Extends types
@@ -52,7 +52,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     const { valueResolver } = this.control.field;
 
     if (valueResolver) {
-      const resolver = getResolverOutput({
+      const resolver = resolveOutput({
         getter: valueResolver,
         control: this.control,
       });

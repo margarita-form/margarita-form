@@ -24,7 +24,7 @@ const resolveStrict = (strictResultFn: Strict, getter: unknown, resolvers: unkno
   return undefined;
 };
 
-export const getResolverOutput = <OUTPUT>({
+export const resolveOutput = <OUTPUT>({
   getter,
   control,
   resolvers = control.resolvers,
@@ -45,7 +45,7 @@ export const getResolverOutput = <OUTPUT>({
       const getterName = name.slice(2);
       const data = Object.fromEntries(rest.map((item) => item.split(':')));
       const combinedData = { ...contextData, ...data };
-      return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData, strict });
+      return resolveOutput({ getter: getterName, control, resolvers, contextData: combinedData, strict });
     }
     if (resolvers[getter]) {
       return resolvers[getter](context);
@@ -59,7 +59,7 @@ export const getResolverOutput = <OUTPUT>({
         const { name, ...rest } = getter as ResolverParams;
         const getterName = name.slice(2);
         const combinedData = { ...contextData, ...rest };
-        return getResolverOutput({ getter: getterName, control, resolvers, contextData: combinedData, strict });
+        return resolveOutput({ getter: getterName, control, resolvers, contextData: combinedData, strict });
       }
     } catch (error) {
       //
@@ -67,6 +67,27 @@ export const getResolverOutput = <OUTPUT>({
   }
   if (strict) return resolveStrict(strict, { getter }, resolvers) as OUTPUT;
   return getter as OUTPUT;
+};
+
+export const getResolverOutput = <OUTPUT = unknown>(
+  key: string,
+  params: unknown,
+  control: MFC,
+  resolvers: Resolvers<OUTPUT> = control.resolvers,
+  contextData: CommonRecord = {},
+  strict: Strict = false
+): MargaritaFormResolverOutput<OUTPUT> => {
+  const valueOutput = resolveOutput<OUTPUT>({ getter: params, control, resolvers, contextData, strict: true });
+  if (valueOutput !== undefined) {
+    return valueOutput;
+  }
+  const combinedParams = { ...contextData, params };
+  const keyOutput = resolveOutput<OUTPUT>({ getter: key, control, resolvers, contextData: combinedParams, strict: true });
+  if (keyOutput !== undefined) {
+    return keyOutput;
+  }
+  if (strict) return resolveStrict(strict, { key, value: params }, resolvers) as OUTPUT;
+  else return params as OUTPUT;
 };
 
 export const getResolverOutputMap = <OUTPUT = unknown>(
@@ -77,20 +98,9 @@ export const getResolverOutputMap = <OUTPUT = unknown>(
   strict: Strict = false
 ): ResolverOutputMap<OUTPUT> => {
   return Object.entries(obj).reduce((acc, [key, params]) => {
-    const valueOutput = getResolverOutput<OUTPUT>({ getter: params, control, resolvers, contextData, strict: true });
-    if (valueOutput !== undefined) {
-      acc[key] = valueOutput;
-      return acc;
-    }
-    const combinedParams = { ...contextData, params };
-    const keyOutput = getResolverOutput<OUTPUT>({ getter: key, control, resolvers, contextData: combinedParams, strict: true });
-    if (keyOutput !== undefined) {
-      acc[key] = keyOutput;
-      return acc;
-    }
-    if (strict) acc[key] = resolveStrict(strict, { key, value: params }, resolvers) as OUTPUT;
-    else acc[key] = params as OUTPUT;
-    if (acc[key] === undefined) delete acc[key];
+    const output = getResolverOutput<OUTPUT>(key, params, control, resolvers, contextData, strict);
+    if (output !== undefined) acc[key] = output;
+    else delete acc[key];
     return acc;
   }, {} as ResolverOutputMap<OUTPUT>);
 };

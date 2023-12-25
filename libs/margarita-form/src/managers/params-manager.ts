@@ -12,7 +12,7 @@ import {
   NotFunction,
   ResolverParams,
 } from '../typings/margarita-form-types';
-import { getResolverOutput, getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
+import { resolveOutput, getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { valueIsAsync } from '../helpers/async-checks';
 
@@ -94,7 +94,7 @@ export class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
       (acc: Params, [key, value]: [string, any]) => {
         if (value instanceof Param) {
           hasParams = true;
-          const fromValue = getResolverOutput({ getter: value.from, control: this.control });
+          const fromValue = resolveOutput({ getter: value.from, control: this.control });
           const fromIsAsync = valueIsAsync(fromValue);
           const syncronousValue = fromIsAsync ? value.snapshotValue : fromValue;
           acc[key] = snapshot ? syncronousValue : value.from;
