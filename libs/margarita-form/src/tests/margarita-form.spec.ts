@@ -8,16 +8,18 @@ import { I18NExtension } from '../extensions/i18n/i18n-extension';
 const fieldNameInitialValue = 'Hello world';
 const anotherInitialValue = 'Live long and prosper';
 
-const commonField: MargaritaFormField<{ value: string; fields: MFF }> = {
+type TestingField = MargaritaFormField<{ value: any; fields: TestingField; name: string }>;
+
+const commonField: TestingField = {
   name: 'fieldName',
   initialValue: fieldNameInitialValue,
 };
 
-const undefinedField: MargaritaFormField<{ value: any; fields: MFF }> = {
+const undefinedField: TestingField = {
   name: 'undefinedField',
 };
 
-const invalidField: MargaritaFormField<{ value: any; fields: MFF }> = {
+const invalidField: TestingField = {
   name: 'invalidField',
   validation: {
     required: true,
@@ -57,7 +59,7 @@ const invalidField: MargaritaFormField<{ value: any; fields: MFF }> = {
   },
 };
 
-const uncommonField: MargaritaFormField<{ value: any; fields: MFF }> = {
+const uncommonField: TestingField = {
   name: 'anotherOne',
   initialValue: anotherInitialValue,
 };
@@ -65,7 +67,7 @@ const uncommonField: MargaritaFormField<{ value: any; fields: MFF }> = {
 const fromParentValue = fieldNameInitialValue + '-from-parent';
 const fromRootValue = fieldNameInitialValue + '-from-root';
 
-const groupField: MargaritaFormField = {
+const groupField: TestingField = {
   name: 'groupName',
   fields: [commonField],
   initialValue: {
@@ -73,7 +75,7 @@ const groupField: MargaritaFormField = {
   },
 };
 
-const asyncGroupField: MargaritaFormField = {
+const asyncGroupField: TestingField = {
   name: 'groupName',
   fields: [{ ...uncommonField, initialValue: null, validation: { asyncGroupValidator: true, required: true } }],
   validators: {
@@ -89,7 +91,7 @@ const asyncGroupField: MargaritaFormField = {
   },
 };
 
-const uncommonGroupField: MargaritaFormField = {
+const uncommonGroupField: TestingField = {
   name: 'groupName',
   fields: [commonField, uncommonField],
   initialValue: {
@@ -97,41 +99,41 @@ const uncommonGroupField: MargaritaFormField = {
   },
 };
 
-const doubleValueField: MargaritaFormField = {
+const doubleValueField: TestingField = {
   name: 'doubleValue',
   initialValue: 'initialValue',
   defaultValue: 'defaultValue',
 };
 
-const onlyDefaultValueField: MargaritaFormField = {
+const onlyDefaultValueField: TestingField = {
   name: 'onlyDefaultValue',
   defaultValue: 'defaultValue',
 };
 
-const arrayField: MargaritaFormField = {
+const arrayField: TestingField = {
   name: 'arrayName',
   grouping: 'array',
   fields: [groupField],
 };
 
-const flatField: MargaritaFormField = {
+const flatField: TestingField = {
   name: 'flatName',
   grouping: 'flat',
   fields: [commonField],
 };
 
-const withFlatField: MargaritaFormField = {
+const withFlatField: TestingField = {
   name: 'withFlatName',
   fields: [flatField],
 };
 
-const doubleFlatField: MargaritaFormField = {
+const doubleFlatField: TestingField = {
   name: 'doubleFlatName',
   grouping: 'flat',
   fields: [flatField],
 };
 
-const withDoubleFlatField: MargaritaFormField = {
+const withDoubleFlatField: TestingField = {
   name: 'withDoubleFlatName',
   fields: [doubleFlatField],
 };

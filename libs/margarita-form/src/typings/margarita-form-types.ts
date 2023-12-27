@@ -32,16 +32,19 @@ import {
 import { NotFunction, OrAny, OrString } from './util-types';
 import { Configs, ControlContext, Extensions, FieldBase, FieldParams, Managers } from './expandable-types';
 import { ExtensionInstanceLike, ExtensionsArray } from './derived-types';
+import { CoreGetter } from '../helpers/core-resolver';
 
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
+
+export type FieldName = CoreGetter<string>;
 
 export interface MargaritaFormChildField extends MFF {
   name: string;
 }
 
 export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
-  name: string;
-  fields?: FP['fields'] extends object ? FP['fields'][] : MFF[];
+  name: FP['name'] extends FieldName ? FP['name'] : FieldName;
+  fields?: FP['fields'] extends object ? FP['fields'][] : MFGF[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
   initialValue?: FP['value'];
@@ -164,7 +167,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get config(): MargaritaFormConfig;
   get extensions(): Extensions;
   get activeExtensions(): ExtensionInstanceLike[];
-  get name(): FIELD['name'];
+  get name(): FIELD['name'] extends string ? FIELD['name'] : string;
   get index(): number;
   get valueHash(): string;
   get grouping(): MargaritaFormGroupings;

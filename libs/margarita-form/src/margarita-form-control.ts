@@ -27,6 +27,7 @@ import { removeFormFromCache } from './create-margarita-form';
 import { ManagerLike } from './managers/base-manager';
 import { ExtensionBase } from './extensions/base/extension-base';
 import { StateFactoryFunction } from './managers/state-manager-helpers/state-factory';
+import { coreResolver } from './helpers/core-resolver';
 
 export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLike<FIELD> {
   public key: string;
@@ -213,7 +214,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   // Field and metadata getters
 
   public get name(): ControlLike<FIELD>['name'] {
-    return this.field.name;
+    return coreResolver(this.field.name, this);
   }
 
   public get index(): ControlLike<FIELD>['index'] {
@@ -644,7 +645,8 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
    * @returns The control that was found or added
    */
   public getOrAddControl: ControlLike<FIELD>['getOrAddControl'] = (field) => {
-    const control = this.managers.controls.getControl(field.name) as any;
+    const name = coreResolver(field.name, this);
+    const control = this.managers.controls.getControl(name) as any;
     if (!control) return this.managers.controls.addControl(field) as any;
     return control;
   };
@@ -658,7 +660,8 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   public addControl: ControlLike<FIELD>['addControl'] = (field, replaceExisting) => {
     const exists = this.hasControl(field.name);
     if (this.expectGroup && exists && replaceExisting === undefined) {
-      console.warn(`Control with name "${field.name}" already exists and will be replaced!`);
+      const name = coreResolver(field.name, this);
+      console.warn(`Control with name "${name}" already exists and will be replaced!`);
     }
     return this.managers.controls.addControl(field) as any;
   };
@@ -801,17 +804,24 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
     return defaultValue;
   };
 
+  public getControlContext = () => {
+    const staticContext = MargaritaFormControl.context || {};
+    const fieldContext = this.field.context || {};
+    return {
+      ...staticContext,
+      ...fieldContext,
+    };
+  };
+
   /**
    * @internal
    */
   public generateContext = <PARAMS>(params?: PARAMS, overrides: CommonRecord = {}): MargaritaFormControlContext<typeof this, PARAMS> => {
-    const staticContext = MargaritaFormControl.context || {};
-    const fieldContext = this.field.context || {};
+    const controlContext = this.getControlContext();
     const context: MargaritaFormControlContext<typeof this, PARAMS> = {
       control: this,
       value: this.value,
-      ...staticContext,
-      ...fieldContext,
+      ...controlContext,
       ...overrides,
     };
     if (params !== undefined) context['params'] = params;

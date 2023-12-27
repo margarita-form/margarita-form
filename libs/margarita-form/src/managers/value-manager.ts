@@ -6,6 +6,7 @@ import { valueExists } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { resolveOutput, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
 import { valueIsAsync } from '../helpers/async-checks';
+import { coreResolver } from '../helpers/core-resolver';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -138,11 +139,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       }
     } else if (expectFlat && field.fields) {
       const reducer = (acc: CommonRecord, field: MFF): CommonRecord => {
+        const resolvedName = coreResolver(field.name, this.control);
         if (field.grouping === 'flat' && field.fields) {
           const inheritedValue: CommonRecord = field.fields.reduce(reducer, {});
           return { ...acc, ...inheritedValue };
         }
-        acc[field.name] = _get(parentValue, [field.name], undefined);
+        acc[resolvedName] = _get(parentValue, [resolvedName], undefined);
         return acc;
       };
 

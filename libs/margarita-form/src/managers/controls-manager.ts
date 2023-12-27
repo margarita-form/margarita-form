@@ -2,6 +2,7 @@ import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../typings/margarita-form-types';
+import { coreResolver } from '../helpers/core-resolver';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -57,7 +58,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
 
     if (this._buildWith && fields && this.control.expectGroup) {
       const controlsToRemove = this.value.filter((control) => {
-        return !fields.some((field: MFF) => field.name === control.name);
+        return !fields.some((field: MFF) => field.name === control.field.name);
       });
 
       controlsToRemove.forEach((control) => {
@@ -79,8 +80,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
         const someFieldsAreNotMaps = fields.filter((field) => !field.fields || ![undefined, 'group'].includes(field.grouping));
 
         if (someFieldsAreNotMaps.length > 0) {
-          const fieldNames = someFieldsAreNotMaps.map((field) => field.name).join(', ');
-          throw `Control "${path}" has fields (${fieldNames}) where metadata cannot be added! To fix this, only add fields to the array where child fields are expected and grouping is not array or flat.`;
+          throw `Control "${path}" has fields where metadata cannot be added! To fix this, only add fields to the array where child fields are expected and grouping is not array or flat.`;
         }
       }
 
@@ -100,8 +100,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     } else if (fields) {
       const hasDuplicateNames = fields.filter((field, index) => fields.findIndex((f) => f.name === field.name) !== index);
       if (hasDuplicateNames.length > 0) {
-        const duplicateNames = hasDuplicateNames.map((field) => field.name).join(', ');
-        throw `Duplicate field names (${duplicateNames}) found for control "${this.control.name}"! Please make sure all field names are unique when grouping is not set to "array".`;
+        throw `Duplicate field names found for control "${this.control.name}"! Please make sure all field names are unique when grouping is not set to "array".`;
       }
       this.addControls(fields, resetControls, false);
     }
@@ -254,6 +253,10 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   }
 
   public getControl(identifier: DeepControlIdentifier<CONTROL['field']>): MFC | undefined {
+    if (typeof identifier === 'function') {
+      const resolvedIdentifier = coreResolver(identifier, this.control);
+      return this.getControl(resolvedIdentifier);
+    }
     if (typeof identifier === 'number') {
       if (identifier < 0) return this.value[this.value.length + identifier];
       return this.value[identifier];
@@ -273,6 +276,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
         return control.getControl(rest);
       }
     }
+
     return this.value.find((control) => {
       const identifiers: unknown[] = [control.name, control.key, control.uid];
       return identifiers.includes(identifier);

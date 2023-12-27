@@ -1,10 +1,11 @@
+import { CoreGetterFn } from '../helpers/core-resolver';
 import { ManagerName } from '../managers/base-manager';
-import { MF, MFC, MFF, MFGF, MargaritaFormState } from './margarita-form-types';
+import { FieldName, MF, MFC, MFF, MFGF, MargaritaFormState } from './margarita-form-types';
 import { OrString, OrNumber, OrT } from './util-types';
 
 export type StateKey = keyof MargaritaFormState;
 export type ControlPath = (string | number | MFC | MF)[];
-export type ControlIdentifier = OrString | OrNumber;
+export type ControlIdentifier = OrString | OrNumber | CoreGetterFn<string>;
 
 /**
  * Get possible identifiers for a field from parent field.
@@ -12,7 +13,7 @@ export type ControlIdentifier = OrString | OrNumber;
 export type DeepControlIdentifier<
   PARENT_FIELD extends MFF,
   CHILD_FIELD extends MFF = ChildField<PARENT_FIELD>,
-  NAME extends string = CHILD_FIELD['name']
+  NAME extends FieldName = CHILD_FIELD['name']
 > = OrT<NAME> | ControlValueKey<PARENT_FIELD> | ControlIdentifier | ControlIdentifier[];
 
 /**
@@ -78,11 +79,13 @@ export type ChildControl<
   ? MFC<CHILD_FIELD>
   : ControlValue<PARENT_FIELD> extends object
   ? IDENTIFIER extends CHILD_FIELD['name']
-    ? MFC<
-        ChildFieldFromName<CHILD_FIELD, IDENTIFIER> extends never
-          ? FieldWithParentValue<PARENT_FIELD, IDENTIFIER>
-          : ChildFieldFromName<PARENT_FIELD, IDENTIFIER>
-      >
+    ? IDENTIFIER extends string
+      ? MFC<
+          ChildFieldFromName<CHILD_FIELD, IDENTIFIER> extends never
+            ? FieldWithParentValue<PARENT_FIELD, IDENTIFIER>
+            : ChildFieldFromName<PARENT_FIELD, IDENTIFIER>
+        >
+      : any
     : IDENTIFIER extends ControlValueKey<PARENT_FIELD>
     ? MFC<CHILD_FIELD>
     : never
