@@ -128,7 +128,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
 
   private _getInheritedValue() {
     if (this.control.isRoot) return undefined;
-    const { field, expectFlat } = this.control;
+    const { expectFlat, fields, expectChildControls } = this.control;
     const { value: parentValue, expectArray } = this.control.parent || {};
     if (typeof parentValue !== 'object') return undefined;
 
@@ -137,7 +137,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       if (inheritedValue !== undefined) {
         return inheritedValue;
       }
-    } else if (expectFlat && field.fields) {
+    } else if (expectFlat && expectChildControls) {
       const reducer = (acc: CommonRecord, field: MFF): CommonRecord => {
         const resolvedName = coreResolver(field.name, this.control);
         if (field.grouping === 'flat' && field.fields) {
@@ -148,7 +148,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         return acc;
       };
 
-      const inheritedValue = field.fields.reduce(reducer, {});
+      const inheritedValue = fields.reduce(reducer, {});
 
       if (inheritedValue !== undefined) {
         return inheritedValue;

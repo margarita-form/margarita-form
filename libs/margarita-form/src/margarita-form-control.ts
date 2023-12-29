@@ -162,7 +162,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
 
   public get parent(): ControlLike<FIELD>['parent'] {
     if (!this._buildParams.parent) {
-      console.warn('Root of controls reached!', this);
+      console.warn('Root of controls reached!');
     }
     return this._buildParams.parent || this;
   }
@@ -278,8 +278,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   }
 
   public get fields(): ControlLike<FIELD>['fields'] {
-    if (!this.expectChildControls) return [];
-    return (this.field.fields as any) || [];
+    return this.managers.field.getChildFields();
   }
 
   public setField: ControlLike<FIELD>['setField'] = async (changes, resetControl = false) => {
@@ -560,7 +559,8 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
    */
   public getSiblings: ControlLike<FIELD>['getSiblings'] = () => {
     if (this.isRoot) throw 'Cannot get siblings of root control!';
-    return this.parent.controls.filter((control) => control !== this);
+    const fields = this.parent.controls.filter((control) => control !== this);
+    return fields as MFC<any>[];
   };
 
   /**

@@ -1,5 +1,5 @@
-import { expectType } from 'tsd';
-import { MFC, MFCA, MFF, MFGF, createMargaritaForm } from '../index';
+import { expectType, expectNotType } from 'tsd';
+import { FieldChild, MFC, MFCA, MFF, MFGF, createMargaritaForm } from '../index';
 
 interface Address {
   street: string;
@@ -192,7 +192,8 @@ const advField: AdvRootField = {
 };
 
 expectType<AdvRootField>(advField);
-expectType<AdvField>(advField.fields![0]);
+expectNotType<AdvField>(advField.fields![0]);
+expectType<FieldChild<MFGF & AdvField>>(advField.fields![0]);
 
 const advForm = createMargaritaForm<AdvRootField>(advField);
 

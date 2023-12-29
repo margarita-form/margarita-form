@@ -1,7 +1,7 @@
 import { filter, skip } from 'rxjs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './base-manager';
-import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG } from '../typings/margarita-form-types';
+import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG, MFGF } from '../typings/margarita-form-types';
 import { coreResolver } from '../helpers/core-resolver';
 
 // Extends types
@@ -23,15 +23,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   }
 
   public override prepare() {
-    const { fields } = this.control.field;
-    const fieldsAreValid = !fields || Array.isArray(fields);
-    if (!fieldsAreValid) {
-      throw 'Invalid fields provided for field at: ' + (this.control.isRoot ? 'root' : this.control.getPath().join(' > '));
-    }
-
-    if (this.control.field) {
-      this.rebuild();
-    }
+    this.rebuild();
   }
 
   public override onInitialize() {
@@ -51,10 +43,10 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
   }
 
   public rebuild(resetControls = false) {
-    const { field } = this.control;
+    const { field, fields } = this.control;
     if (!field) throw 'No field provided for control!';
     this._buildWith = field;
-    const { startWith = 1, fields } = field;
+    const { startWith = 1 } = field;
 
     if (this._buildWith && fields && this.control.expectGroup) {
       const controlsToRemove = this.value.filter((control) => {
@@ -149,9 +141,9 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     fieldTemplate?: string | number | FIELD,
     overrides: Partial<FIELD> = {}
   ): null | MFC<FIELD> {
-    const { fields } = this.control.field;
+    const { fields } = this.control;
 
-    const getField = (): undefined | FIELD => {
+    const getField = (): undefined | MFGF => {
       if (fields) {
         if (!fieldTemplate) return fields[0];
         if (typeof fieldTemplate === 'string') return fields.find((field: MFF) => field.name === fieldTemplate);
@@ -166,7 +158,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       if (this.control.expectArray) throw 'Invalid field provided for "appendRepeatingControl" controls!';
       return null;
     }
-    const merged = { ...field, ...overrides };
+    const merged = { ...field, ...overrides } as FIELD;
     return this.addControl(merged);
   }
 

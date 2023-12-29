@@ -4,9 +4,10 @@ export type CoreGetterContext = { parent?: MFC; field?: MFGF } & ControlContext;
 export type CoreGetterFn<OUTPUT> = (context: CoreGetterContext) => OUTPUT;
 export type CoreGetter<OUTPUT> = OUTPUT | CoreGetterFn<OUTPUT>;
 
-export const coreResolver = <OUTPUT extends NotFunction>(getter: CoreGetter<OUTPUT>, control: MFC): OUTPUT => {
+export const coreResolver = <OUTPUT extends NotFunction>(getter: CoreGetter<OUTPUT>, control: MFC, asParent = false): OUTPUT => {
   const controlContext = control.getControlContext();
-  const context: CoreGetterContext = control.isRoot ? { ...controlContext } : { parent: control.parent, ...controlContext };
+  const parent = asParent ? control : control.isRoot ? undefined : control.parent;
+  const context: CoreGetterContext = { parent, ...controlContext };
   if (typeof getter === 'function') return getter(context);
   return getter;
 };

@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import { FieldName, MFF, createMargaritaForm } from '../index';
 
 describe('Functional name and fields', () => {
@@ -31,5 +32,43 @@ describe('Functional name and fields', () => {
     const functionName2Control = form.getControl<any>('function-name-copied-name');
     expect(functionName2Control).toBeDefined();
     expect(functionName2Control.name).toBe('function-name-copied-name');
+  });
+  it('should be able to create fields that are functions', async () => {
+    const rootId = nanoid();
+
+    interface CustomField extends MFF {
+      lorem: 'ipsum';
+    }
+
+    type RootField = MFF<{ fields: CustomField }>;
+
+    const form = createMargaritaForm<RootField>({
+      name: rootId,
+      fields: [
+        {
+          name: 'basic-field',
+          lorem: 'ipsum',
+        },
+        ({ parent }) => {
+          if (!parent) throw 'Parent not defined';
+          expect(parent.name).toBe(rootId);
+          return {
+            name: parent.name + '-functional-field',
+            lorem: 'ipsum',
+          };
+        },
+      ],
+    });
+
+    expect(form.name).toBeDefined();
+
+    const basicFieldName1Control = form.getControl('basic-field');
+    if (!basicFieldName1Control) throw 'basicFieldName1Control not defined';
+    expect(basicFieldName1Control.name).toBe('basic-field');
+
+    const childFieldName = rootId + '-functional-field';
+    const functionalFieldName1Control = form.getControl(childFieldName);
+    if (!functionalFieldName1Control) throw 'functionalFieldName1Control not defined';
+    expect(functionalFieldName1Control.name).toBe(childFieldName);
   });
 });

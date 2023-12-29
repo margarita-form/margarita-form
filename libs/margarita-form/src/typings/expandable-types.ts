@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { FieldName } from './margarita-form-types';
+import { FieldName, MFGF } from './margarita-form-types';
 
 export interface FieldParams {
   value?: any;
-  fields?: any;
+  fields?: unknown;
   parent?: any;
   name?: FieldName;
 }

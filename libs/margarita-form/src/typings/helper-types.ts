@@ -19,7 +19,7 @@ export type DeepControlIdentifier<
 /**
  * Identify possible types of a field from parent field.
  */
-export type ChildField<ParentField extends MFF> = NonNullable<ParentField['fields']>[number];
+export type ChildField<ParentField extends MFF> = NonNullable<ParentField['__fields']>[number];
 
 /**
  * Identify value of a field. Not nullable.

@@ -1,5 +1,7 @@
 import { BaseManager, ManagerName } from './base-manager';
 import { MFC, MFF } from '../typings/margarita-form-types';
+import { coreResolver } from '../helpers/core-resolver';
+import { valueExists } from '../helpers/check-value';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -22,11 +24,27 @@ class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
     this.emitChange(this.value);
   }
 
-  public async setField<FIELD extends MFF = MFF | CONTROL['field']>(field: FIELD | Promise<FIELD>, resetControl = false) {
+  public getChildFields = <FIELD extends MFF = MFF | CONTROL['field']>(): FIELD[] => {
+    const { fields } = this.value;
+    if (!fields) return [];
+    if (!Array.isArray(fields)) {
+      throw 'Invalid fields provided for field at: ' + (this.control.isRoot ? 'root' : this.control.getPath().join(' > '));
+    }
+    const resolvedFields = fields
+      .map((field) => {
+        if (typeof field === 'function') return coreResolver<MFF>(field, this.control, true);
+        return field;
+      })
+      .filter(valueExists);
+
+    return resolvedFields as FIELD[];
+  };
+
+  public setField<FIELD extends MFF = MFF | CONTROL['field']>(field: FIELD, resetControl = false) {
     if (!field) return;
     const fieldIsSame = this.value && field && this.value === field;
     if (fieldIsSame) return;
-    this.value = await field;
+    this.value = field;
     this.shouldResetControl = resetControl;
     this._emitChanges();
   }
