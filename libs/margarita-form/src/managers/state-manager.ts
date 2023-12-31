@@ -76,16 +76,20 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormState> 
   }
 
   override get value(): any {
-    const json = this.toJSON();
-    return new Proxy(json, {
-      get: (target, key) => {
-        const state = this.findState(key as keyof MargaritaFormState);
-        if (!state) return undefined;
-        const json = state.toJSON();
-        return json[key as any];
-      },
-    }) as MargaritaFormState;
+    return this.states.reduce((acc, state) => {
+      const stateJson = state.toJSON();
+      Object.keys(stateJson).forEach((key) => {
+        Object.defineProperty(acc, key, {
+          get() {
+            const _cur = state.toJSON();
+            return _cur[key];
+          },
+        });
+      });
+      return acc;
+    }, {} as MargaritaFormState);
   }
+
   override set value(value) {
     if (value) {
       console.log('Setting value on state manager is not allowed', value);
