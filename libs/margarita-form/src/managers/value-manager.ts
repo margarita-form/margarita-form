@@ -108,12 +108,16 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   }
 
   public _getInitialValue(allowExtensionValue = true) {
+    const { field, activeExtensions, config } = this.control;
+    const { allowValueToBeFunction } = config;
     const inheritedValue = this._getInheritedValue();
     if (inheritedValue !== undefined) return inheritedValue;
-    if (valueExists(this.control.field.initialValue)) return this.control.field.initialValue;
+    if (valueExists(this.control.field.initialValue)) {
+      return allowValueToBeFunction ? field.initialValue : coreResolver(field.initialValue, this.control);
+    }
 
     if (allowExtensionValue) {
-      const snapshots = this.control.activeExtensions.map(({ getValueSnapshot }) => getValueSnapshot);
+      const snapshots = activeExtensions.map(({ getValueSnapshot }) => getValueSnapshot);
 
       const result = snapshots.reduce((acc, snapshot) => {
         if (valueExists(acc)) return acc;
@@ -123,7 +127,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       if (valueExists(result) && !valueIsAsync(result)) return result;
     }
 
-    return this.control.field.defaultValue;
+    return allowValueToBeFunction ? field.defaultValue : coreResolver(field.defaultValue, this.control);
   }
 
   private _getInheritedValue() {
@@ -301,7 +305,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
         const fieldIdentifier = resolveFieldIdentifier();
 
         this.control.managers.controls.appendRepeatingControl(fieldIdentifier, {
-          initialValue: value,
+          initialValue: value as any,
         });
       });
     }

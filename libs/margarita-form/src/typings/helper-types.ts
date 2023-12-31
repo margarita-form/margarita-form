@@ -24,7 +24,7 @@ export type ChildField<ParentField extends MFF> = NonNullable<ParentField['__fie
 /**
  * Identify value of a field. Not nullable.
  */
-export type ControlValue<Field extends MFF> = NonNullable<Field['initialValue']>;
+export type ControlValue<Field extends MFF> = NonNullable<Field['__value']>;
 
 /**
  * Identify possible values from object field.

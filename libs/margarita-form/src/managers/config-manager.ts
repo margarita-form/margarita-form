@@ -14,6 +14,7 @@ export const getDefaultConfig = (): MargaritaFormConfig => ({
   afterChangesDebounceTime: 10,
   allowUnresolvedArrayChildNames: false,
   allowConcurrentSubmits: false,
+  allowValueToBeFunction: false,
   asyncFunctionWarningTimeout: 5000,
   appendNodeValidationsToControl: true,
   appendControlValidationsToNode: true,

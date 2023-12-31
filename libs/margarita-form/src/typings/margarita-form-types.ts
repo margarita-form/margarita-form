@@ -29,7 +29,7 @@ import {
   ControlChange,
   ControlChangeName,
 } from './helper-types';
-import { NotFunction, OrAny, OrString } from './util-types';
+import { NotFunction, OrAny, OrString, ReplaceAny } from './util-types';
 import { Configs, ControlContext, Extensions, FieldBase, FieldParams, Managers } from './expandable-types';
 import { ExtensionInstanceLike, ExtensionsArray } from './derived-types';
 import { CoreGetter } from '../helpers/core-resolver';
@@ -38,14 +38,15 @@ export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
 export type FieldName = CoreGetter<string>;
 export type FieldChild<FIELD extends MFF> = CoreGetter<FIELD>;
+export type FieldValue<VALUE = unknown> = CoreGetter<VALUE>;
 
 export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
   name: FP['name'] extends FieldName ? FP['name'] : FieldName;
   fields?: FieldChild<MFGF & FP['fields']>[];
   grouping?: MargaritaFormGroupings;
   startWith?: number | (number | string)[];
-  initialValue?: FP['value'];
-  defaultValue?: FP['value'];
+  initialValue?: FieldValue<ReplaceAny<FP['value']>>;
+  defaultValue?: FieldValue<ReplaceAny<FP['value']>>;
   valueResolver?: MargaritaFormResolver<FP['value']> | NotFunction;
   attributes?: MargaritaFormFieldAttributes;
   resolvers?: MargaritaFormResolvers;
@@ -70,7 +71,7 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
   managers?: Partial<Managers>;
   extensions?: ExtensionsArray;
   __params?: FP;
-  // __fields?: FP['fields'] extends object ? FP['fields'][] : MFGF[];
+  __value?: FP['value'];
   __fields?: FP['fields'] extends object ? FP['fields'][] : MFGF[];
 }
 
@@ -122,6 +123,7 @@ export interface MargaritaFormConfig extends Partial<Configs> {
   afterChangesDebounceTime?: number;
   allowUnresolvedArrayChildNames?: boolean;
   allowConcurrentSubmits?: boolean;
+  allowValueToBeFunction?: boolean;
   asyncFunctionWarningTimeout?: number;
   appendNodeValidationsToControl?: boolean;
   appendControlValidationsToNode?: boolean;

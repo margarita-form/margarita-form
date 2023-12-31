@@ -1,10 +1,11 @@
+import { nanoid } from 'nanoid';
 import { createMargaritaForm } from '../../index';
 import { typeofValidator } from './typeof-validator';
 
 describe('typeofValidator', () => {
   it('should return valid for empty value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: undefined,
       validation: { required: false, typeof: typeofValidator(undefined, 'Please enter a valid value!') },
     });
@@ -17,7 +18,7 @@ describe('typeofValidator', () => {
 
   it('should return valid for string value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: 'hello',
       validation: { required: false, typeof: typeofValidator('string', 'Please enter a valid string!') },
     });
@@ -30,7 +31,7 @@ describe('typeofValidator', () => {
 
   it('should return invalid for number value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: 42,
       validation: { required: false, typeof: typeofValidator('number', 'Please enter a valid number!') },
     });
@@ -43,7 +44,7 @@ describe('typeofValidator', () => {
 
   it('should return valid for bigint value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: BigInt(42),
       validation: { required: false, typeof: typeofValidator('bigint', 'Please enter a valid bigint!') },
     });
@@ -56,7 +57,7 @@ describe('typeofValidator', () => {
 
   it('should return invalid for boolean value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: true,
       validation: { required: false, typeof: typeofValidator('boolean', 'Please enter a valid boolean!') },
     });
@@ -69,7 +70,7 @@ describe('typeofValidator', () => {
 
   it('should return invalid for symbol value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: Symbol('test'),
       validation: { required: false, typeof: typeofValidator('symbol', 'Please enter a valid symbol!') },
     });
@@ -82,7 +83,7 @@ describe('typeofValidator', () => {
 
   it('should return valid for undefined value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: undefined,
       validation: { required: false, typeof: typeofValidator('undefined', 'Please enter a valid undefined!') },
     });
@@ -95,7 +96,7 @@ describe('typeofValidator', () => {
 
   it('should return valid for null value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: null,
       validation: { required: false, typeof: typeofValidator('null', 'Please enter a valid null!') },
     });
@@ -108,7 +109,7 @@ describe('typeofValidator', () => {
 
   it('should return invalid for object value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: { test: 'value' },
       validation: { required: false, typeof: typeofValidator('object', 'Please enter a valid object!') },
     });
@@ -121,9 +122,10 @@ describe('typeofValidator', () => {
 
   it('should return invalid for function value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: () => 123,
       validation: { required: false, typeof: typeofValidator('function', 'Please enter a valid function!') },
+      config: { allowValueToBeFunction: true },
     });
     await form.validate();
     const { valid, errors } = form.state;
@@ -134,7 +136,7 @@ describe('typeofValidator', () => {
 
   it('should return invalid for array value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: [1, 2, 3],
       validation: { required: false, typeof: typeofValidator('array', 'Please enter a valid array!') },
     });
@@ -147,7 +149,7 @@ describe('typeofValidator', () => {
 
   it('should return invalid for map value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: new Map(),
       validation: { required: false, typeof: typeofValidator('map', 'Please enter a valid map!') },
     });
@@ -160,7 +162,7 @@ describe('typeofValidator', () => {
 
   it('should return valid for date value', async () => {
     const form = createMargaritaForm({
-      name: 'typeof-validator-test-form',
+      name: nanoid(),
       initialValue: new Date(),
       validation: { required: false, typeof: typeofValidator('date', 'Please enter a valid date!') },
     });

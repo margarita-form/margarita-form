@@ -7,6 +7,7 @@ export type NotFunction = string | number | boolean | object | null | undefined 
 export type OrT<T> = T & NeverObj;
 export type OrString = OrT<string>;
 export type OrNumber = OrT<number>;
+export type ReplaceAny<TYPE, WITH = unknown> = TYPE extends any ? WITH : TYPE;
 export type BothTrue<T, U> = T extends true ? (U extends true ? true : false) : false;
 export type EitherTrue<T, U> = T extends true ? true : U extends true ? true : false;
 export type Tail<T extends any[]> = ((...args: T) => any) extends (arg: any, ...rest: infer R) => any ? R : never;

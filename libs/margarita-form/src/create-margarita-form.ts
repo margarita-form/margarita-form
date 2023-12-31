@@ -34,7 +34,7 @@ export const removeFormFromCache = (name: string) => {
  * });
  * ```
  */
-export const createMargaritaForm = <FIELD extends MFF<any>>(field: FIELD, useCache = true): MargaritaForm<FIELD> => {
+export const createMargaritaForm = <FIELD extends MFF<any> = MFF>(field: FIELD, useCache = true): MargaritaForm<FIELD> => {
   const { name } = field;
   if (useCache && typeof name === 'string') {
     const cachedForm = formsCache.get(name);
