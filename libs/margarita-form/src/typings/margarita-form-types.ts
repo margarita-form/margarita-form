@@ -53,7 +53,7 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
   resolvers?: MargaritaFormResolvers;
   validators?: MargaritaFormValidators;
   validation?: MargaritaFormFieldValidation<FP['value']>;
-  dispatcher?: MargaritaFormResolver<FP['value']>;
+  dispatcher?: MargaritaFormResolver<FP['value']> | NotFunction;
   transformer?: MargaritaFormResolver<FP['value']>;
   beforeSubmit?: MargaritaFormResolver;
   afterSubmit?: MargaritaFormResolver;
@@ -201,7 +201,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
 
   setValue(value: VALUE | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): void;
   patchValue(value: Partial<VALUE> | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): void;
-  dispatchValue(value: VALUE | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): Promise<void>;
+  dispatch(action: VALUE | OrAny, setAsDirty?: boolean, emitEvent?: boolean): Promise<void>;
 
   addValue(value: ControlValueItem<FIELD>, mustBeUnique?: boolean, setAsDirty?: boolean, emitEvent?: boolean): void;
   toggleValue(value: ControlValueItem<FIELD>, mustBeUnique?: boolean, setAsDirty?: boolean, emitEvent?: boolean): void;

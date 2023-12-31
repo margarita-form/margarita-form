@@ -7,7 +7,6 @@ import {
   MargaritaFormControlBuildParams,
   ControlLike,
   ControlValue,
-  MargaritaFormResolverOutput,
   CommonRecord,
   ControlChange,
   MargaritaFormControlContext,
@@ -20,7 +19,7 @@ import {
   MargaritaFormConfig,
   MargaritaFormGroupings,
 } from './typings/margarita-form-types';
-import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
 import { isEqual, isIncluded, valueExists } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
@@ -29,6 +28,7 @@ import { ManagerLike } from './managers/base-manager';
 import { ExtensionBase } from './extensions/base/extension-base';
 import { StateFactoryFunction } from './managers/state-manager-helpers/state-factory';
 import { coreResolver } from './helpers/core-resolver';
+import { getResolverOutput, getResolverOutputPromise } from './helpers/resolve-function-outputs';
 
 export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLike<FIELD> {
   public key: string;
@@ -362,19 +362,12 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
   /**
    * Run value through field's dispatcher and set the result as the new value
    */
-  public dispatchValue: ControlLike<FIELD>['dispatchValue'] = async (value, setAsDirty, emitEvent) => {
+  public dispatch: ControlLike<FIELD>['dispatch'] = async (action, setAsDirty, emitEvent) => {
     if (!this.field.dispatcher) return console.warn('No dispatcher defined for this control!');
     const { dispatcher } = this.field;
-    const result = dispatcher({ control: this, value }) as MargaritaFormResolverOutput<ControlValue<FIELD>>;
-    if (result instanceof Promise) {
-      const value = await result;
-      this.setValue(value, setAsDirty, emitEvent);
-    } else if (result instanceof Observable) {
-      const value = await firstValueFrom(result);
-      this.setValue(value, setAsDirty, emitEvent);
-    } else {
-      this.setValue(result, setAsDirty, emitEvent);
-    }
+    const resolver = getResolverOutput<number>('dispatcher', dispatcher, this, this.resolvers, { action });
+    const result = await getResolverOutputPromise('dispatcher', resolver, this);
+    this.setValue(result, setAsDirty, emitEvent);
   };
 
   /**
