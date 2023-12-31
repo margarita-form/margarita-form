@@ -39,12 +39,13 @@ export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 export type FieldName = CoreGetter<string>;
 export type FieldChild<FIELD extends MFF> = CoreGetter<FIELD>;
 export type FieldValue<VALUE = unknown> = CoreGetter<VALUE>;
+export type StartWith = number | (number | string)[];
 
 export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
   name: FP['name'] extends FieldName ? FP['name'] : FieldName;
   fields?: FieldChild<MFGF & FP['fields']>[];
-  grouping?: MargaritaFormGroupings;
-  startWith?: number | (number | string)[];
+  grouping?: CoreGetter<MargaritaFormGroupings>;
+  startWith?: CoreGetter<StartWith>;
   initialValue?: FieldValue<ReplaceAny<FP['value']>>;
   defaultValue?: FieldValue<ReplaceAny<FP['value']>>;
   valueResolver?: MargaritaFormResolver<FP['value']> | NotFunction;

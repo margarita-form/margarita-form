@@ -18,6 +18,7 @@ import {
   Extensions,
   ExtensionInstanceLike,
   MargaritaFormConfig,
+  MargaritaFormGroupings,
 } from './typings/margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
@@ -244,7 +245,7 @@ export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLik
    * Get the way how the child controls should be grouped
    */
   public get grouping(): ControlLike<FIELD>['grouping'] {
-    return this.field.grouping || 'group';
+    return coreResolver<MargaritaFormGroupings>(this.field.grouping, this, false, 'group');
   }
 
   /**

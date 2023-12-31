@@ -46,7 +46,6 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     const { field, fields } = this.control;
     if (!field) throw 'No field provided for control!';
     this._buildWith = field;
-    const { startWith = 1 } = field;
 
     if (this._buildWith && fields && this.control.expectGroup) {
       const controlsToRemove = this.value.filter((control) => {
@@ -69,7 +68,10 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
           throw `Control "${path}" has different fields specified for array grouping without metadata being added to them! Please add "addMetadata" to the control config.`;
         }
 
-        const someFieldsAreNotMaps = fields.filter((field) => !field.fields || ![undefined, 'group'].includes(field.grouping));
+        const someFieldsAreNotMaps = fields.filter((field) => {
+          const grouping = coreResolver(field.grouping, this.control, true);
+          return ![undefined, 'group'].includes(grouping);
+        });
 
         if (someFieldsAreNotMaps.length > 0) {
           throw `Control "${path}" has fields where metadata cannot be added! To fix this, only add fields to the array where child fields are expected and grouping is not array or flat.`;
@@ -79,6 +81,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
       const startFrom = this.value.length;
       const shouldBuildArray = resetControls || startFrom <= 0;
       if (shouldBuildArray && !Array.isArray(this.control.value)) {
+        const startWith = coreResolver<(string | number)[] | number>(field.startWith, this.control, false, 1);
         // Skip if value is already set as it determines the length of the array
         const startWithArray = Array.isArray(startWith)
           ? startWith.map((name) => fields.find((field: MFF) => field.name === name))

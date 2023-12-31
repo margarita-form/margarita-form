@@ -1,13 +1,24 @@
 import { ControlContext, MFC, MFGF, OrT } from '../typings/margarita-form-types';
+import { valueExists } from './check-value';
 
 export type CoreGetterContext = { parent?: MFC; field?: MFGF } & ControlContext;
 export type CoreGetterFn<OUTPUT> = (context: CoreGetterContext) => OUTPUT;
 export type CoreGetter<OUTPUT> = OrT<OUTPUT> | CoreGetterFn<OUTPUT>;
 
-export const coreResolver = <OUTPUT = any>(getter: undefined | CoreGetter<OUTPUT>, control: MFC, asParent = false): OUTPUT => {
+export const coreResolver = <OUTPUT = any>(
+  getter: undefined | CoreGetter<OUTPUT>,
+  control: MFC,
+  asParent = false,
+  defaultValue?: OUTPUT
+): OUTPUT => {
   const controlContext = control.getControlContext();
   const parent = asParent ? control : control.isRoot ? undefined : control.parent;
   const context: CoreGetterContext = { parent, ...controlContext };
-  if (typeof getter === 'function') return getter(context);
+  if (typeof getter === 'function') {
+    const result = getter(context);
+    if (!valueExists(result)) return defaultValue as OUTPUT;
+    return result;
+  }
+  if (!valueExists(getter)) return defaultValue as OUTPUT;
   return getter as OUTPUT;
 };
