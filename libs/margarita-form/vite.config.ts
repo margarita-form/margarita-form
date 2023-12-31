@@ -45,6 +45,8 @@ export default defineConfig({
         'validators/index': 'src/validators/index.ts',
         'validators/add-default-validators': 'src/validators/add-default-validators',
         'validators/add-all-validators': 'src/validators/add-all-validators',
+        /* Resolvers */
+        'resolvers/and-or': 'src/resolvers/and-or/index.ts',
         /* Managers */
         'managers/config-manager': 'src/managers/config-manager.ts',
         'managers/controls-manager': 'src/managers/controls-manager.ts',
