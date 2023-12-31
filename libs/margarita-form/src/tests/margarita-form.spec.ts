@@ -77,7 +77,7 @@ const groupField: TestingField = {
 
 const asyncGroupField: TestingField = {
   name: 'groupName',
-  fields: [{ ...uncommonField, initialValue: null, validation: { asyncGroupValidator: true, required: true } }],
+  fields: [{ ...uncommonField, initialValue: undefined, validation: { asyncGroupValidator: true, required: true } }],
   validators: {
     asyncGroupValidator: ({ value, control }: MargaritaFormControlContext) => {
       if (!value) return { valid: true };
