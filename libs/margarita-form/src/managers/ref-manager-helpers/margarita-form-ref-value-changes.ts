@@ -52,6 +52,10 @@ export const setControlValueOnNodeValueChanges = <CONTROL extends MFC = MFC>({
   return fromEvent<InputEvent>(node, 'input').subscribe(() => {
     try {
       const getNodeValue = () => {
+        if (type === 'file' && node.files) {
+          return node.files;
+        }
+
         if (type === 'checkbox') {
           if (multiple) {
             const isDefaultValue = /on|off/gi.test(String(node.value));

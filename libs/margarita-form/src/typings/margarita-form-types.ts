@@ -144,6 +144,7 @@ export type MargaritaFormBaseElement<CONTROL extends MFC = MFC<MFGF>, NODE exten
   controls?: CONTROL[];
   value?: unknown;
   checked?: boolean;
+  files?: FileList;
   multiple?: boolean;
   form?: HTMLFormElement;
   type?: string;
