@@ -30,7 +30,7 @@ import { StateFactoryFunction } from './managers/state-manager-helpers/state-fac
 import { coreResolver } from './helpers/core-resolver';
 import { getResolverOutput, getResolverOutputPromise } from './helpers/resolve-function-outputs';
 
-export class MargaritaFormControl<FIELD extends MFF = MFF> implements ControlLike<FIELD> {
+export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements ControlLike<FIELD> {
   public key: string;
   public uid: string;
   public syncId: string = nanoid(4);

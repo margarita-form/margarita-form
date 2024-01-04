@@ -14,7 +14,7 @@ export interface BroadcasterMessage<DATA = unknown> {
 }
 
 declare module '../../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF = MFF> {
+  export interface MargaritaFormControl<FIELD extends MFF<any> = MFF> {
     get syncronization(): Extensions['syncronization'];
   }
 }

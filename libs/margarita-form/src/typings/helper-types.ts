@@ -73,7 +73,7 @@ export type ChildControl<
   CHILD_FIELD extends MFF = ChildField<PARENT_FIELD>
 > = FIELD_TYPE extends MFC
   ? FIELD_TYPE
-  : FIELD_TYPE extends MFF
+  : FIELD_TYPE extends MFF<any>
   ? MFC<FIELD_TYPE>
   : IDENTIFIER extends any[]
   ? MFC<CHILD_FIELD>

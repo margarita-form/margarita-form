@@ -10,7 +10,7 @@ export interface StorageExtensionConfig {
 }
 
 declare module '../../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF = MFF> {
+  export interface MargaritaFormControl<FIELD extends MFF<any> = MFF> {
     get storage(): Extensions['storage'];
   }
 }

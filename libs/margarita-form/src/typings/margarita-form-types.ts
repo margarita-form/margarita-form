@@ -301,17 +301,17 @@ export type MFF<FP extends FieldParams = FieldParams> = MargaritaFormField<FP>;
 /** Shorthand for {@link MargaritaFormGeneralField} */
 export type MFGF<FP extends FieldParams = FieldParams> = MargaritaFormGeneralField<FP>;
 /** Shorthand for {@link MargaritaForm}  */
-export type MF<FIELD extends MFF = MFGF> = MargaritaForm<FIELD>;
+export type MF<FIELD extends MFF<any> = MFGF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
-export type MFC<FIELD extends MFF = MFGF> = MargaritaFormControl<FIELD>;
+export type MFC<FIELD extends MFF<any> = MFGF> = MargaritaFormControl<FIELD>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE<CONTROL extends MFC = MFC<MFGF>> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */
-export type MFCG<FIELD extends MFF = MFGF> = Record<string, MFC<FIELD>>;
+export type MFCG<FIELD extends MFF<any> = MFGF> = Record<string, MFC<FIELD>>;
 /** Margarita form controls as array */
-export type MFCA<FIELD extends MFF = MFGF> = MFC<FIELD>[];
+export type MFCA<FIELD extends MFF<any> = MFGF> = MFC<FIELD>[];
 /** Get child control */
-export type MFCCF<FIELD extends MFF> = MFC<ChildField<FIELD>>;
+export type MFCCF<FIELD extends MFF<any>> = MFC<ChildField<FIELD>>;
 
 // Export types
 

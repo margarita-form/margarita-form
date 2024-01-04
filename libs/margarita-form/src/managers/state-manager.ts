@@ -32,7 +32,7 @@ declare module '../typings/expandable-types' {
 }
 
 declare module '../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF> {
+  export interface MargaritaFormControl<FIELD extends MFF<any>> {
     _getStateFactories(global?: boolean): StateFactoryFunction[];
   }
 }
