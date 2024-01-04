@@ -96,7 +96,7 @@ interface I18NContent {
   description?: string;
 }
 
-type DefaultTypes = 'text' | 'number' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group';
+type DefaultTypes = 'text' | 'file' | 'number' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group';
 export interface CustomFieldBase<TYPE extends string = DefaultTypes, VALUE = unknown, FIELDS extends MFF = any>
   extends MargaritaFormField<{ value: VALUE; fields: FIELDS; i18n: I18NContent }> {
   type: TYPE;
@@ -410,7 +410,7 @@ const FormField = ({ control }: FormFieldProps) => {
       );
 
     default:
-      if (['text', 'number'].includes(control.field.type)) {
+      if (['text', 'number', 'file'].includes(control.field.type)) {
         return (
           <div className="field-wrapper">
             <label htmlFor={uid}>{control.field.title}</label>
