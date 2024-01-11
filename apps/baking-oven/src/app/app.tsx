@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import { useMargaritaForm, MargaritaFormField, Form, MFC, MargaritaFormControl, MFF } from '@margarita-form/react';
+import { LocalStorageExtension } from '@margarita-form/core/extensions/browser-local-storage';
+import { SearchParamsStorageExtension } from '@margarita-form/core/extensions/browser-search-params-storage';
 import { useState } from 'react';
 import { recipeConfig } from './fields/receipe';
 import { websiteConfig } from './fields/website';
@@ -119,6 +121,15 @@ const locales = {
   fi: { title: 'Finnish' },
 } as const;
 
+// const storage = LocalStorageExtension.withConfig({
+//   //
+// });
+
+const storage = SearchParamsStorageExtension.withConfig({
+  storageKey: 'name',
+  storageStrategy: 'end',
+});
+
 export function App({ children }: { children?: React.ReactNode }) {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
   const [currentFields, setCurrentFields] = useState(helloWorldConfig);
@@ -128,8 +139,7 @@ export function App({ children }: { children?: React.ReactNode }) {
     ...currentFields,
     localize: true,
     locales,
-    useStorage: 'localStorage',
-    useSyncronization: 'broadcastChannel',
+    extensions: [storage],
     handleLocalize: {
       parent: () => {
         return {
@@ -395,13 +405,13 @@ const FormField = ({ control }: FormFieldProps) => {
           {control.field.fields?.map((field) => {
             return (
               <button
-                key={field.name}
+                key={field.name as string}
                 type="button"
                 onClick={() => {
                   control.appendControl(field.name);
                 }}
               >
-                Add new {field.title}
+                Add new
               </button>
             );
           })}

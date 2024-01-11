@@ -5,7 +5,7 @@ const helloWorldFields: CustomField[] = [
     type: 'text',
     name: 'title',
     title: 'Title',
-    initialValue: 'Hello world!',
+    defaultValue: 'Hello world!',
     validation: {
       required: true,
     },
