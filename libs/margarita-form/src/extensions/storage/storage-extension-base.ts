@@ -20,6 +20,10 @@ export class StorageExtensionBase extends ExtensionBase {
 
   public override activeCheck = (control: MFC) => {
     const { storageStrategy } = this.getConfig(control);
+    // Allow storage if strategy is 'manual' and control's field has "storage: true"
+    if (storageStrategy === 'manual') {
+      return !!control.field.storage;
+    }
     // Allow storage if strategy is 'end' and control has no child controls
     if (storageStrategy === 'end') {
       if (control.expectChildControls) return false;

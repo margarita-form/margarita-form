@@ -5,7 +5,7 @@ import { StorageExtensionBase } from './storage-extension-base';
 export interface StorageExtensionConfig {
   clearStorageOnSuccessfullSubmit?: boolean;
   storageKey?: 'key' | 'name' | GenerateKeyFunction;
-  storageStrategy?: 'start' | 'end';
+  storageStrategy?: 'start' | 'end' | 'manual';
   resolveInitialValuesFromSearchParams?: boolean;
 }
 
@@ -16,6 +16,10 @@ declare module '../../margarita-form-control' {
 }
 
 declare module '../../typings/expandable-types' {
+  export interface FieldBase<PARAMS extends FieldParams> {
+    storage?: boolean;
+  }
+
   export interface Extensions {
     storage: StorageExtensionBase;
   }
