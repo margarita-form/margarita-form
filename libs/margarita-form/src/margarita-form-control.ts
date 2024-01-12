@@ -432,9 +432,10 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   };
 
   public get validators(): ControlLike<FIELD>['validators'] {
-    const fieldValidators = this.field.validators || {};
-    const parentValidators = this._buildParams.parent?.field?.validators || {};
     const defaultValidators = MargaritaFormControl.validators;
+    const fieldValidators = this.field.validators || {};
+    if (this.isRoot) return { ...defaultValidators, ...fieldValidators };
+    const parentValidators = this.parent.validators;
     return { ...defaultValidators, ...parentValidators, ...fieldValidators };
   }
 
@@ -496,7 +497,8 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
    */
   public get resolvers(): ControlLike<FIELD>['resolvers'] {
     const fieldResolvers = this.field.resolvers || {};
-    const parentResolvers = this._buildParams.parent?.field?.resolvers || {};
+    if (this.isRoot) return fieldResolvers;
+    const parentResolvers = this.parent.resolvers;
     return { ...parentResolvers, ...fieldResolvers };
   }
 
