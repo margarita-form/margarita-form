@@ -12,7 +12,7 @@ export class ExtensionBase {
   handleValueUpdate?: <T>(control: MFC, value: T) => void | Promise<void>;
   getValueSnapshot?: <T>(control: MFC) => T | undefined;
   // Control manager
-  modifyField?: (field: any, parentControl: MFC) => any;
+  modifyField?: (field: any, parent?: MFC) => any;
   // Events manager
   afterSubmit?: (control: MFC) => void | Promise<void>;
   // Lifecycle

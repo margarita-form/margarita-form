@@ -172,22 +172,8 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
     });
   }
 
-  public addControl<FIELD extends MFF = CONTROL['field']>(
-    field: FIELD,
-    resetControl = false,
-    emit = true,
-    allowModifiers = true
-  ): MFC<FIELD> {
+  public addControl<FIELD extends MFF = CONTROL['field']>(field: FIELD, resetControl = false, emit = true): MFC<FIELD> {
     if (!field) throw 'No field provided!';
-
-    if (allowModifiers) {
-      for (const extension of this.control.activeExtensions) {
-        if (extension.modifyField) {
-          const modified = extension.modifyField(field, this.control) as FIELD;
-          if (modified) return this.addControl(modified, resetControl, emit, false);
-        }
-      }
-    }
 
     if (this.control.expectGroup && !resetControl) {
       const existingControl = this.getControl(field.name);

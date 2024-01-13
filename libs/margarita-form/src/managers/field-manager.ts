@@ -1,5 +1,5 @@
 import { BaseManager, ManagerName } from './base-manager';
-import { MFC, MFF } from '../typings/margarita-form-types';
+import { MFC, MFF, MFGF } from '../typings/margarita-form-types';
 import { coreResolver } from '../helpers/core-resolver';
 import { valueExists } from '../helpers/check-value';
 
@@ -20,9 +20,21 @@ class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
   }
 
   private _emitChanges() {
-    this.control.field = this.value as typeof this.control.field;
     this.emitChange(this.value);
   }
+
+  private _setValue = (field: MFGF) => {
+    const modified = this.control.activeExtensions.reduce((current, extension) => {
+      if (extension.modifyField) {
+        const parent = this.control.isRoot ? undefined : this.control.parent;
+        const modified = extension.modifyField(current, parent);
+        if (modified) return modified;
+      }
+      return current;
+    }, field);
+    this.value = modified;
+    this.control.field = this.value;
+  };
 
   public getChildFields = <FIELD extends MFF = MFF | CONTROL['field']>(): FIELD[] => {
     const { fields } = this.value;
@@ -44,7 +56,7 @@ class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
     if (!field) return;
     const fieldIsSame = this.value && field && this.value === field;
     if (fieldIsSame) return;
-    this.value = field;
+    this._setValue(field);
     this.shouldResetControl = resetControl;
     this._emitChanges();
   }

@@ -37,9 +37,9 @@ export class I18NExtension extends ExtensionBase {
     });
   }
 
-  public override modifyField = (field: MFF, parentControl: MFC): MFGF => {
-    if (!field.localize) return field;
-    return this.localizeField(parentControl, field);
+  public override modifyField = (field: MFF, parent?: MFC): MFGF => {
+    if (!field.localize || !parent) return field;
+    return this.localizeField(field, parent);
   };
 
   get locales() {
@@ -67,7 +67,7 @@ export class I18NExtension extends ExtensionBase {
     return Object.fromEntries(entries);
   }
 
-  public localizeField<FIELD extends MFC['field']>(parent: MFC, field: FIELD): MFF {
+  public localizeField<FIELD extends MFC['field']>(field: FIELD, parent: MFC): MFF {
     const { localizationOutput } = this.getConfig(parent);
     const locales = parent.locales || [];
     const localeNames = Object.keys(locales);
