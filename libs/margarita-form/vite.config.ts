@@ -58,6 +58,7 @@ export default defineConfig({
         'managers/value-manager': 'src/managers/value-manager.ts',
         /* Extensions */
         'extensions/i18n/i18n-extension': 'src/extensions/i18n/i18n-extension.ts',
+        'extensions/field-modifiers/field-modifiers-extension': 'src/extensions/field-modifiers/field-modifiers-extension.ts',
         'extensions/storage/storage-extension-base': 'src/extensions/storage/storage-extension-base.ts',
         'extensions/storage/browser-local-storage': 'src/extensions/storage/browser-local-storage.ts',
         'extensions/storage/browser-search-params-storage': 'src/extensions/storage/browser-search-params-storage.ts',

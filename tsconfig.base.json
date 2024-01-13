@@ -26,6 +26,9 @@
       "@margarita-form/core/extensions/browser-syncronization": [
         "libs/margarita-form/src/extensions/syncronization/browser-syncronization.ts"
       ],
+      "@margarita-form/core/extensions/field-modifiers-extension": [
+        "libs/margarita-form/src/extensions/field-modifiers/field-modifiers-extension.ts"
+      ],
       "@margarita-form/core/extensions/i18n-extension": ["libs/margarita-form/src/extensions/i18n/i18n-extension.ts"],
       "@margarita-form/core/extensions/storage-extension-base": ["libs/margarita-form/src/extensions/storage/storage-extension-base.ts"],
       "@margarita-form/core/extensions/syncronization-extension-base": [
