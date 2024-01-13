@@ -110,6 +110,9 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
       Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
       this.controls.forEach((control) => control.initialize(false, true));
     }
+    this.activeExtensions.forEach(({ afterReady }) => {
+      if (afterReady) afterReady(this);
+    });
   }
 
   /**
@@ -735,8 +738,9 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   // Submit
 
   public get onSubmit(): ControlLike<FIELD>['onSubmit'] {
-    return this.getStateChanges('submits').pipe(
-      filter((submits) => submits > 0),
+    type EventsChange = { name: string; change: { event: string } };
+    return this.ownChanges.pipe(
+      filter<any>(({ name, change }: EventsChange) => name === 'events' && change.event === 'submit'),
       map(() => this)
     );
   }

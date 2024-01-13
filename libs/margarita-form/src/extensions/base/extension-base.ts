@@ -16,6 +16,7 @@ export class ExtensionBase {
   // Events manager
   afterSubmit?: (control: MFC) => void | Promise<void>;
   // Lifecycle
+  afterReady?: (control: MFC) => void | Promise<void>;
   onCleanup?: (control: MFC) => void | Promise<void>;
 
   public getConfig(control = this.root): this['config'] {

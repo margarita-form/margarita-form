@@ -77,6 +77,10 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
           submits: submits + 1,
           submitOutput,
         });
+        this.emitChange({
+          event: 'submit',
+          state: this.control.state,
+        });
         return submitOutput;
       }
 
@@ -90,6 +94,10 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
         disabled: false,
         submits: submits + 1,
         submitOutput,
+      });
+      this.emitChange({
+        event: 'submit',
+        state: this.control.state,
       });
       return submitOutput;
     } catch (error) {
