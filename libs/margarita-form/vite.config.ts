@@ -64,6 +64,7 @@ export default defineConfig({
         'extensions/storage/browser-session-storage': 'src/extensions/storage/browser-session-storage.ts',
         'extensions/syncronization/syncronization-extension-base': 'src/extensions/syncronization/syncronization-extension-base.ts',
         'extensions/syncronization/browser-syncronization': 'src/extensions/syncronization/browser-syncronization.ts',
+        'extensions/unload/unload-extension': 'src/extensions/unload/unload-extension.ts',
       },
       fileName: (format, entryName) => {
         const ext = format === 'es' ? 'js' : format;

@@ -99,6 +99,10 @@
     "./extensions/syncronization/browser-syncronization": {
       "import": "./extensions/syncronization/browser-syncronization.js",
       "require": "./extensions/syncronization/browser-syncronization.cjs"
+    },
+    "./extensions/unload/unload-extension": {
+      "import": "./extensions/unload/unload-extension.js",
+      "require": "./extensions/unload/unload-extension.cjs"
     }
   },
   "typedoc": {
