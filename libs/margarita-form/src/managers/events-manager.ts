@@ -26,16 +26,17 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
   }
 
   public submit = async <T>(params?: T) => {
-    const { validate, updateStateValue, updateState, reset, managers, field, config, state } = this.control;
+    const { validate, updateStateValue, updateState, reset, resetValue, resetState, enable, managers, field, config, state } = this.control;
     try {
       await validate();
       const { formAction, useNativeSubmit } = managers.ref;
       if (!field.handleSubmit && !formAction && !useNativeSubmit)
         throw 'Add "handleSubmit" option to field or define action to form element to submit the form!';
-      const canSubmit = config.allowConcurrentSubmits || !state.submitting;
+      const { allowConcurrentSubmits, disableFormWhileSubmitting, handleSuccesfullSubmit } = config;
+      const canSubmit = allowConcurrentSubmits || !state.submitting;
       if (!canSubmit) throw 'Form is already submitting!';
       await updateStateValue('submitting', true);
-      if (config.disableFormWhileSubmitting) await updateStateValue('disabled', true);
+      if (disableFormWhileSubmitting) await updateStateValue('disabled', true);
 
       // Handle valid submit
       if (state.valid || config.allowInvalidSubmit) {
@@ -48,15 +49,19 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
               return submitOutput.value;
             } else {
               await updateStateValue('submitResult', 'success');
-              switch (config.handleSuccesfullSubmit) {
+              if (disableFormWhileSubmitting && handleSuccesfullSubmit !== 'disable') enable();
+              switch (handleSuccesfullSubmit) {
                 case 'disable':
                   await updateStateValue('disabled', true);
                   break;
                 case 'reset':
                   reset();
                   break;
-                default:
-                  await updateStateValue('disabled', false);
+                case 'reset-value':
+                  resetValue();
+                  break;
+                case 'reset-state':
+                  resetState();
                   break;
               }
               await this._handleAfterSubmit();

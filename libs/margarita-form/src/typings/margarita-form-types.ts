@@ -131,7 +131,7 @@ export interface MargaritaFormConfig extends Partial<Configs> {
   resolveNodeTypeValidationsToControl?: boolean;
   disableFormWhileSubmitting?: boolean;
   allowInvalidSubmit?: boolean;
-  handleSuccesfullSubmit?: 'disable' | 'enable' | 'reset';
+  handleSuccesfullSubmit?: 'disable' | 'reset' | 'reset-value' | 'reset-state' | 'none';
   resetFormOnFieldChanges?: boolean;
   showDebugMessages?: boolean;
   transformUndefinedToNull?: boolean;
