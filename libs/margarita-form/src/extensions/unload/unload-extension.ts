@@ -1,8 +1,9 @@
 import { Subscription, distinctUntilKeyChanged, filter, fromEvent, map, skip, switchMap, takeUntil } from 'rxjs';
-import { MFC } from '../../typings/margarita-form-types';
+import { ExtensionName, MFC } from '../../typings/margarita-form-types';
 import { ExtensionBase } from '../base/extension-base';
 
 export class UnloadExtension extends ExtensionBase {
+  public static override extensionName: ExtensionName = 'unload';
   private subscriptions: Subscription[] = [];
 
   constructor(public override root: MFC) {
