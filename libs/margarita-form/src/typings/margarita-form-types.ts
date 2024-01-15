@@ -15,7 +15,7 @@ import {
   MargaritaFormStateAllErrors,
   MargaritaFormStateChildren,
   MargaritaFormValidator,
-  MargaritaFormControlContext,
+  ControlContext,
 } from './core-types';
 import {
   ControlValue,
@@ -30,7 +30,7 @@ import {
   ControlChangeName,
 } from './helper-types';
 import { NotFunction, OrAny, OrString, ReplaceAny } from './util-types';
-import { Configs, ControlContext, Extensions, FieldBase, FieldParams, Managers } from './expandable-types';
+import { Configs, Context, Extensions, FieldBase, FieldParams, Managers } from './expandable-types';
 import { ExtensionInstanceLike, ExtensionsArray } from './derived-types';
 import { CoreGetter } from '../helpers/core-resolver';
 
@@ -68,7 +68,7 @@ export interface MargaritaFormField<FP extends FieldParams = FieldParams> extend
     | MargaritaFormSubmitHandler<MFGF<{ value: FP['value'] }>>
     | MargaritaFormSubmitHandlers<MFGF<{ value: FP['value'] }>>;
   config?: MargaritaFormConfig;
-  context?: ControlContext;
+  context?: Context;
   managers?: Partial<Managers>;
   extensions?: ExtensionsArray;
   __params?: FP;
@@ -80,18 +80,20 @@ interface MargaritaFormGeneralField<FP extends FieldParams = any> extends MFF<FP
   [key: string]: OrAny;
 }
 
-export interface UserDefinedStates<TYPE = MargaritaFormFieldState, ALLOW_RESOLVER = false> {
-  enabled: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  disabled: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  editable: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  readOnly: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  active: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  inactive: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  hidden: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
-  visible: ALLOW_RESOLVER extends true ? TYPE | `$$${string}` : TYPE;
+type UserDefinedStateResolver<TYPE = MargaritaFormFieldState> = TYPE | `$$${string}`;
+
+export interface UserDefinedStates<TYPE = unknown> {
+  enabled: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  disabled: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  editable: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  readOnly: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  active: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  inactive: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  hidden: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+  visible: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
 }
 
-export type UserDefinedStatesField = Partial<UserDefinedStates<MargaritaFormFieldState, true>>;
+export type UserDefinedStatesField = Partial<UserDefinedStates>;
 
 export interface MargaritaFormState extends UserDefinedStates<boolean> {
   pristine: boolean;
@@ -291,7 +293,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   clear(resetChildren?: boolean): void;
 
   getFieldValue<OUTPUT = unknown>(key: keyof FIELD, defaultValue?: OUTPUT): OUTPUT;
-  get context(): MargaritaFormControlContext<MFC<FIELD>, never>;
+  get context(): ControlContext<MFC<FIELD>, never>;
 }
 
 // Shorthands

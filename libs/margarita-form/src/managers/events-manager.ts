@@ -1,6 +1,6 @@
 import { BaseManager, ManagerName } from './base-manager';
-import { MFC, MargaritaFormControlContext } from '../typings/margarita-form-types';
-import { resolveOutput, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
+import { MFC, ControlContext } from '../typings/margarita-form-types';
+import { resolve, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';
 
 // Extends types
@@ -121,7 +121,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
       throw 'No submit handler for valid submit!';
     }
 
-    const context = this.control.generateContext(params) as MargaritaFormControlContext<any>;
+    const context = this.control.generateContext(params) as ControlContext<any>;
 
     if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(context));
 
@@ -130,7 +130,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
     if (typeof handleSubmit === 'object' && handleSubmit.valid) return await Promise.resolve(handleSubmit.valid(context));
 
-    const resolver = resolveOutput({ getter: handleSubmit, control: this.control, strict: true });
+    const resolver = resolve({ getter: handleSubmit, control: this.control, strict: true });
 
     if (resolver) return await getResolverOutputPromise('handleSubmit', resolver, this.control);
 
@@ -151,7 +151,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
 
   private async _resolveInvalidSubmitHandler<T>(params: T): Promise<any> {
     const { handleSubmit } = this.control.field;
-    const context = this.control.generateContext(params) as MargaritaFormControlContext<any>;
+    const context = this.control.generateContext(params) as ControlContext<any>;
     const defaultHandler = () => console.log('Form is invalid!', { form: this });
     if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
     if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(context));
@@ -165,7 +165,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
    */
   public _resolveSubmitHandler = async (key: 'beforeSubmit' | 'afterSubmit'): Promise<void> => {
     const { field, controls } = this.control;
-    const resolver = resolveOutput({ getter: field[key], control: this.control });
+    const resolver = resolve({ getter: field[key], control: this.control });
     if (resolver) await getResolverOutputPromise(key, resolver, this.control);
     const childHandlers = controls.map((control) => {
       const eventsManager = control.managers.events;

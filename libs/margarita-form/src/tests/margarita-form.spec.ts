@@ -1,5 +1,5 @@
 import { debounceTime, firstValueFrom, map } from 'rxjs';
-import { MFC, MFF, MargaritaFormField, MargaritaFormControlContext } from '../typings/margarita-form-types';
+import { MFC, MFF, MargaritaFormField, ControlContext } from '../typings/margarita-form-types';
 import { nanoid } from 'nanoid';
 import { SubmitError } from '../classes/submit-error';
 import { createMargaritaForm } from '../index';
@@ -31,12 +31,12 @@ const invalidField: TestingField = {
       params: 20,
       errorMessage: 'Value is way way way too high!',
     },
-    max: async ({ value }: MargaritaFormControlContext) => {
+    max: async ({ value }: ControlContext) => {
       if (!value) return { valid: true };
       if (value > 42) return { valid: false, error: 'Value must be under 42!' };
       return { valid: true };
     },
-    divisible: async ({ value }: MargaritaFormControlContext) => {
+    divisible: async ({ value }: ControlContext) => {
       if (!value) return { valid: true };
       const remainderIsZero = value % 5 === 0;
       if (remainderIsZero) return { valid: true };
@@ -44,13 +44,13 @@ const invalidField: TestingField = {
     },
   },
   validators: {
-    pattern: ({ value }: MargaritaFormControlContext) => {
+    pattern: ({ value }: ControlContext) => {
       if (!value) return { valid: true };
       const isPattern = /\d\d/gi.test(String(value));
       if (isPattern) return { valid: true };
       return { valid: false, error: 'Value must have two digits!' };
     },
-    customValidator: ({ value }: MargaritaFormControlContext) => {
+    customValidator: ({ value }: ControlContext) => {
       if (!value) return { valid: true };
       const isPattern = /\d5/gi.test(String(value));
       if (isPattern) return { valid: true };
@@ -79,7 +79,7 @@ const asyncGroupField: TestingField = {
   name: 'groupName',
   fields: [{ ...uncommonField, initialValue: undefined, validation: { asyncGroupValidator: true, required: true } }],
   validators: {
-    asyncGroupValidator: ({ value, control }: MargaritaFormControlContext) => {
+    asyncGroupValidator: ({ value, control }: ControlContext) => {
       if (!value) return { valid: true };
       return control.root.valueChanges.pipe(
         map((rootValue) => {

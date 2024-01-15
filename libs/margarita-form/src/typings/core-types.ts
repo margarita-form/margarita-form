@@ -2,9 +2,10 @@ import type { Observable } from 'rxjs';
 import { MF, MFC, MFF, MFGF, MargaritaFormState } from './margarita-form-types';
 import { CommonRecord, NotFunction, OrString } from './util-types';
 import { Validation } from './resolver-types';
-import { ControlContext, Extensions } from './expandable-types';
+import { Context, Extensions } from './expandable-types';
+import { Resolver } from '../classes/resolver';
 
-export interface MargaritaFormControlBuildParams {
+export interface ControlBuildParams {
   root?: MF | MFC;
   parent?: MF | MFC;
   initialIndex?: number;
@@ -12,24 +13,22 @@ export interface MargaritaFormControlBuildParams {
   extensions: Extensions;
 }
 
-export interface MargaritaFormControlContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends ControlContext {
+export interface ControlContext<CONTROL extends MFC = MFC<MFGF>, PARAMS = any> extends Context {
   control: CONTROL;
   value: CONTROL['value'] | undefined;
   params?: PARAMS;
   errorMessage?: string;
 }
 
-export type MargaritaFormResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
+export type ResolverOutput<OUTPUT = unknown> = OUTPUT | Promise<OUTPUT> | Observable<OUTPUT>;
 
-export type MargaritaFormContextFunction<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = (
-  context: MargaritaFormControlContext<CONTROL, PARAMS>
+export type ContextFunction<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = (
+  context: ControlContext<CONTROL, PARAMS>
 ) => OUTPUT;
 
-export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> = MargaritaFormContextFunction<
-  MargaritaFormResolverOutput<OUTPUT>,
-  PARAMS,
-  CONTROL
->;
+export type MargaritaFormResolver<OUTPUT = unknown, PARAMS = unknown, CONTROL extends MFC = MFC<MFGF>> =
+  | Resolver<OUTPUT>
+  | ContextFunction<ResolverOutput<OUTPUT>, PARAMS, CONTROL>;
 
 export type MargaritaFormFieldAttributes = CommonRecord<any | MargaritaFormResolver<any>>;
 
@@ -69,12 +68,12 @@ export type MargaritaFormStateErrors = Record<string, unknown>;
 export type MargaritaFormStateAllErrors = { path: string; errors: MargaritaFormStateErrors; control: MFC }[];
 export type MargaritaFormStateChildren = MargaritaFormState[];
 
-export type MargaritaFormFieldState = MargaritaFormResolverOutput<boolean> | MargaritaFormResolver<boolean>;
+export type MargaritaFormFieldState = ResolverOutput<boolean> | MargaritaFormResolver<boolean>;
 
 export type GenerateKeyFunction = (control: MFC) => string;
 
 export type MargaritaFormSubmitHandler<FIELD extends MFF = MFGF, PARAMS = any> = (
-  context: MargaritaFormControlContext<MFC<FIELD>, PARAMS>
+  context: ControlContext<MFC<FIELD>, PARAMS>
 ) => unknown | Promise<unknown>;
 
 export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFGF> {

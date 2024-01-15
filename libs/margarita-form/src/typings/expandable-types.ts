@@ -12,7 +12,7 @@ export interface FieldParams {
 export interface FieldBase<PARAMS extends FieldParams> {
   // Empty by default
 }
-export interface ControlContext {
+export interface Context {
   [key: string]: unknown;
 }
 

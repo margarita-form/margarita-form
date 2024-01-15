@@ -15,6 +15,7 @@ export * from './managers/state-manager-helpers/state-classes';
 export * from './managers/state-manager-helpers/state-factory';
 
 export * from './classes/submit-error';
+export * from './classes/resolver';
 
 export * from './helpers/check-value';
 export * from './helpers/to-hash';

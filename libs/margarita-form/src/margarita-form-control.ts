@@ -4,12 +4,12 @@ import {
   MargaritaFormResolvers,
   MargaritaFormState,
   MargaritaFormValidators,
-  MargaritaFormControlBuildParams,
+  ControlBuildParams,
   ControlLike,
   ControlValue,
   CommonRecord,
   ControlChange,
-  MargaritaFormControlContext,
+  ControlContext,
   MargaritaFormValidator,
   MFC,
   ControlChangeName,
@@ -28,7 +28,7 @@ import { ManagerLike } from './managers/base-manager';
 import { ExtensionBase } from './extensions/base/extension-base';
 import { StateFactoryFunction } from './managers/state-manager-helpers/state-factory';
 import { coreResolver } from './helpers/core-resolver';
-import { getResolverOutput, getResolverOutputPromise } from './helpers/resolve-function-outputs';
+import { solveResolver, getResolverOutputPromise, resolve } from './helpers/resolve-function-outputs';
 
 export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements ControlLike<FIELD> {
   public key: string;
@@ -42,7 +42,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
 
   constructor(
     public field: FIELD,
-    public _buildParams: MargaritaFormControlBuildParams = {
+    public _buildParams: ControlBuildParams = {
       idStore: new Set<string>(),
       extensions: {} as Extensions,
     }
@@ -61,7 +61,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
       this._startAfterInitializeLoop();
       this.managers.value.refreshSync();
     }
-    if (field.onCreate) field.onCreate(this.context);
+    if (field.onCreate) resolve({ getter: field.onCreate, control: this });
   }
 
   public get extensions(): ControlLike<FIELD>['extensions'] {
@@ -368,7 +368,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   public dispatch: ControlLike<FIELD>['dispatch'] = async (action, setAsDirty, emitEvent) => {
     if (!this.field.dispatcher) return console.warn('No dispatcher defined for this control!');
     const { dispatcher } = this.field;
-    const resolver = getResolverOutput<number>('dispatcher', dispatcher, this, this.resolvers, { action });
+    const resolver = solveResolver<number>('dispatcher', dispatcher, this, this.resolvers, { action });
     const result = await getResolverOutputPromise('dispatcher', resolver, this);
     this.setValue(result, setAsDirty, emitEvent);
   };
@@ -816,9 +816,9 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   /**
    * @internal
    */
-  public generateContext = <PARAMS>(params?: PARAMS, overrides: CommonRecord = {}): MargaritaFormControlContext<typeof this, PARAMS> => {
+  public generateContext = <PARAMS>(params?: PARAMS, overrides: CommonRecord = {}): ControlContext<typeof this, PARAMS> => {
     const controlContext = this.getControlContext();
-    const context: MargaritaFormControlContext<typeof this, PARAMS> = {
+    const context: ControlContext<typeof this, PARAMS> = {
       control: this,
       value: this.value,
       ...controlContext,
@@ -889,7 +889,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   public static managers = {} as Record<string, ManagerLike>;
   public static extensions: Set<typeof ExtensionBase> = new Set();
   public static validators = {} as Record<string, MargaritaFormValidator>;
-  public static context: Partial<MargaritaFormControlContext<any>> = {};
+  public static context: Partial<ControlContext<any>> = {};
   public static states: Set<StateFactoryFunction> = new Set();
 
   public static extend = (source: Partial<MargaritaFormControl<any>> & ThisType<MargaritaFormControl<any>>): void => {
@@ -936,15 +936,15 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
     MargaritaFormControl.validators[key] = validator;
   };
 
-  public static addContextValue = <T extends keyof MargaritaFormControlContext>(key: T, value: MargaritaFormControlContext[T]): void => {
+  public static addContextValue = <T extends keyof ControlContext>(key: T, value: ControlContext[T]): void => {
     MargaritaFormControl.context[key] = value;
   };
 
-  public static removeContextValue = <T extends keyof MargaritaFormControlContext>(key: T): void => {
+  public static removeContextValue = <T extends keyof ControlContext>(key: T): void => {
     delete MargaritaFormControl.context[key];
   };
 
-  public static extendContext = (context: Partial<MargaritaFormControlContext>): void => {
+  public static extendContext = (context: Partial<ControlContext>): void => {
     MargaritaFormControl.context = { ...MargaritaFormControl.context, ...context };
   };
 

@@ -6,13 +6,13 @@ import {
   FieldParams,
   MFC,
   MFF,
-  MargaritaFormContextFunction,
+  ContextFunction,
   MargaritaFormResolver,
-  MargaritaFormResolverOutput,
+  ResolverOutput,
   NotFunction,
   ResolverParams,
 } from '../typings/margarita-form-types';
-import { resolveOutput, getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
+import { resolve, getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';
 import { valueIsAsync } from '../helpers/async-checks';
 
@@ -40,8 +40,8 @@ declare module '../typings/margarita-form-types' {
   }
 }
 
-type ParamsValue<T> = ResolverParams | MargaritaFormResolverOutput<T> | MargaritaFormResolver<T>;
-type ParamsSnapshotValue<T> = T | MargaritaFormContextFunction<T>;
+type ParamsValue<T> = ResolverParams | ResolverOutput<T> | MargaritaFormResolver<T>;
+type ParamsSnapshotValue<T> = T | ContextFunction<T>;
 
 export class Param<T = unknown> {
   constructor(public from: ParamsValue<T>, public snapshotValue?: ParamsSnapshotValue<T>) {}
@@ -94,7 +94,7 @@ export class ParamsManager<CONTROL extends MFC> extends BaseManager<Params> {
       (acc: Params, [key, value]: [string, any]) => {
         if (value instanceof Param) {
           hasParams = true;
-          const fromValue = resolveOutput({ getter: value.from, control: this.control });
+          const fromValue = resolve({ getter: value.from, control: this.control });
           const fromIsAsync = valueIsAsync(fromValue);
           const syncronousValue = fromIsAsync ? value.snapshotValue : fromValue;
           acc[key] = snapshot ? syncronousValue : value.from;
