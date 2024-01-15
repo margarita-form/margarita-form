@@ -40,16 +40,18 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   public initialized = false;
   public ready = false;
   public changes: BehaviorSubject<ControlChange>;
+  public field: FIELD;
 
   constructor(
-    public field: FIELD,
+    public _field: FIELD,
     public _buildParams: ControlBuildParams = {
       idStore: new Set<string>(),
       extensions: {} as Extensions,
     }
   ) {
+    this.field = _field;
     this.changes = new BehaviorSubject<ControlChange>({ control: this, change: undefined, name: 'initialize' });
-    if (!field.name) throw 'Missing name in field: ' + (this.isRoot ? 'root' : this.getPath('default').join(' > ') + '*');
+    if (!this.field.name) throw 'Missing name in field: ' + (this.isRoot ? 'root' : this.getPath('default').join(' > ') + '*');
 
     this.key = this._generateKey();
     this._constructExtensions();
@@ -62,7 +64,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
       this._startAfterInitializeLoop();
       this.managers.value.refreshSync();
     }
-    if (field.onCreate) resolve({ getter: field.onCreate, control: this });
+    if (this.field.onCreate) resolve({ getter: this.field.onCreate, control: this });
   }
 
   public get extensions(): ControlLike<FIELD>['extensions'] {
