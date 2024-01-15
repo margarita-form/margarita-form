@@ -4,7 +4,7 @@ import { MFGF } from '../../typings/margarita-form-types';
 import { FieldModifiersExtension } from './field-modifiers-extension';
 
 export type ModifierConditionFn = (context: CoreGetterContext) => boolean;
-export type FieldModifierFn = (context: CoreGetterContext) => MFGF;
+export type FieldModifierFn = (context: CoreGetterContext) => Partial<MFGF<any>>;
 
 export type FieldModifier =
   | FieldModifierFn

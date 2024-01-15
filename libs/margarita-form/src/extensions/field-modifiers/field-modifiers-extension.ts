@@ -32,8 +32,12 @@ export class FieldModifiersExtension extends ExtensionBase {
       return modifier.condition({ field, parent });
     });
     return activeModifiers.reduce((field, modifier) => {
-      if (typeof modifier === 'function') return modifier({ field, parent });
-      return modifier.modifier({ field, parent });
+      if (typeof modifier === 'function') {
+        const modified = modifier({ field, parent });
+        return { ...field, ...modified };
+      }
+      const modified = modifier.modifier({ field, parent });
+      return { ...field, ...modified };
     }, field);
   };
 }
