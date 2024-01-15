@@ -326,6 +326,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
   public _syncDownstreamValue(childControl: MFC, setAsDirty = true, emitEvent = true) {
     // console.debug('Sync Downstream value:', this.control.name);
     const { expectArray, expectGroup, isRoot } = this.control;
+    const { sortValues } = this.control.config;
     const { expectFlat } = childControl;
     this.control.updateKey();
 
@@ -338,7 +339,10 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     else if (expectGroup) this.value = { [key]: value };
     else if (expectArray) this.value = [value];
     else if (expectFlat) this.value = { ...value };
-
+    if (sortValues) {
+      const entries = Object.entries(this.value).sort(([a]: any, [b]: any) => (sortValues === 'asc' ? (a > b ? 1 : -1) : a < b ? 1 : -1));
+      this.value = Object.fromEntries(entries);
+    }
     if (setAsDirty) this.control.updateStateValue('dirty', true);
     if (emitEvent) this._emitChanges();
     if (!isRoot) this.control.parent.managers.value._syncDownstreamValue(this.control, setAsDirty, emitEvent);
@@ -349,6 +353,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
    */
   private _resolveValue(): CONTROL['value'] {
     const { expectChildControls, expectArray, activeControls } = this.control;
+    const { sortValues } = this.control.config;
     if (!expectChildControls) return this.value;
 
     const hasActiveControls = activeControls.length > 0;
@@ -368,6 +373,8 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       }
       return acc;
     }, [] as [PropertyKey, unknown][]);
+
+    if (sortValues) entries.sort(([a]: any, [b]: any) => (sortValues === 'asc' ? (a > b ? 1 : -1) : a < b ? 1 : -1));
 
     const obj = Object.fromEntries(entries);
     if (expectArray) return Object.values(obj);

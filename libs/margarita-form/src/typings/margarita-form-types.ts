@@ -140,6 +140,7 @@ export interface MargaritaFormConfig extends Partial<Configs> {
   allowEmptyString?: boolean;
   requiredNameCase?: false | 'camel' | 'snake' | 'kebab';
   runTransformersForInitialValues?: boolean;
+  sortValues?: 'asc' | 'desc' | false;
 }
 
 export type MargaritaFormBaseElement<CONTROL extends MFC = MFC<MFGF>, NODE extends HTMLElement = HTMLElement> = NODE & {

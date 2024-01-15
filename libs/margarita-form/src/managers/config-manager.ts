@@ -28,6 +28,7 @@ export const getDefaultConfig = (): MargaritaFormConfig => ({
   allowEmptyString: false,
   requiredNameCase: false,
   runTransformersForInitialValues: true,
+  sortValues: false,
 });
 
 class ConfigManager<CONTROL extends MFC = MFC> extends BaseManager<MargaritaFormConfig> {
