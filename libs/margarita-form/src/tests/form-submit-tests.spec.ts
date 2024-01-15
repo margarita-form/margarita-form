@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { MFF, MargaritaForm, createMargaritaForm } from '../index';
 import { IncomingMessage, RequestListener, ServerResponse, createServer } from 'http';
+import { map } from 'rxjs';
 
 declare module '@margarita-form/core' {
   export interface ControlContext {
@@ -146,5 +147,72 @@ describe('Form submit testing', () => {
     expect(form.state.submitted).toBe(true);
 
     form.cleanup();
+  });
+
+  it('Should respect current disabled resolver after submit is done', async () => {
+    const form1 = createMargaritaForm<MFF>({
+      name: nanoid(),
+      handleSubmit: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      },
+      disabled: ({ control }) => control.stateChanges.pipe(map((state) => state.submits % 2 === 1)),
+    });
+
+    expect(form1.state.disabled).toBe(false);
+
+    await form1.submit();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(form1.state.disabled).toBe(true);
+
+    await form1.submit();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(form1.state.disabled).toBe(false);
+
+    await form1.submit();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(form1.state.disabled).toBe(true);
+
+    const form2 = createMargaritaForm<MFF>({
+      name: nanoid(),
+      handleSubmit: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      },
+      disabled: () => true,
+    });
+
+    expect(form2.state.disabled).toBe(true);
+    await form2.submit();
+    expect(form2.state.disabled).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(form2.state.disabled).toBe(true);
+    await form2.submit();
+    expect(form2.state.disabled).toBe(true);
+
+    const form3 = createMargaritaForm<MFF>({
+      name: nanoid(),
+      handleSubmit: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      },
+      config: {
+        handleSuccesfullSubmit: 'none',
+      },
+    });
+
+    expect(form3.state.disabled).toBe(false);
+    await form3.submit();
+    expect(form3.state.disabled).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(form3.state.disabled).toBe(false);
+
+    form3.disable();
+
+    expect(form3.state.disabled).toBe(true);
+    await form3.submit();
+    expect(form3.state.disabled).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(form3.state.disabled).toBe(true);
   });
 });

@@ -36,7 +36,8 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
       const canSubmit = allowConcurrentSubmits || !state.submitting;
       if (!canSubmit) throw 'Form is already submitting!';
       await updateStateValue('submitting', true);
-      if (disableFormWhileSubmitting) await updateStateValue('disabled', true);
+      const { disabled: disabledBeforeSubmit } = state;
+      if (disableFormWhileSubmitting && !disabledBeforeSubmit) await updateStateValue('disabled', true);
 
       // Handle valid submit
       if (state.valid || config.allowInvalidSubmit) {
@@ -49,10 +50,13 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
               return submitOutput.value;
             } else {
               await updateStateValue('submitResult', 'success');
-              if (disableFormWhileSubmitting && handleSuccesfullSubmit !== 'disable') enable();
+              if (disableFormWhileSubmitting && handleSuccesfullSubmit !== 'disable' && !disabledBeforeSubmit) enable();
               switch (handleSuccesfullSubmit) {
                 case 'disable':
                   await updateStateValue('disabled', true);
+                  break;
+                case 'enable':
+                  await updateStateValue('disabled', false);
                   break;
                 case 'reset':
                   reset();
