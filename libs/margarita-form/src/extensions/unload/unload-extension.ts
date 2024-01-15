@@ -37,3 +37,5 @@ export class UnloadExtension extends ExtensionBase {
     this.subscriptions.forEach((subscription) => subscription.unsubscribe());
   };
 }
+
+export * from './unload-types';

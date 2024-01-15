@@ -37,3 +37,5 @@ export class FieldModifiersExtension extends ExtensionBase {
     }, field);
   };
 }
+
+export * from './field-modifiers-types';
