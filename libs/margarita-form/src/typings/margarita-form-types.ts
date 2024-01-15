@@ -306,6 +306,8 @@ export type MFGF<FP extends FieldParams = FieldParams> = MargaritaFormGeneralFie
 export type MF<FIELD extends MFF<any> = MFGF> = MargaritaForm<FIELD>;
 /** Shorthand for {@link MargaritaFormControl}  */
 export type MFC<FIELD extends MFF<any> = MFGF> = MargaritaFormControl<FIELD>;
+/** Shorthand for {@link MargaritaFormControl} where value is defined instead of field */
+export type MFCV<VALUE> = MargaritaFormControl<MFF<{ value: VALUE }>>;
 /** Shorthand for {@link MargaritaFormBaseElement}  */
 export type MFBE<CONTROL extends MFC = MFC<MFGF>> = MargaritaFormBaseElement<CONTROL>;
 /** Margarita form controls as group */
