@@ -18,6 +18,7 @@ import {
   ExtensionInstanceLike,
   MargaritaFormConfig,
   MargaritaFormGroupings,
+  Context,
 } from './typings/margarita-form-types';
 import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
@@ -804,11 +805,21 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
     return defaultValue;
   };
 
-  public getControlContext = () => {
-    const staticContext = MargaritaFormControl.context || {};
+  /**
+   * @internal
+   */
+  public _getCustomContext = (): Context => {
     const fieldContext = this.field.context || {};
+    if (this.isRoot) {
+      const staticContext = MargaritaFormControl.context || {};
+      return {
+        ...staticContext,
+        ...fieldContext,
+      };
+    }
+    const parentContext = this.parent._getCustomContext();
     return {
-      ...staticContext,
+      ...parentContext,
       ...fieldContext,
     };
   };
@@ -817,7 +828,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
    * @internal
    */
   public generateContext = <PARAMS>(params?: PARAMS, overrides: CommonRecord = {}): ControlContext<typeof this, PARAMS> => {
-    const controlContext = this.getControlContext();
+    const controlContext = this._getCustomContext();
     const context: ControlContext<typeof this, PARAMS> = {
       control: this,
       value: this.value,

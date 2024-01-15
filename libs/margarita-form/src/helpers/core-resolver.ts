@@ -11,7 +11,7 @@ export const coreResolver = <OUTPUT = any>(
   asParent = false,
   defaultValue?: OUTPUT
 ): OUTPUT => {
-  const controlContext = control.getControlContext();
+  const controlContext = control._getCustomContext();
   const parent = asParent ? control : control.isRoot ? undefined : control.parent;
   const context: CoreGetterContext = { parent, ...controlContext };
   if (typeof getter === 'function') {
