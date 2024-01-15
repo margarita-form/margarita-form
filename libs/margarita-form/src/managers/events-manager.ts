@@ -17,11 +17,11 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
   }
 
   public override afterInitialize(): void {
-    this.createSubscription(this.control.changes, ({ name, change: value, control }) => {
+    this.createSubscription(this.control.changes, ({ name, control }) => {
       const { onChanges, onValueChanges, onStateChanges } = control.field;
-      if (onChanges) onChanges({ control, value, params: name });
-      if (name === 'value' && onValueChanges) onValueChanges({ control, value });
-      if (name === 'state' && onStateChanges) onStateChanges({ control, value });
+      if (onChanges) resolve({ getter: onChanges, control, contextData: { params: name } });
+      if (name === 'value' && onValueChanges) resolve({ getter: onValueChanges, control });
+      if (name === 'state' && onStateChanges) resolve({ getter: onStateChanges, control });
     });
   }
 

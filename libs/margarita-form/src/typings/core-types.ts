@@ -37,8 +37,8 @@ export interface MargaritaFormValidatorResult {
   error?: unknown;
 }
 
-export type MargaritaFormValidator<PARAMS = any, VALUE = any> = MargaritaFormResolver<
-  MargaritaFormValidatorResult,
+export type MargaritaFormValidator<PARAMS = any, VALUE = any> = ContextFunction<
+  ResolverOutput<MargaritaFormValidatorResult>,
   PARAMS,
   MFC<MFGF<{ value: VALUE }>>
 >;

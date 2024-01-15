@@ -1,7 +1,7 @@
 import { ControlContext, MFC, MFGF, OrT } from '../typings/margarita-form-types';
 import { valueExists } from './check-value';
 
-export type CoreGetterContext = { parent?: MFC; field?: MFGF } & ControlContext;
+export type CoreGetterContext = { parent?: MFC; field?: MFGF } & Partial<ControlContext>;
 export type CoreGetterFn<OUTPUT> = (context: CoreGetterContext) => OUTPUT;
 export type CoreGetter<OUTPUT> = OrT<OUTPUT> | CoreGetterFn<OUTPUT>;
 

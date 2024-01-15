@@ -96,7 +96,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
 
     // Transform value with custom transformer script
     const { transformer } = this.control.field;
-    const _value = _useTransformer && transformer ? transformer({ value: _valueWithMetadata, control: this.control }) : _valueWithMetadata;
+
+    const _value =
+      _useTransformer && transformer
+        ? resolve({ getter: transformer, control: this.control, contextData: { value: _valueWithMetadata } })
+        : _valueWithMetadata;
 
     // Set value
     this.value = _value;

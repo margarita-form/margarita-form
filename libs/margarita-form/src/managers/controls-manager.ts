@@ -3,6 +3,7 @@ import { MargaritaFormControl } from '../margarita-form-control';
 import { BaseManager, ManagerName } from './base-manager';
 import { DeepControlIdentifier, MFF, MFC, MFCA, MFCG, MFGF } from '../typings/margarita-form-types';
 import { coreResolver } from '../helpers/core-resolver';
+import { resolve } from '../helpers/resolve-function-outputs';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -227,7 +228,7 @@ class ControlsManager<CONTROL extends MFC = MFC> extends BaseManager<MFC[]> {
         const [control] = this.value.splice(index, 1);
         this._removeCleanup(control);
         const { onRemove } = control.field;
-        if (onRemove) onRemove(control.context);
+        if (onRemove) resolve({ getter: onRemove, control });
       }
     }
     if (emit) this._emitChanges();

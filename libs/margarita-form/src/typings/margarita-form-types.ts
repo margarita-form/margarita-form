@@ -82,15 +82,15 @@ interface MargaritaFormGeneralField<FP extends FieldParams = any> extends MFF<FP
 
 type UserDefinedStateResolver<TYPE = MargaritaFormFieldState> = TYPE | `$$${string}`;
 
-export interface UserDefinedStates<TYPE = unknown> {
-  enabled: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  disabled: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  editable: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  readOnly: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  active: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  inactive: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  hidden: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
-  visible: TYPE extends unknown ? UserDefinedStateResolver : TYPE;
+export interface UserDefinedStates<TYPE = UserDefinedStateResolver> {
+  enabled: TYPE;
+  disabled: TYPE;
+  editable: TYPE;
+  readOnly: TYPE;
+  active: TYPE;
+  inactive: TYPE;
+  hidden: TYPE;
+  visible: TYPE;
 }
 
 export type UserDefinedStatesField = Partial<UserDefinedStates>;
