@@ -1,13 +1,39 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
-import { createFormStore } from '../misc/margarita-form-store';
-import { MFF, MargaritaFormRootField, createMargaritaForm } from '@margarita-form/core';
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { DependencyList, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { useFormStore } from '../misc/margarita-form-store';
+import { MFC, MFF, MFGF, createMargaritaForm } from '@margarita-form/core/light';
 
-export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF>(
-  field: Partial<FIELD> & MargaritaFormRootField<VALUE>,
-  deps: any[] = []
-) => {
-  const form = createMargaritaForm(field);
-  const store = createFormStore(form);
+type FieldOrControl = MFF | MFC<MFGF>;
+type AsField<T extends FieldOrControl> = T extends MFC ? T['field'] : T;
+
+export const useMargaritaForm = <FOC extends MFGF = MFF>(field: AsField<FOC>, dependencies: DependencyList = [], useCache = true) => {
+  type FIELD = AsField<FOC>;
+
+  const fieldRef = useRef<null | FIELD>(null);
+  const form = useMemo(() => {
+    return createMargaritaForm<FIELD>(field, useCache);
+  }, [field.name]);
+
+  useEffect(() => {
+    if (!fieldRef.current) {
+      fieldRef.current = field;
+      return () => {};
+    }
+    const currentForm = form;
+    currentForm.reInitialize();
+    return () => currentForm.cleanup();
+  }, [field.name]);
+
+  useEffect(() => {
+    const { current } = fieldRef;
+    const changed = current && field && current !== field;
+    if (changed) {
+      fieldRef.current = field;
+      form.setField(field);
+    }
+  }, dependencies);
+
+  const store = useFormStore(form);
 
   useSyncExternalStore(
     store.subscribe,
@@ -15,24 +41,7 @@ export const useMargaritaForm = <VALUE = unknown, FIELD extends MFF<FIELD> = MFF
     () => store.getSnapshot()
   );
 
-  const computedFieldValue = useMemo(() => {
-    try {
-      return JSON.stringify(field);
-    } catch (error) {
-      return null;
-    }
-  }, [field]);
-
-  useEffect(() => {
-    form.updateField(field);
-  }, [computedFieldValue, ...deps]);
-
-  useEffect(() => {
-    form.resubscribe();
-    return () => {
-      form.cleanup();
-    };
-  }, []);
-
   return form;
 };
+
+export const useForm = useMargaritaForm;

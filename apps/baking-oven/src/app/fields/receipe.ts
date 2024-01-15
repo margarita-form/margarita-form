@@ -1,6 +1,6 @@
 import { CustomField } from '../app';
 
-export const recipeFields: CustomField[] = [
+const recipeFields: CustomField[] = [
   {
     type: 'text',
     name: 'title',
@@ -14,6 +14,7 @@ export const recipeFields: CustomField[] = [
     type: 'textarea',
     name: 'description',
     title: 'Description',
+    initialValue: 'This is a recipe for a delicious meal',
     validation: {
       required: true,
     },
@@ -26,36 +27,119 @@ export const recipeFields: CustomField[] = [
     type: 'repeatable',
     name: 'steps',
     title: 'Steps how to make the recipe',
-    grouping: 'repeat-group',
-    startWith: 2,
-    template: {
-      title: 'Step',
-      name: 'step',
-      fields: [
-        {
-          name: 'title',
-          title: 'Title',
-          type: 'text',
-          validation: {
-            required: true,
+    grouping: 'array',
+    startWith: ['note', 'step', 'step'],
+    config: { addMetadata: true },
+    fields: [
+      {
+        title: 'Step',
+        name: 'step',
+        type: 'group',
+        fields: [
+          {
+            name: 'title',
+            title: 'Title',
+            type: 'text',
+            initialValue: 'Step title',
+            validation: {
+              required: true,
+            },
+            attributes: {
+              placeholder: 'Step title',
+            },
           },
-          attributes: {
-            placeholder: 'Step title',
+          {
+            name: 'description',
+            title: 'Description',
+            type: 'textarea',
+            validation: {
+              required: true,
+            },
+            attributes: {
+              placeholder: 'Step description (keep it short!)',
+              rows: 2,
+            },
           },
-        },
-        {
-          name: 'description',
-          title: 'Description',
-          type: 'textarea',
-          validation: {
-            required: true,
+        ],
+      },
+      {
+        name: 'note',
+        title: 'Note',
+        type: 'group',
+        fields: [
+          {
+            name: 'text',
+            title: 'Text',
+            type: 'textarea',
+            validation: {
+              required: true,
+            },
           },
-          attributes: {
-            placeholder: 'Step description (keep it short!)',
-            rows: 2,
-          },
-        },
-      ],
+        ],
+      },
+    ],
+  },
+  {
+    type: 'group',
+    name: 'author',
+    title: 'Author',
+    initialValue: {
+      name: 'Teemukissa',
+      title: 'Master chef',
     },
+    fields: [
+      {
+        name: 'name',
+        title: 'Name',
+        type: 'text',
+        initialValue: 'John Doe',
+        validation: {
+          required: true,
+        },
+      },
+      {
+        name: 'title',
+        title: 'Title',
+        type: 'text',
+        initialValue: 'Chef',
+      },
+    ],
+  },
+  {
+    name: 'state',
+    title: 'State',
+    type: 'radio',
+    initialValue: 'draft',
+    options: [
+      {
+        label: 'Draft',
+        value: 'draft',
+      },
+      {
+        label: 'Published',
+        value: 'published',
+      },
+    ],
+  },
+  {
+    name: 'tags',
+    title: 'Tags',
+    type: 'checkbox-group',
+    initialValue: ['tag1', 'tag2'],
+    options: Array.from({ length: 5 }, (_, i) => ({
+      label: `Tag ${i + 1}`,
+      value: `tag${i + 1}`,
+    })),
+  },
+  {
+    name: 'allowComments',
+    title: 'Allow comments',
+    type: 'checkbox',
+    initialValue: true,
   },
 ];
+
+export const recipeConfig = {
+  name: 'recipe',
+  fields: recipeFields,
+};

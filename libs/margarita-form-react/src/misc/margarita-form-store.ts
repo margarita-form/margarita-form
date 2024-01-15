@@ -1,9 +1,11 @@
-import type { MF } from '@margarita-form/core';
-import { combineLatest, debounceTime } from 'rxjs';
+import type { MF } from '@margarita-form/core/light';
+import { shareReplay } from 'rxjs';
 
-export const createFormStore = (form: MF) => {
+export const useFormStore = (form: MF) => {
   const subscribe = (listener: () => void) => {
-    const subscription = combineLatest([form.valueChanges, form.stateChanges]).pipe(debounceTime(10)).subscribe(listener);
+    const subscription = form.afterChanges.pipe(shareReplay(1)).subscribe(() => {
+      listener();
+    });
     return () => {
       subscription.unsubscribe();
     };

@@ -1,16 +1,14 @@
-import type { CommonRecord, MargaritaFormControl, MargaritaFormField } from '@margarita-form/core';
+import type { MFC, MFGF } from '@margarita-form/core/light';
 import { ControlProvider } from '../providers/control/control-provider';
 import { HTMLAttributes, createElement, Fragment } from 'react';
 import { useGetOrAddControl } from '../hooks/use-get-or-add-control';
 
 interface WithControl {
-  control: MargaritaFormControl<any, any>;
+  control: MFC<MFGF>;
 }
 
-type ControlField = MargaritaFormField<ControlField> & CommonRecord;
-
 interface WithField {
-  field: ControlField;
+  field: MFGF;
 }
 
 type WithControlOrSchema = WithControl | WithField;
@@ -45,7 +43,7 @@ export const Control = (props: ControlComponentProps) => {
 type CreateFormProps = HTMLAttributes<HTMLFormElement> & WithField;
 
 const CreateControl = ({ field, ...rest }: CreateFormProps) => {
-  const control = useGetOrAddControl<unknown, ControlField>(field);
+  const control = useGetOrAddControl(field);
   if (!control) throw 'No control found and control could not be created!';
   return <ControlElement control={control} {...rest} />;
 };

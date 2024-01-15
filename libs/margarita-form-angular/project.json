@@ -1,0 +1,30 @@
+{
+  "name": "margarita-form-angular",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/margarita-form-angular/src",
+  "prefix": "margarita-form",
+  "tags": [],
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "project": "libs/margarita-form-angular/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/margarita-form-angular/tsconfig.lib.prod.json"
+        },
+        "development": {
+          "tsConfig": "libs/margarita-form-angular/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    }
+  }
+}

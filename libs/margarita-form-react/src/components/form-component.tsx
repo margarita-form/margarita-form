@@ -1,16 +1,14 @@
 import type { FormHTMLAttributes } from 'react';
-import type { CommonRecord, MargaritaForm, MargaritaFormField, MargaritaFormRootField } from '@margarita-form/core';
+import type { MFC, MFGF } from '@margarita-form/core/light';
 import { useMargaritaForm } from '../hooks/use-margarita-form';
 import { FormProvider } from '../providers/form/form-provider';
 
 interface WithForm {
-  form: MargaritaForm<any, any>;
+  form: MFC<MFGF>;
 }
 
-type FormField = Partial<MargaritaFormField<FormField>> & MargaritaFormRootField<any> & CommonRecord;
-
 interface WithField {
-  field: FormField;
+  field: MFGF;
 }
 
 type WithFormOrSchema = WithForm | WithField;
@@ -32,7 +30,7 @@ export const Form = (props: FormComponentProps) => {
 type CreateFormProps = FormHTMLAttributes<HTMLFormElement> & WithField;
 
 export const CreateForm = ({ field, ...rest }: CreateFormProps) => {
-  const form = useMargaritaForm<unknown, FormField>(field);
+  const form = useMargaritaForm<MFGF>(field);
   return <FormElement form={form} {...rest} />;
 };
 

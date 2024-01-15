@@ -24,6 +24,7 @@ For now you can check [reference documentation](https://margarita-form.github.io
 
 - [Core](https://www.npmjs.com/package/@margarita-form/core)
 - [React](https://www.npmjs.com/package/@margarita-form/react)
+- [Angular](https://www.npmjs.com/package/@margarita-form/angular)
 
 ### React
 
@@ -43,13 +44,15 @@ interface MyFormValue {
   message?: string;
 }
 
-interface MyFormField extends MargaritaFormField<MyFormField> {
+interface MyFormField extends MargaritaFormField<{ value: MyFormValue; fields: MyFormField }> {
   type: 'text' | 'textarea';
   title: string;
 }
 
+type RootField = MargaritaFormField<{ fields: MyFormField }>;
+
 export function App() {
-  const form = useMargaritaForm<MyFormValue, MyFormField>({
+  const form = useMargaritaForm<RootField>({
     name: 'my-form',
     fields: [
       {
@@ -68,17 +71,15 @@ export function App() {
       },
     ],
     handleSubmit: {
-      valid: (form) => {
-        console.log('Valid submit', { form });
+      valid: async ({ control: form, value }) => {
+        console.log('Valid submit', { form, value });
       },
-      invalid: (form) => {
-        console.log('Invalid submit', { form });
+      invalid: async ({ control: form, value }) => {
+        console.log('Invalid submit', { form, value });
       },
     },
-    options: {
+    config: {
       handleSuccesfullSubmit: 'reset', // Change what happens when form is successfully submitted
-      useStorage: false, // Change to "localStorage" or "sessionStorage" to enable persistence between page reloads
-      useSyncronization: false, // Change to true to syncronize form value between tabs
     },
   });
 
@@ -170,19 +171,26 @@ import { createMargaritaForm, MargaritaFormField } from '@margarita-form/core';
 #### Create a new form with single field:
 
 ```typescript
+import { createMargaritaForm, MargaritaFormField } from '@margarita-form/core';
+
 interface MyFormValue {
-  myControl: string;
+  name?: string;
+  message?: string;
 }
 
-interface MyFormField extends MargaritaFormField<MyFormField> {
+interface MyFormField extends MargaritaFormField<{ value: MyFormValue; fields: MyFormField }> {
+  type: 'text' | 'textarea';
   title: string;
 }
 
-const form = createMargaritaForm<MyFormValue, MyFormField>({
-  fields: [{ name: 'myControl', title: 'My Control', validation: { required: true } }],
+type RootField = MargaritaFormField<{ fields: MyFormField }>;
+
+export const form = createMargaritaForm<RootField>({
+  name: 'my-form',
+  fields: [{ name: 'myControl', type: 'text', title: 'My Control', validation: { required: true } }],
   handleSubmit: {
-    valid: (form) => {
-      /* Handle valid submission */
+    valid: async ({ control: form, value }) => {
+      console.log('Valid submit', { form, value });
     },
   },
 });
@@ -192,6 +200,7 @@ const form = createMargaritaForm<MyFormValue, MyFormField>({
 
 ```typescript
 const myControl = form.getControl('myControl');
+if (!myControl) throw 'Control "myControl" was not found!"';
 ```
 
 or

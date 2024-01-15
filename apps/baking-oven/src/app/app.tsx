@@ -1,12 +1,25 @@
 import styled from 'styled-components';
-import { useMargaritaForm, MargaritaFormField, Form, MFC } from '@margarita-form/react';
+import { useMargaritaForm, MargaritaFormField, Form, MFC, MargaritaFormControl, MFF } from '@margarita-form/react';
+import { SearchParamsStorageExtension } from '@margarita-form/core/extensions/browser-search-params-storage';
 import { useState } from 'react';
-import { recipeFields } from './fields/receipe';
-import { websiteFields } from './fields/website';
-import { registerManager } from '@margarita-form/core';
+import { recipeConfig } from './fields/receipe';
+import { websiteConfig } from './fields/website';
 import { CustomManager } from './managers/custom-manager';
+import { ControlError } from './components/error';
+import { lifecycleConfig } from './fields/lifecycle';
+import { conditionalsConfig } from './fields/conditionals';
+import { helloWorldConfig } from './fields/hello-world';
+import { I18NExtension, Locale } from '@margarita-form/core/extensions/i18n-extension';
 
-registerManager('custom', CustomManager);
+declare module '@margarita-form/core/extensions/i18n-extension' {
+  export interface Locales {
+    en: Locale;
+    fi: Locale;
+  }
+}
+
+MargaritaFormControl.addManager(CustomManager);
+MargaritaFormControl.addExtension(I18NExtension);
 
 const AppWrapper = styled.div`
   font-family: Arial, sans-serif;
@@ -69,32 +82,63 @@ const AppWrapper = styled.div`
     width: 100%;
     padding: 20px;
     background: #f8f8f8;
-    min-height: 100%;
+    height: fit-content;
+    min-height: 100px;
+    max-height: 80vh;
+    overflow: auto;
     box-sizing: border-box;
     margin: 0;
+    position: sticky;
+    top: 20px;
   }
 `;
 
-export interface CustomField extends MargaritaFormField<CustomField> {
-  type: 'text' | 'textarea' | 'repeatable' | 'localized';
-  title: string;
+interface I18NContent {
+  description?: string;
 }
 
-interface FormValue {
+type DefaultTypes = 'text' | 'file' | 'number' | 'textarea' | 'radio' | 'checkbox' | 'checkbox-group';
+export interface CustomFieldBase<TYPE extends string = DefaultTypes, VALUE = unknown, FIELDS extends MFF = any>
+  extends MargaritaFormField<{ value: VALUE; fields: FIELDS; i18n: I18NContent }> {
+  type: TYPE;
   title: string;
-  description: string;
-  steps: { title: string; description: string }[];
+  options?: { label: string; value: string }[];
 }
 
-export function App() {
+export type CommonField = CustomFieldBase<DefaultTypes, unknown, never>;
+export type GroupField = CustomFieldBase<'group', unknown, CustomField>;
+export type StepsField = CustomFieldBase<'repeatable', unknown, CustomField>;
+export type LocalizedField = CustomFieldBase<'localized', unknown, CustomField>;
+export type LocalizedArrayField = CustomFieldBase<'localized-array', unknown, CustomField>;
+export type CustomField = CommonField | GroupField | StepsField | LocalizedField | LocalizedArrayField;
+
+type FormValue = Record<string, unknown>;
+type RootField = MargaritaFormField<{ value: FormValue; fields: CustomField }>;
+
+const locales = {
+  en: { title: 'English' },
+  fi: { title: 'Finnish' },
+} as const;
+
+// const storage = LocalStorageExtension.withConfig({
+//   //
+// });
+
+const storage = SearchParamsStorageExtension.withConfig({
+  storageKey: 'name',
+  storageStrategy: 'end',
+});
+
+export function App({ children }: { children?: React.ReactNode }) {
   const [submitResponse, setSubmitResponse] = useState<string | null>(null);
-  const [currentFields, setCurrentFields] = useState(recipeFields);
+  const [currentFields, setCurrentFields] = useState(helloWorldConfig);
   const [shouldReset, setShouldReset] = useState(true);
 
-  const form = useMargaritaForm<FormValue, CustomField>({
-    name: currentFields === recipeFields ? 'recipe' : 'website',
-    fields: currentFields,
-    locales: ['en', 'fi'],
+  const form = useMargaritaForm<RootField>({
+    ...currentFields,
+    localize: true,
+    locales,
+    extensions: [storage],
     handleLocalize: {
       parent: () => {
         return {
@@ -103,7 +147,7 @@ export function App() {
       },
       child: ({ locale }) => {
         return {
-          title: locale.toUpperCase(),
+          title: locale.title.toUpperCase(),
         };
       },
     },
@@ -123,17 +167,19 @@ export function App() {
     },
     config: {
       resetFormOnFieldChanges: shouldReset,
-      handleSuccesfullSubmit: 'enable',
-      addMetadataToArrays: true,
-      useStorage: 'localStorage',
-      useSyncronization: true,
+      handleSuccesfullSubmit: 'reset-state',
     },
   });
+
+  // console.log('Rendering form', form.uid);
 
   return (
     <AppWrapper>
       <div className="form-wrapper">
         <Form form={form}>
+          <p>
+            Form uid: <strong>{form.uid}</strong>
+          </p>
           <h2>Config</h2>
 
           <div>
@@ -156,7 +202,15 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setCurrentFields(recipeFields);
+                setCurrentFields(helloWorldConfig);
+              }}
+            >
+              Hello world field
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(recipeConfig);
               }}
             >
               Recipe fields
@@ -164,10 +218,26 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setCurrentFields(websiteFields);
+                setCurrentFields(websiteConfig);
               }}
             >
               Website fields
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(lifecycleConfig);
+              }}
+            >
+              Lifecycle testing fields
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentFields(conditionalsConfig);
+              }}
+            >
+              Conditionals fields
             </button>
           </div>
 
@@ -175,7 +245,7 @@ export function App() {
 
           <h2>Fields</h2>
 
-          {form.controls.map((control) => (
+          {form.activeControls.map((control) => (
             <FormField key={control.key} control={control} />
           ))}
 
@@ -185,8 +255,12 @@ export function App() {
 
           <hr />
 
-          <button type="button" onClick={form.reset}>
+          <button type="button" onClick={() => form.reset()}>
             Reset
+          </button>
+
+          <button type="button" onClick={() => form.disable()}>
+            Disable
           </button>
 
           {submitResponse && <span>{submitResponse}</span>}
@@ -198,26 +272,61 @@ export function App() {
 }
 
 interface FormFieldProps {
-  control: MFC<unknown, CustomField>;
+  control: MFC<CustomField>;
 }
 
 const FormField = ({ control }: FormFieldProps) => {
   const uid = control.name + '-' + control.key;
 
   switch (control.field.type) {
-    case 'text':
-      return (
-        <div className="field-wrapper">
-          <label htmlFor={uid}>{control.field.title}</label>
-          <input id={uid} name={uid} type="text" ref={control.setRef} />
-        </div>
-      );
-
     case 'textarea':
       return (
         <div className="field-wrapper">
           <label htmlFor={uid}>{control.field.title}</label>
+          {control.i18n && <p>{control.i18n.description}</p>}
           <textarea id={uid} name={uid} ref={control.setRef} />
+          <ControlError control={control} />
+        </div>
+      );
+
+    case 'radio':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          {control.field.options?.map((option) => {
+            return (
+              <div key={option.value}>
+                <input id={uid + '-' + option.value} name={uid} type="radio" value={option.value} ref={control.setRef} />
+                <label htmlFor={uid + '-' + option.value}>{option.label}</label>
+              </div>
+            );
+          })}
+          <ControlError control={control} />
+        </div>
+      );
+
+    case 'checkbox':
+      return (
+        <div className="field-wrapper">
+          <label htmlFor={uid}>{control.field.title}</label>
+          <input id={uid} name={uid} type="checkbox" ref={control.setRef} />
+          <ControlError control={control} />
+        </div>
+      );
+
+    case 'checkbox-group':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          {control.field.options?.map((option) => {
+            return (
+              <div key={option.value}>
+                <input id={uid + '-' + option.value} name={uid} type="checkbox" multiple value={option.value} ref={control.setRef} />
+                <label htmlFor={uid + '-' + option.value}>{option.label}</label>
+              </div>
+            );
+          })}
+          <ControlError control={control} />
         </div>
       );
 
@@ -226,10 +335,37 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper">
           <h3>{control.field.title}</h3>
           <div className="locales-fields">
-            {control.controls.map((localeControl) => {
+            {control.activeControls.map((localeControl) => {
               return <FormField key={localeControl.key} control={localeControl} />;
             })}
           </div>
+          <ControlError control={control} />
+        </div>
+      );
+
+    case 'localized-array':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          <div className="locales-fields">
+            {control.activeControls.map((localeControl) => {
+              return <FormField key={localeControl.key} control={localeControl} />;
+            })}
+          </div>
+          <ControlError control={control} />
+        </div>
+      );
+
+    case 'group':
+      return (
+        <div className="field-wrapper">
+          <h3>{control.field.title}</h3>
+          <div className="locales-fields">
+            {control.activeControls.map((localeControl) => {
+              return <FormField key={localeControl.key} control={localeControl} />;
+            })}
+          </div>
+          <ControlError control={control} />
         </div>
       );
 
@@ -238,11 +374,11 @@ const FormField = ({ control }: FormFieldProps) => {
         <div className="field-wrapper repeatable">
           <h3>{control.field.title}</h3>
 
-          {control.controls.map((childGroup) => {
+          {control.activeControls.map((childGroup) => {
             return (
-              <div className="step-container" key={childGroup.key}>
+              <div className="step-container" key={childGroup.uid}>
                 <h3>
-                  {childGroup.field.title}: {childGroup.index + 1}
+                  {childGroup.field.title}: {childGroup.index + 1} ({childGroup.key} & {childGroup.uid})
                 </h3>
 
                 <button
@@ -251,30 +387,48 @@ const FormField = ({ control }: FormFieldProps) => {
                     childGroup.remove();
                   }}
                 >
-                  Delete step
+                  Delete
                 </button>
 
                 <div className="step-fields">
-                  {childGroup.controls.map((control) => (
-                    <FormField key={control.key} control={control} />
-                  ))}
+                  {childGroup.expectChildControls ? (
+                    childGroup.activeControls.map((control) => <FormField key={control.key} control={control} />)
+                  ) : (
+                    <FormField control={childGroup} />
+                  )}
                 </div>
               </div>
             );
           })}
 
-          <button
-            type="button"
-            onClick={() => {
-              control.appendRepeatingControls();
-            }}
-          >
-            Add new step
-          </button>
+          {control.field.fields?.map((field) => {
+            return (
+              <button
+                key={field.name as string}
+                type="button"
+                onClick={() => {
+                  control.appendControl(field.name);
+                }}
+              >
+                Add new
+              </button>
+            );
+          })}
+          <ControlError control={control} />
         </div>
       );
 
     default:
+      if (['text', 'number', 'file'].includes(control.field.type)) {
+        return (
+          <div className="field-wrapper">
+            <label htmlFor={uid}>{control.field.title}</label>
+            {control.i18n?.description && <p>{control.i18n.description}</p>}
+            <input id={uid} name={uid} type={control.field.type} ref={control.setRef} />
+            <ControlError control={control} />
+          </div>
+        );
+      }
       return <p>Unknown field type: {control.field.type}</p>;
   }
 };

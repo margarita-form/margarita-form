@@ -54,18 +54,15 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/apps/baking-oven"],
+      "outputs": ["{workspaceRoot}/coverage/apps/baking-oven"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/apps/baking-oven"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/baking-oven/**/*.{ts,tsx,js,jsx}"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     }
   },
   "tags": []
