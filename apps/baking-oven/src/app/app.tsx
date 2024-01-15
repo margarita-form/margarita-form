@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import { useMargaritaForm, MargaritaFormField, Form, MFC, MargaritaFormControl, MFF } from '@margarita-form/react';
-import { LocalStorageExtension } from '@margarita-form/core/extensions/browser-local-storage';
 import { SearchParamsStorageExtension } from '@margarita-form/core/extensions/browser-search-params-storage';
 import { useState } from 'react';
 import { recipeConfig } from './fields/receipe';
@@ -168,7 +167,7 @@ export function App({ children }: { children?: React.ReactNode }) {
     },
     config: {
       resetFormOnFieldChanges: shouldReset,
-      handleSuccesfullSubmit: 'enable',
+      handleSuccesfullSubmit: 'reset-state',
     },
   });
 
