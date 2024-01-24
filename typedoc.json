@@ -3,7 +3,7 @@
   "out": "doc",
   "entryPointStrategy": "packages",
   "excludePrivate": true,
-  "entryPoints": ["libs/margarita-form", "libs/margarita-form-react"],
+  "entryPoints": ["libs/*"],
   "name": "Margarita form reference documentation",
   "titleLink": "https://github.com/margarita-form/margarita-form",
   "githubPages": true
