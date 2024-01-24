@@ -1,30 +1,39 @@
 # Margarita Form
 
-## Modern form library made with TypeScript 🔥
+## Form library that makes creating forms easy 🔥
 
-Margarita form is inspired by [Angular's Reactive forms](https://angular.io/guide/reactive-forms) but build to work with any framework or library like React, Next.js, Gatsby.js, Vue or Svelte!
+Start creating extendable reactive forms with any framework today.
 
-## Features
+### Forms for modern web development
 
-- Asynchronous validation
-- Schema based controls
-- Conditional form fields
-- Written with TypeScript
-- CMS & CRM compatible
-- Storage and syncronization
-- Form field localization
-- Framework agnostic
-
-## Get started
-
-Proper documentation is coming soon!
-For now you can check [reference documentation](https://margarita-form.github.io/margarita-form/index.html) and the following examples!
+Goal of margarita form is to help you to create, extend and validate forms easily. Margarita form provides methods to conditionally enable, transform and observe your form, it's value, state and everything related to it.
 
 ### Packages
 
 - [Core](https://www.npmjs.com/package/@margarita-form/core)
 - [React](https://www.npmjs.com/package/@margarita-form/react)
 - [Angular](https://www.npmjs.com/package/@margarita-form/angular)
+
+## Features
+
+- **Asynchronous validation** - Validate form fields with build in validators or create your own. Margarita form validation supports validators that can be functions, promises or even observables.
+- **Schema based controls** - Form’s controls are created with a simple schema that consists of fields. Schema can be created with simple JSON data from your database or from javascript objects extended with custom functionality.
+- **Conditional form fields** - With margarita form’s active and visible states you can control conditional cases for your form easily. Connect any function, promise or observable to render fields conditinally.
+- **Written with TypeScript** - Typescript support is crucial for modern libraries and so margarita form is build to be typescript native library with support to utilize your custom types.
+- **CMS & CRM compatible** - It’s possible to create form schema with any CMS or CMR and use all features of margarita form with that. Existing forms can be extended with margarita form’s api and data can be submitted to where ever needed.
+- **Storage and syncronization** - You can enable locally stored data to allow users continue filling the form later. On top of storage you can allow form data syncronization between tabs via [Broadcast Channel API](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API)
+- **Form field localization** - Margarita form supports localization for form fields. You can create forms that generate values or you can localize form's content.
+- **Framework agnostic** - Margarita form is build to be framework agnostic. It can be used with any framework or without any framework at all.
+
+## How Margarita form works in action?
+
+1. **Define your schema.** Schema is the foundation for your form. Schema is an array of fields and with each field you can define controls name, type, state, behavior and validations. From schema / fields margarita form will create controls that then are used in your code to control form's value, state and content.
+
+2. **Connect your ui components to form controls.** Margarita form does not define how your form should look like. You easily connect any UI components to the form controls and create dynamic forms without hassle.
+
+3. **Handle form submission.** Saving form data is easy. Before user can submit the form, margarita form validates all active controls. If form is valid, a callback you defined get run with a form context and saving data to any target can be handled with native Promise api.
+
+## Get started
 
 ### React
 
@@ -212,3 +221,8 @@ form.controls.map((control) => {
 ```
 
 And the rest is up to your framework!
+
+### Read more
+
+Proper documentation is coming soon!
+For now you can check [reference documentation](https://margarita-form.github.io/margarita-form/index.html) and the following examples!
