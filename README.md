@@ -18,7 +18,7 @@ Margarita form is inspired by [Angular's Reactive forms](https://angular.io/guid
 ## Get started
 
 Proper documentation is coming soon!
-For now you can check [reference documentation](https://margarita-form.github.io/margarita-form/modules.html) and the following examples!
+For now you can check [reference documentation](https://margarita-form.github.io/margarita-form/index.html) and the following examples!
 
 ### Packages
 
