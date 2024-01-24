@@ -44,12 +44,12 @@ interface MyFormValue {
   message?: string;
 }
 
-interface MyFormField extends MargaritaFormField<{ value: MyFormValue; fields: MyFormField }> {
+interface MyFormField extends MargaritaFormField<{ fields: MyFormField }> {
   type: 'text' | 'textarea';
   title: string;
 }
 
-type RootField = MargaritaFormField<{ fields: MyFormField }>;
+type RootField = MargaritaFormField<{ value: MyFormValue; fields: MyFormField }>;
 
 export function App() {
   const form = useMargaritaForm<RootField>({
@@ -178,12 +178,12 @@ interface MyFormValue {
   message?: string;
 }
 
-interface MyFormField extends MargaritaFormField<{ value: MyFormValue; fields: MyFormField }> {
+interface MyFormField extends MargaritaFormField<{ fields: MyFormField }> {
   type: 'text' | 'textarea';
   title: string;
 }
 
-type RootField = MargaritaFormField<{ fields: MyFormField }>;
+type RootField = MargaritaFormField<{ value: MyFormValue; fields: MyFormField }>;
 
 export const form = createMargaritaForm<RootField>({
   name: 'my-form',
