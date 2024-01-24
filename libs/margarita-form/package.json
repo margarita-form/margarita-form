@@ -108,10 +108,5 @@
       "import": "./extensions/unload/unload-extension.js",
       "require": "./extensions/unload/unload-extension.cjs"
     }
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "displayName": "@margarita-form/core",
-    "tsconfig": "./tsconfig.lib.json"
   }
 }

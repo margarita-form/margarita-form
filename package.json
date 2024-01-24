@@ -29,7 +29,8 @@
     "publish:angular": "cd dist/libs/margarita-form-angular && npm publish",
     "publish:all-dev": "npm run test:all && npm run create-docs && lerna version --force-publish -m \"chore(release-dev): version %v\" && rm -rf dist && npm run build:all && node ./scripts/add-readme.mjs && node ./scripts/update-dependencies.mjs && npm run publish:core --tag dev && npm run publish:react --tag dev && npm run publish:angular --tag dev",
     "publish:all": "npm run test:all && npm run create-docs && lerna version --force-publish -m \"chore(release): version %v\" && npm run build:all && node ./scripts/add-readme.mjs && node ./scripts/update-dependencies.mjs && npm run publish:core && npm run publish:react && npm run publish:angular",
-    "create-docs": "typedoc"
+    "create-docs": "typedoc",
+    "serve-docs": "cd doc && npx http-server -p 8080"
   },
   "private": true,
   "devDependencies": {
@@ -121,4 +122,3 @@
     "packages/*"
   ]
 }
-
