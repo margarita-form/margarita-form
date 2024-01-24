@@ -1,5 +1,5 @@
 {
   "entryPoints": ["src/angular.ts"],
-  "name": "@margarita-form/react",
+  "name": "@margarita-form/angular",
   "tsconfig": "./tsconfig.lib.json"
 }
