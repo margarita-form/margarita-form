@@ -69,14 +69,8 @@ type RootField = MargaritaFormField<{ value: MyFormValue; fields: MyFormField }>
         <label [for]="control.uid">{{ control.field.title }}</label>
 
         <ng-container [ngSwitch]="control.field.type">
-          <div *ngSwitchCase="'text'">
-            <input [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control" />
-          </div>
-
-          <div *ngSwitchCase="'textarea'">
-            <textarea [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control"></textarea>
-          </div>
-
+          <input *ngSwitchCase="'text'" [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control" />
+          <textarea *ngSwitchCase="'textarea'" [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control"></textarea>
           <div *ngSwitchDefault>Unknown field type: {{ control.field.type }}</div>
         </ng-container>
       </div>
