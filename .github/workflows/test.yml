@@ -1,5 +1,9 @@
 # Simple workflow for testing current branch
 name: Test current branch
+
+runs:
+  using: 'node20'
+
 on:
   push:
   pull_request:
