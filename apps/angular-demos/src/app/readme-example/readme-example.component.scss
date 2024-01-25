@@ -1,0 +1,36 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  h2 {
+    font-size: 16px;
+  }
+  form {
+    display: grid;
+    gap: 10px;
+    font-family: sans-serif;
+  }
+  .field-wrapper {
+    display: grid;
+    gap: 4px;
+  }
+  input,
+  textarea {
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: sans-serif;
+    width: 100%;
+  }
+  button[type='submit'] {
+    padding: 0.5em 2em;
+    width: fit-content;
+  }
+  code {
+    display: block;
+    background: #111;
+    color: #fff;
+    padding: 20px;
+  }
+}

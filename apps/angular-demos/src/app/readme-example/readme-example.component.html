@@ -1,0 +1,21 @@
+<!-- Render the current value -->
+<h2>Current value</h2>
+<code>{{ form.value | json }}</code>
+
+<!-- Render the form -->
+<h2>Form</h2>
+<form *ngIf="form" [mfControl]="form">
+  <!-- Map controls and connect to inputs -->
+  <div class="field-wrapper" *ngFor="let control of form.controls">
+    <label [for]="control.uid">{{ control.field.title }}</label>
+
+    <!-- Use switch to render different types of fields -->
+    <ng-container [ngSwitch]="control.field.type">
+      <textarea *ngSwitchCase="'textarea'" [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control"></textarea>
+      <input *ngSwitchDefault [id]="control.uid" [name]="control.uid" [type]="control.field.type" [mfControl]="control" />
+    </ng-container>
+  </div>
+
+  <!-- Submit the form -->
+  <button type="submit">Submit</button>
+</form>

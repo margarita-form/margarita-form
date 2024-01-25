@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { ReadmeExampleComponent } from './forms/readme-example/readme-example.component';
+import { ReadmeExampleComponent } from './readme-example/readme-example.component';
 
 export const appRoutes: Route[] = [
   {
