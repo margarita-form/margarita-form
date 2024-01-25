@@ -1,5 +1,5 @@
 import { Directive, ElementRef, Input, OnInit } from '@angular/core';
-import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarita-form/core/light';
+import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarita-form/core';
 import { MargaritaFormService } from './margarita-form.service';
 
 @Directive({
