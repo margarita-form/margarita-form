@@ -72,11 +72,11 @@ export type MargaritaFormFieldState = ResolverOutput<boolean> | MargaritaFormRes
 
 export type GenerateKeyFunction = (control: MFC) => string;
 
-export type MargaritaFormSubmitHandler<FIELD extends MFF = MFGF, PARAMS = any> = (
+export type MargaritaFormSubmitHandler<FIELD extends MFF<any> = MFGF, PARAMS = any> = (
   context: ControlContext<MFC<FIELD>, PARAMS>
 ) => unknown | Promise<unknown>;
 
-export interface MargaritaFormSubmitHandlers<FIELD extends MFF = MFGF> {
+export interface MargaritaFormSubmitHandlers<FIELD extends MFF<any> = MFGF> {
   valid: MargaritaFormSubmitHandler<FIELD>;
   invalid?: MargaritaFormSubmitHandler<FIELD>;
 }

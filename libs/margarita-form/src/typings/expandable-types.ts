@@ -4,7 +4,7 @@ import { FieldName, MFGF } from './margarita-form-types';
 
 export interface FieldParams {
   value?: any;
-  fields?: unknown;
+  fields?: MFGF;
   parent?: any;
   name?: FieldName;
 }

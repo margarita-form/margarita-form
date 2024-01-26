@@ -37,13 +37,13 @@ import { CoreGetter } from '../helpers/core-resolver';
 export type MargaritaFormGroupings = 'group' | 'array' | 'flat';
 
 export type FieldName = CoreGetter<string>;
-export type FieldChild<FIELD extends MFF> = CoreGetter<FIELD>;
+export type FieldChild<FIELD extends MFF | unknown> = CoreGetter<FIELD>;
 export type FieldValue<VALUE = unknown> = CoreGetter<VALUE>;
 export type StartWith = number | (number | string)[];
 
 export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
   name: FP['name'] extends FieldName ? FP['name'] : FieldName;
-  fields?: FieldChild<MFGF & FP['fields']>[];
+  fields?: FieldChild<FP['fields']>[];
   grouping?: CoreGetter<MargaritaFormGroupings>;
   startWith?: CoreGetter<StartWith>;
   initialValue?: FieldValue<ReplaceAny<FP['value']>>;

@@ -51,7 +51,7 @@ type ValueFromParent<PARENT_FIELD extends MFF, IDENTIFIER extends PropertyKey> =
  * Identifies the type of a child field based on value type.
  */
 type GetFieldOfType<FIELD_UNION, VALUE> = Extract<FIELD_UNION, MFF<{ value: VALUE }>>;
-type WithValue<VALUE> = { initialValue: VALUE };
+export type WithValue<VALUE> = { initialValue: VALUE };
 
 /**
  * Identifies the type of a child field based on the parent control and the identifier.
