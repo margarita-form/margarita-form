@@ -1,5 +1,55 @@
 import { expectType, expectNotType } from 'tsd';
-import { FieldChild, MFC, MFCA, MFF, MFGF, createMargaritaForm } from '../index';
+import { FieldChild, FieldParams, MFC, MFCA, MFF, MFGF, WithValue, createMargaritaForm } from '../index';
+
+const vanillaForm = createMargaritaForm<MFF>({
+  name: 'form-0',
+  handleSubmit: ({ control, value }) => {
+    expectType<MFC<MFGF<{ value: any }>>>(control);
+    expectType<any>(value);
+  },
+  validation: {
+    custom: (context) => {
+      expectType<MFC<MFGF<{ value: any }>>>(context.control);
+      expectType<any>(context.value);
+    },
+  },
+  fields: [
+    {
+      name: 'level-1',
+      fields: [
+        {
+          name: 'level-2',
+          fields: [
+            {
+              name: 'level-3',
+              fields: [
+                {
+                  name: 'level-4',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});
+
+type VanillaFieldType = MFC<MFGF<FieldParams> & WithValue<any>>;
+
+expectType<MFF>(vanillaForm.field);
+const level1Control = vanillaForm.getControl('level-1');
+if (!level1Control) throw new Error('Control not found');
+expectType<VanillaFieldType>(level1Control);
+const level2Control = level1Control.getControl('level-2');
+if (!level2Control) throw new Error('Control not found');
+expectType<VanillaFieldType>(level2Control);
+const level3Control = level2Control.getControl('level-3');
+if (!level3Control) throw new Error('Control not found');
+expectType<VanillaFieldType>(level3Control);
+const level4Control = level3Control.getControl('level-4');
+if (!level4Control) throw new Error('Control not found');
+expectType<VanillaFieldType>(level4Control);
 
 interface Address {
   street: string;
@@ -18,7 +68,7 @@ interface CustomFieldBase<Type, Value, Field extends MFF = never> extends MFF<{ 
   type: Type;
 }
 
-type StringField = CustomFieldBase<'text', string>;
+type StringField = CustomFieldBase<'text' | 'email', string>;
 type NumberField = CustomFieldBase<'number', number>;
 type AddressField = CustomFieldBase<'address', Address, StringField>;
 type StringArrayField = CustomFieldBase<'array', string[], StringField>;
@@ -74,7 +124,14 @@ const form = createMargaritaForm<PersonField>({
         {
           name: 'emailAddress',
           title: 'Email address',
-          type: 'text',
+          type: 'email',
+          validation: {
+            custom: (context) => {
+              expectType<MFC<MFGF<{ value: string }>>>(context.control);
+              expectType<string | undefined>(context.value);
+              return { valid: true };
+            },
+          },
         },
       ],
     },
@@ -193,7 +250,7 @@ const advField: AdvRootField = {
 
 expectType<AdvRootField>(advField);
 expectNotType<AdvField>(advField.fields![0]);
-expectType<FieldChild<MFGF & AdvField>>(advField.fields![0]);
+expectType<FieldChild<AdvField>>(advField.fields![0]);
 
 const advForm = createMargaritaForm<AdvRootField>(advField);
 
@@ -245,3 +302,36 @@ advForm.activeControls.map((control) => {
     expectType<AdvOptionsField>(field);
   }
 });
+
+interface FormValue {
+  name: string;
+  age: number;
+}
+
+type ValueFormRootField = MFF<{ value: FormValue }>;
+
+const valueForm = createMargaritaForm<ValueFormRootField>({
+  name: 'valueForm',
+  handleSubmit: ({ control, value }) => {
+    expectType<MFC<MFGF<{ value: FormValue }>>>(control);
+    expectType<FormValue | undefined>(value);
+  },
+  fields: [
+    {
+      name: 'name',
+      title: 'Name',
+      type: 'text',
+    },
+    {
+      name: 'age',
+      title: 'Age',
+      type: 'number',
+    },
+  ],
+});
+
+expectType<ValueFormRootField>(valueForm.field);
+const valueFormNameControl = valueForm.getControl('name');
+if (!valueFormNameControl) throw new Error('Control not found');
+type ValueFormNameControlType = MFC<MFGF<FieldParams> & WithValue<string>>;
+expectType<ValueFormNameControlType>(valueFormNameControl);
