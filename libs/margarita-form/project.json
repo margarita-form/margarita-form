@@ -11,6 +11,14 @@
         "outputPath": "dist/libs/margarita-form"
       }
     },
+    "build-minified": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/margarita-form",
+        "configFile": "libs/margarita-form/vite.minified-config.ts"
+      }
+    },
     "publish": {
       "executor": "nx:run-commands",
       "options": {
