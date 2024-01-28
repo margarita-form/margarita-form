@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Margarita Form / Vanilla TypeScript example</title>
+    <link rel="stylesheet" href="/styles-vanilla.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Margarita Form / Vanilla TypeScript with HTML Template extension example</h1>
+    </header>
+    <main>
+      <div class="form-wrapper">
+        <!-- Render the current value -->
+        <h2>Current value</h2>
+        <code id="current-value"></code>
+
+        <!-- Render the form -->
+        <h2>Form</h2>
+        <!-- HTML Template extension: Add "mf-root" to indicate root ref -->
+        <form mf-root>
+          <!-- HTML Template extension: Add "mf-controls-container" to indicate where child controls should be placed -->
+          <div class="form-fields-container" mf-controls-container>
+            <!-- Fields are appended here -->
+          </div>
+
+          <!-- Submit the form -->
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </main>
+
+    <script
+      type="module"
+      src="/app/vanilla-typescript-with-html-template-extension/vanilla-typescript-with-html-template-extension.ts"
+    ></script>
+  </body>
+</html>

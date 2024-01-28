@@ -45,6 +45,11 @@ form {
   gap: 4px;
 }
 
+.grouped-fields {
+  padding-left: 10px;
+  border-left: 2px solid #ccc;
+}
+
 input,
 textarea {
   padding: 0.5em;
