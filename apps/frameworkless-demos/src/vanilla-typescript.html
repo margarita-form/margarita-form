@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Margarita Form / Vanilla TypeScript example</title>
+    <link rel="stylesheet" href="/styles-vanilla.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Margarita Form / Vanilla TypeScript example</h1>
+    </header>
+    <main>
+      <div class="form-wrapper">
+        <!-- Render the current value -->
+        <h2>Current value</h2>
+        <code id="current-value"></code>
+
+        <!-- Render the form -->
+        <h2>Form</h2>
+        <form *ngIf="form" [mfControl]="form">
+          <!-- Map controls and connect to inputs -->
+          <div class="form-fields-container">
+            <!-- Fields are appended here -->
+          </div>
+
+          <!-- Submit the form -->
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/app/vanilla-typescript/vanilla-typescript.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+header {
+  nav {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    gap: 10px;
+    a {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #000;
+      transition: color 0.2s;
+      &:hover {
+        color: #666;
+      }
+    }
+  }
+}
