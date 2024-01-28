@@ -26,7 +26,7 @@
     "build:react": "nx run margarita-form-react:build",
     "build:angular": "nx run margarita-form-angular:build",
     "build:angular-demos": "nx run angular-demos:build",
-    "build:all": "nx run-many -t build -p margarita-form-core margarita-form-react margarita-form-angular --skipNxCache --nxBail",
+    "build:all": "nx run margarita-form:build-minified && nx run-many -t build -p margarita-form-core margarita-form-react margarita-form-angular --skipNxCache --nxBail",
     "publish:core": "cd dist/libs/margarita-form && npm publish",
     "publish:react": "cd dist/libs/margarita-form-react && npm publish",
     "publish:angular": "cd dist/libs/margarita-form-angular && npm publish",
