@@ -20,7 +20,7 @@ import {
   MargaritaFormGroupings,
   Context,
 } from './typings/margarita-form-types';
-import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, filter, map, shareReplay } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, debounceTime, distinctUntilChanged, filter, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
 import { isEqual, isIncluded, valueExists } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
@@ -41,6 +41,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   public ready = false;
   public changes: BehaviorSubject<ControlChange>;
   public field: FIELD;
+  public subscriptions: Subscription[] = [];
 
   constructor(
     public _field: FIELD,
@@ -65,6 +66,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
       this.managers.value.refreshSync();
     }
     if (this.field.onCreate) resolve({ getter: this.field.onCreate, control: this });
+    if (this.isRoot) this.initialize();
   }
 
   public get extensions(): ControlLike<FIELD>['extensions'] {
@@ -96,6 +98,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
    * Unsubscribe from all subscriptions for current control
    */
   public cleanup: ControlLike<FIELD>['cleanup'] = () => {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     Object.values(this.managers).forEach((manager: any) => manager.cleanup());
     this._buildParams.idStore.delete(this.uid);
     if (this.isRoot) removeFormFromCache(this.name);
@@ -110,12 +113,12 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
       this.controls.forEach((control) => control.initialize(true, false));
     }
     if (after) {
+      this.activeExtensions.forEach(({ afterReady }) => {
+        if (afterReady) afterReady(this);
+      });
       Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
       this.controls.forEach((control) => control.initialize(false, true));
     }
-    this.activeExtensions.forEach(({ afterReady }) => {
-      if (afterReady) afterReady(this);
-    });
   }
 
   /**

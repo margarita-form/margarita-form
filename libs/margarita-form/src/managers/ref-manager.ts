@@ -163,6 +163,11 @@ class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
       cleanup,
     });
 
+    this.control.activeExtensions.forEach((extension) => {
+      const { afterRefSet } = extension;
+      if (afterRefSet) afterRefSet(this.control, node);
+    });
+
     this._emitChanges();
   }
 

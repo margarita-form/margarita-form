@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ExtensionName, MFC } from '../../typings/margarita-form-types';
+import { ExtensionName, MFC, MargaritaFormBaseElement } from '../../typings/margarita-form-types';
 
 export class ExtensionBase {
   public static extensionName: ExtensionName;
@@ -15,6 +15,8 @@ export class ExtensionBase {
   modifyField?: (field: any, parent?: MFC) => any;
   // Events manager
   afterSubmit?: (control: MFC) => void | Promise<void>;
+  // Ref manager
+  afterRefSet?: (control: MFC, node: MargaritaFormBaseElement) => void | Promise<void>;
   // Lifecycle
   afterReady?: (control: MFC) => void | Promise<void>;
   onCleanup?: (control: MFC) => void | Promise<void>;
