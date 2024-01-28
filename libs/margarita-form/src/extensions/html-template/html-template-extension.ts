@@ -73,8 +73,6 @@ export class HTMLTemplateExtension extends ExtensionBase {
   };
 
   public addListeners = (control: MFC, node: HTMLElement) => {
-    console.log('addListeners', control.name, node.querySelectorAll<HTMLElement>('[mf-listen]'));
-
     node.querySelectorAll<HTMLElement>('[mf-listen]').forEach((element) => {
       const attr = element.getAttribute('mf-listen') as string;
       const [eventName, resolverName] = attr.split(',');
