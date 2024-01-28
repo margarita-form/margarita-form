@@ -8,10 +8,10 @@ Goal of margarita form is to help you to create, extend and validate forms easil
 
 ## Packages
 
-- [React](https://www.npmjs.com/package/@margarita-form/react) → `npm install @margarita-form/react` → [View React example](#example-dynamic-form-with-react)
-- [Angular](https://www.npmjs.com/package/@margarita-form/angular) → `npm install @margarita-form/angular` → [View Angular example](#example-dynamic-form-with-angular)
-- [HTML and JS](https://www.npmjs.com/package/@margarita-form/core) → `npm install @margarita-form/core` → [View HTML & JS example](#example-dynamic-form-with-html-and-js)
-- [Other frameworks](https://www.npmjs.com/package/@margarita-form/core) → `npm install @margarita-form/core` → [View TypeScript example](#example-form-with-other-frameworks)
+- [React](#react) → `npm install @margarita-form/react` → [View React example](#example-dynamic-form-with-react)
+- [Angular](#angular) → `npm install @margarita-form/angular` → [View Angular example](#example-dynamic-form-with-angular)
+- [HTML and JS](#html-and-js) → `npm install @margarita-form/core` → [View HTML & JS example](#example-dynamic-form-with-html-and-js)
+- [Other frameworks](#other-frameworks) → `npm install @margarita-form/core` → [View TypeScript example](#example-dynamic-form-with-other-frameworks)
 
 ## Features
 
@@ -273,7 +273,7 @@ export class ReadmeExampleComponent {
 
 - [Angular reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_angular.html)
 
-### HTML & JS
+### HTML and JS
 
 #### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
 
@@ -412,8 +412,6 @@ npm install @margarita-form/core
 #### More resources
 
 - [Core reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_core.html)
-
-###############################
 
 ### Other frameworks
 
