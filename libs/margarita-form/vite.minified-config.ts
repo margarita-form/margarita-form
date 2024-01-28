@@ -1,11 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
 
-const banner = `/*!
-* Margarita Form - https://github.com/margarita-form/margarita-form - MIT License - Created by Teemu Lahjalahti
-*/`;
-
-const footer = `window.createMargaritaForm = createMargaritaForm;`;
+const banner = `/* Margarita Form - https://github.com/margarita-form/margarita-form - MIT License - Created by Teemu Lahjalahti */`;
 
 export default defineConfig({
   root: __dirname,
@@ -16,13 +12,17 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'MargaritaForm',
-      formats: ['es', 'umd', 'iife', 'cjs'],
-      fileName: (format) => `margarita-form.${format}.js`,
+      formats: ['es', 'iife'],
+      fileName: (format) => {
+        if (format === 'es') {
+          return 'margarita-form.module.js';
+        }
+        return 'margarita-form.min.js';
+      },
     },
     rollupOptions: {
       output: {
         banner,
-        footer,
       },
     },
   },
