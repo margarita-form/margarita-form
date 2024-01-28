@@ -10,14 +10,15 @@ Goal of margarita form is to help you to create, extend and validate forms easil
 
 - [React](https://www.npmjs.com/package/@margarita-form/react) → `npm install @margarita-form/react` → [View React example](#example-dynamic-form-with-react)
 - [Angular](https://www.npmjs.com/package/@margarita-form/angular) → `npm install @margarita-form/angular` → [View Angular example](#example-dynamic-form-with-angular)
-- [Core](https://www.npmjs.com/package/@margarita-form/core) → `npm install @margarita-form/core` → [View TypeScript example](#example-form-with-core)
+- [HTML and JS](https://www.npmjs.com/package/@margarita-form/core) → `npm install @margarita-form/core` → [View HTML & JS example](#example-dynamic-form-with-html-and-js)
+- [Other frameworks](https://www.npmjs.com/package/@margarita-form/core) → `npm install @margarita-form/core` → [View TypeScript example](#example-form-with-other-frameworks)
 
 ## Features
 
 - **Asynchronous validation** - Validate form fields with build in validators or create your own. Margarita form validation supports validators that can be functions, promises or even observables.
 - **Schema based controls** - Form’s controls are created with a simple schema that consists of fields. Schema can be created with simple JSON data from your database or from javascript objects extended with custom functionality.
 - **Conditional form fields** - With margarita form’s active and visible states you can control conditional cases for your form easily. Connect any function, promise or observable to render fields conditinally.
-- **Written with TypeScript** - Typescript support is crucial for modern libraries and so margarita form is build to be typescript native library with support to utilize your custom types.
+- **Written with TypeScript** - TypeScript support is crucial for modern libraries and so margarita form is build to be typescript native library with support to utilize your custom types.
 - **CMS & CRM compatible** - It’s possible to create form schema with any CMS or CMR and use all features of margarita form with that. Existing forms can be extended with margarita form’s api and data can be submitted to where ever needed.
 - **Storage and syncronization** - You can enable locally stored data to allow users continue filling the form later. On top of storage you can allow form data syncronization between tabs via [Broadcast Channel API](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API)
 - **Form field localization** - Margarita form supports localization for form fields. You can create forms that generate values or you can localize form's content.
@@ -272,11 +273,7 @@ export class ReadmeExampleComponent {
 
 - [Angular reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_angular.html)
 
-### Other frameworks
-
-The plan is to make more framework specific libraries but even now you can use @margarita-form/core to implement the form logic into any project!
-
-### Example form with core
+### HTML & JS
 
 #### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
 
@@ -284,56 +281,300 @@ The plan is to make more framework specific libraries but even now you can use @
 npm install @margarita-form/core
 ```
 
-#### Import it into your project:
+#### Example dynamic form with HTML and JS
 
-```typescript
-import { createMargaritaForm, MargaritaFormField } from '@margarita-form/core';
+**Example file** / [vanilla-html-js.html](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos/src/vanilla-html-js.html)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Margarita Form / Vanilla HTML anf JS example</title>
+    <script src="https://unpkg.com/@margarita-form/core/margarita-form.min.js"></script>
+    <link rel="stylesheet" href="/styles-vanilla.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Margarita Form / Vanilla HTML anf JS example</h1>
+    </header>
+    <main>
+      <div class="form-wrapper">
+        <!-- Render the current value -->
+        <h2>Current value</h2>
+        <code id="current-value"></code>
+
+        <!-- Render the form -->
+        <h2>Form</h2>
+        <form *ngIf="form" [mfControl]="form">
+          <!-- Map controls and connect to inputs -->
+          <div class="form-fields-container">
+            <!-- Fields are appended here -->
+          </div>
+
+          <!-- Submit the form -->
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </main>
+
+    <script>
+      const form = MargaritaForm.createMargaritaForm({
+        name: 'my-form', // Name for each form should be unique
+        fields: [
+          {
+            name: 'name',
+            title: 'Full name',
+            type: 'text',
+            validation: { required: true },
+            attributes: { placeholder: 'John Doe' }, // Attributes are passed to the input
+          },
+          {
+            name: 'email',
+            title: 'Email',
+            type: 'email',
+            validation: { required: true },
+            attributes: { placeholder: 'john.doe@email.com' },
+          },
+          {
+            name: 'message',
+            title: 'Message',
+            type: 'textarea',
+            validation: { required: true },
+            attributes: { placeholder: 'Lorem ipsum' }, // Attributes are passed to the input
+          },
+        ],
+        handleSubmit: {
+          // This required function is called when the form is valid
+          valid: async ({ value }) => {
+            console.log('Valid submit', { value });
+            alert(`Form is valid!\n${JSON.stringify(value, null, 2)}`);
+          },
+          // This optional function is called when the form is invalid
+          invalid: async ({ control, value }) => {
+            const { allErrors } = control.state;
+            alert(`Form is not valid!\n${JSON.stringify(allErrors, null, 2)}`);
+            console.log('Form is not valid!', { value, allErrors });
+          },
+        },
+        config: {
+          handleSuccesfullSubmit: 'reset', // Change what happens when form is successfully submitted
+        },
+        onValueChanges: ({ value }) => {
+          const currentValueEl = document.querySelector('#current-value');
+          if (!currentValueEl) throw new Error('Element with id "current-value" was not found');
+          currentValueEl.innerText = JSON.stringify(value);
+        },
+      });
+
+      const formEl = document.querySelector('form');
+      if (!formEl) throw new Error('Element with tag "form" was not found');
+      form.setRef(formEl);
+
+      const getInputEl = (control) => {
+        switch (control.field.type) {
+          case 'textarea':
+            return document.createElement('textarea');
+          default:
+            return document.createElement('input');
+        }
+      };
+
+      const formFieldsContainerEl = formEl.querySelector('.form-fields-container');
+      if (!formFieldsContainerEl) throw new Error('Element with class "form-fields-container" was not found');
+
+      form.controls.forEach((control) => {
+        const fieldEl = document.createElement('div');
+        fieldEl.classList.add('field-wrapper');
+
+        const labelEl = document.createElement('label');
+        labelEl.setAttribute('for', control.uid);
+        labelEl.innerText = `${control.field.title}:`;
+
+        const inputEl = getInputEl(control);
+        inputEl.setAttribute('id', control.uid);
+        inputEl.setAttribute('name', control.name);
+        inputEl.setAttribute('type', control.field.type);
+
+        formFieldsContainerEl.appendChild(fieldEl);
+        fieldEl.appendChild(labelEl);
+        fieldEl.appendChild(inputEl);
+        control.setRef(inputEl);
+      });
+    </script>
+  </body>
+</html>
 ```
 
-#### Create a new form with single field:
+**[View full example file](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos/src/vanilla-html-js.html)**
 
-```typescript
-import { createMargaritaForm, MargaritaFormField } from '@margarita-form/core';
+#### More resources
+
+- [Core reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_core.html)
+
+###############################
+
+### Other frameworks
+
+The plan is to make more framework specific libraries but even now you can use @margarita-form/core to implement the form logic into any project!
+
+#### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
+
+```
+npm install @margarita-form/core
+```
+
+#### Example dynamic form with other frameworks
+
+**Example TypeScript** / [vanilla-typescript.ts](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos/src/app/vanilla-typescript/vanilla-typescript.ts)
+
+```ts
+import { MargaritaFormControl, MargaritaFormField, createMargaritaForm } from '@margarita-form/core';
 
 interface MyFormValue {
   name?: string;
   message?: string;
 }
 
-interface MyFormField extends MargaritaFormField<{ fields: MyFormField }> {
-  type: 'text' | 'textarea';
+interface MyFormField extends MargaritaFormField {
+  type: 'text' | 'textarea' | 'number' | 'email' | 'password' | 'tel' | 'url' | 'date';
   title: string;
 }
 
 type RootField = MargaritaFormField<{ value: MyFormValue; fields: MyFormField }>;
 
-export const form = createMargaritaForm<RootField>({
-  name: 'my-form',
-  fields: [{ name: 'myControl', type: 'text', title: 'My Control', validation: { required: true } }],
+type MyFormControl = MargaritaFormControl<MyFormField>;
+
+const form = createMargaritaForm<RootField>({
+  name: 'my-form', // Name for each form should be unique
+  fields: [
+    {
+      name: 'name',
+      title: 'Full name',
+      type: 'text',
+      validation: { required: true },
+      attributes: { placeholder: 'John Doe' }, // Attributes are passed to the input
+    },
+    {
+      name: 'email',
+      title: 'Email',
+      type: 'email',
+      validation: { required: true },
+      attributes: { placeholder: 'john.doe@email.com' },
+    },
+    {
+      name: 'message',
+      title: 'Message',
+      type: 'textarea',
+      validation: { required: true },
+      attributes: { placeholder: 'Lorem ipsum' }, // Attributes are passed to the input
+    },
+  ],
   handleSubmit: {
-    valid: async ({ control: form, value }) => {
-      console.log('Valid submit', { form, value });
+    // This required function is called when the form is valid
+    valid: async ({ value }) => {
+      console.log('Valid submit', { value });
+      alert(`Form is valid!\n${JSON.stringify(value, null, 2)}`);
+    },
+    // This optional function is called when the form is invalid
+    invalid: async ({ control, value }) => {
+      const { allErrors } = control.state;
+      alert(`Form is not valid!\n${JSON.stringify(allErrors, null, 2)}`);
+      console.log('Form is not valid!', { value, allErrors });
     },
   },
+  config: {
+    handleSuccesfullSubmit: 'reset', // Change what happens when form is successfully submitted
+  },
+  onValueChanges: ({ value }) => {
+    const currentValueEl = document.querySelector<HTMLElement>('#current-value');
+    if (!currentValueEl) throw new Error('Element with id "current-value" was not found');
+    currentValueEl.innerText = JSON.stringify(value);
+  },
+});
+
+const formEl = document.querySelector('form');
+if (!formEl) throw new Error('Element with tag "form" was not found');
+form.setRef(formEl);
+
+const getInputEl = (control: MyFormControl) => {
+  switch (control.field.type) {
+    case 'textarea':
+      return document.createElement('textarea');
+    default:
+      return document.createElement('input');
+  }
+};
+
+const formFieldsContainerEl = formEl.querySelector('.form-fields-container');
+if (!formFieldsContainerEl) throw new Error('Element with class "form-fields-container" was not found');
+
+form.controls.forEach((control) => {
+  const fieldEl = document.createElement('div');
+  fieldEl.classList.add('field-wrapper');
+
+  const labelEl = document.createElement('label');
+  labelEl.setAttribute('for', control.uid);
+  labelEl.innerText = `${control.field.title}:`;
+
+  const inputEl = getInputEl(control);
+  inputEl.setAttribute('id', control.uid);
+  inputEl.setAttribute('name', control.name);
+  inputEl.setAttribute('type', control.field.type);
+
+  formFieldsContainerEl.appendChild(fieldEl);
+  fieldEl.appendChild(labelEl);
+  fieldEl.appendChild(inputEl);
+  control.setRef(inputEl);
 });
 ```
 
-#### Get control from the form:
+**Example HTML** / [vanilla-typescript.html](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos/src/vanilla-typescript.html)
 
-```typescript
-const myControl = form.getControl('myControl');
-if (!myControl) throw 'Control "myControl" was not found!"';
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Margarita Form / Vanilla TypeScript example</title>
+    <link rel="stylesheet" href="/styles-vanilla.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Margarita Form / Vanilla TypeScript example</h1>
+    </header>
+    <main>
+      <div class="form-wrapper">
+        <!-- Render the current value -->
+        <h2>Current value</h2>
+        <code id="current-value"></code>
+
+        <!-- Render the form -->
+        <h2>Form</h2>
+        <form *ngIf="form" [mfControl]="form">
+          <!-- Map controls and connect to inputs -->
+          <div class="form-fields-container">
+            <!-- Fields are appended here -->
+          </div>
+
+          <!-- Submit the form -->
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/app/vanilla-typescript/vanilla-typescript.ts"></script>
+  </body>
+</html>
 ```
 
-or
+**[View full example app with Vite server](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos)**
 
-```typescript
-form.controls.map((control) => {
-  /* Do something with the controls! */
-});
-```
+#### More resources
 
-And the rest is up to your framework!
+- [Core reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_core.html)
 
 ### Read more
 
