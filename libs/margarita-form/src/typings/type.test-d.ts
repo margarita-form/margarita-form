@@ -1,4 +1,4 @@
-import { expectType, expectNotType } from 'tsd';
+import { expectType, expectNotType, expectAssignable } from 'tsd';
 import { FieldChild, FieldParams, MFC, MFCA, MFF, MFGF, WithValue, createMargaritaForm } from '../index';
 
 const vanillaForm = createMargaritaForm<MFF>({
@@ -330,8 +330,49 @@ const valueForm = createMargaritaForm<ValueFormRootField>({
   ],
 });
 
+type PossibleNames = Parameters<typeof valueForm.getControl>[0];
+expectAssignable<PossibleNames>('name');
+expectAssignable<PossibleNames>('age');
+
 expectType<ValueFormRootField>(valueForm.field);
 const valueFormNameControl = valueForm.getControl('name');
 if (!valueFormNameControl) throw new Error('Control not found');
 type ValueFormNameControlType = MFC<MFGF<FieldParams> & WithValue<string>>;
 expectType<ValueFormNameControlType>(valueFormNameControl);
+
+interface LoremField extends MFF<{ value: string }> {
+  name: 'lorem';
+}
+
+interface DolorField extends MFF<{ value: number; name: 'dolor' }> {
+  defaultValue: 42;
+}
+
+type NamedFieldsRootField = MFF<{ value: object; fields: LoremField | DolorField }>;
+
+const namedFieldsForm = createMargaritaForm<NamedFieldsRootField>({
+  name: 'namedFieldsForm',
+  fields: [
+    {
+      name: 'lorem',
+    },
+    {
+      name: 'dolor',
+      defaultValue: 42,
+    },
+  ],
+});
+
+expectType<NamedFieldsRootField>(namedFieldsForm.field);
+const namedFieldsFormLoremControl = namedFieldsForm.getControl('lorem');
+if (!namedFieldsFormLoremControl) throw new Error('Control not found');
+expectType<MFC<LoremField>>(namedFieldsFormLoremControl);
+expectType<string>(namedFieldsFormLoremControl.value);
+
+const namedFieldsFormIpsumControl = namedFieldsForm.getControl('ipsum');
+expectType<never>(namedFieldsFormIpsumControl);
+
+const namedFieldsFormDolorControl = namedFieldsForm.getControl('dolor');
+if (!namedFieldsFormDolorControl) throw new Error('Control not found');
+expectType<MFC<DolorField>>(namedFieldsFormDolorControl);
+expectType<number>(namedFieldsFormDolorControl.value);

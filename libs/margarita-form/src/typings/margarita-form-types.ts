@@ -43,7 +43,7 @@ export type StartWith = number | (number | string)[];
 
 export interface MargaritaFormField<FP extends FieldParams = FieldParams> extends FieldBase<FP>, UserDefinedStatesField {
   name: FP['name'] extends FieldName ? FP['name'] : FieldName;
-  fields?: FieldChild<FP['fields']>[];
+  fields?: FP['fields'] extends object ? FieldChild<FP['fields']>[] : FP['fields'] extends never ? never : MFGF[];
   grouping?: CoreGetter<MargaritaFormGroupings>;
   startWith?: CoreGetter<StartWith>;
   initialValue?: FieldValue<ReplaceAny<FP['value']>>;
