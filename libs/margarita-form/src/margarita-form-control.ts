@@ -19,6 +19,8 @@ import {
   MargaritaFormConfig,
   MargaritaFormGroupings,
   Context,
+  MFGF,
+  ControlBase,
 } from './typings/margarita-form-types';
 import { BehaviorSubject, Observable, Subscription, debounceTime, distinctUntilChanged, filter, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
@@ -31,7 +33,7 @@ import { StateFactoryFunction } from './managers/state-manager-helpers/state-fac
 import { coreResolver } from './helpers/core-resolver';
 import { solveResolver, getResolverOutputPromise, resolve } from './helpers/resolve-function-outputs';
 
-export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements ControlLike<FIELD> {
+export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends ControlBase<FIELD> implements ControlLike<FIELD> {
   public key: string;
   public uid: string;
   public syncId: string = nanoid(4);
@@ -42,6 +44,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
   public changes: BehaviorSubject<ControlChange>;
   public field: FIELD;
   public subscriptions: Subscription[] = [];
+  public works = true;
 
   constructor(
     public _field: FIELD,
@@ -50,6 +53,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFF> implements Contr
       extensions: {} as Extensions,
     }
   ) {
+    super();
     this.field = _field;
     this.changes = new BehaviorSubject<ControlChange>({ control: this, change: undefined, name: 'initialize' });
     if (!this.field.name) throw 'Missing name in field: ' + (this.isRoot ? 'root' : this.getPath('default').join(' > ') + '*');
