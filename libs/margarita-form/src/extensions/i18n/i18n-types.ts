@@ -65,10 +65,8 @@ declare module '../../typings/expandable-types' {
     handleLocalize?: MargaritaFormHandleLocalize;
     __i18n?: PARAMS['i18n'];
   }
-}
 
-declare module '../../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF<any> = MFF> {
+  export interface ControlBase<FIELD extends MFF> {
     get i18n(): FIELD['__i18n'];
     get locales(): Locales;
     get currentLocale(): LocaleNames;

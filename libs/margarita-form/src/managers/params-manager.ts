@@ -11,6 +11,7 @@ import {
   ResolverOutput,
   NotFunction,
   ResolverParams,
+  MFGF,
 } from '../typings/margarita-form-types';
 import { resolve, getResolverOutputMapObservable, getResolverOutputMapSyncronous } from '../helpers/resolve-function-outputs';
 import { MargaritaFormControl } from '../margarita-form-control';
@@ -25,10 +26,8 @@ declare module '../typings/expandable-types' {
   export interface Managers {
     params: ParamsManager<MFC>;
   }
-}
 
-declare module '../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF<any>> {
+  export interface ControlBase<FIELD extends MFF> {
     get params(): Params;
     get paramsChanges(): Observable<Params>;
   }

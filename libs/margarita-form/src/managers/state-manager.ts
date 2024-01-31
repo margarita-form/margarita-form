@@ -11,6 +11,7 @@ import {
   MargaritaFormValidatorResult,
   MFF,
   FieldParams,
+  MFGF,
 } from '../typings/margarita-form-types';
 import { BaseManager, ManagerName } from './base-manager';
 import { isEqual, valueExists } from '../helpers/check-value';
@@ -29,10 +30,8 @@ declare module '../typings/expandable-types' {
   export interface Managers {
     state: StateManager<MFC>;
   }
-}
 
-declare module '../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF<any>> {
+  export interface ControlBase<FIELD extends MFF> {
     _getStateFactories(global?: boolean): StateFactoryFunction[];
   }
 }

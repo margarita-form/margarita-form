@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { FieldName, MFGF } from './margarita-form-types';
+import { FieldName, MFF, MFGF } from './margarita-form-types';
 
 export interface FieldParams {
   value?: any;
@@ -25,5 +25,9 @@ export interface Extensions {
 }
 
 export interface Configs {
+  //
+}
+
+export class ControlBase<FIELD extends MFF> {
   //
 }

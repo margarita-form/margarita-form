@@ -1,5 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expectType, expectNotType, expectAssignable } from 'tsd';
 import { FieldChild, FieldParams, MFC, MFCA, MFF, MFGF, WithValue, createMargaritaForm } from '../index';
+
+declare module './expandable-types' {
+  export interface ControlBase<FIELD extends MFF> {
+    newMethod2(): void;
+  }
+}
 
 const vanillaForm = createMargaritaForm<MFF>({
   name: 'form-0',
@@ -50,6 +57,8 @@ expectType<VanillaFieldType>(level3Control);
 const level4Control = level3Control.getControl('level-4');
 if (!level4Control) throw new Error('Control not found');
 expectType<VanillaFieldType>(level4Control);
+
+expectType<() => void>(vanillaForm.newMethod2);
 
 interface Address {
   street: string;

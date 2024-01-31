@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Extensions, GenerateKeyFunction, MFF } from '../../typings/margarita-form-types';
+import { Extensions, GenerateKeyFunction, MFF, MFGF } from '../../typings/margarita-form-types';
 import { SyncronizationExtensionBase } from './syncronization-extension-base';
 
 export interface SyncronizationExtensionConfig {
@@ -13,13 +13,11 @@ export interface BroadcasterMessage<DATA = unknown> {
   requestSend?: boolean;
 }
 
-declare module '../../margarita-form-control' {
-  export interface MargaritaFormControl<FIELD extends MFF<any> = MFF> {
+declare module '../../typings/expandable-types' {
+  export interface ControlBase<FIELD extends MFF> {
     get syncronization(): Extensions['syncronization'];
   }
-}
 
-declare module '../../typings/expandable-types' {
   export interface Extensions {
     syncronization?: typeof SyncronizationExtensionBase;
   }
