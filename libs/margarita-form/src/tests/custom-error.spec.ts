@@ -1,17 +1,23 @@
 import { nanoid } from 'nanoid';
 import { createMargaritaForm } from '../index';
 import '../validators/add-all-validators';
+import { filter, firstValueFrom, shareReplay } from 'rxjs';
 
 describe('Custom error testing', () => {
-  it('expect custom error to work', () => {
+  it('expect custom error to work', async () => {
     const form = createMargaritaForm({
       name: nanoid(),
     });
 
     const message = 'Custom error';
+    const changes = form.changes.pipe(
+      filter((c) => c.name === 'error'),
+      shareReplay(1)
+    );
 
     expect(form.error).toBeUndefined();
     form.setError(message);
+
     expect(form.error).toBeInstanceOf(Error);
     expect(form.error).toEqual(new Error(message));
     expect(form.errorMessage).toBe(message);
@@ -22,7 +28,12 @@ describe('Custom error testing', () => {
       },
     ]);
 
+    const changeEv = await firstValueFrom(changes);
+    expect(changeEv.change).toBeInstanceOf(Error);
+    expect(changeEv.change).toEqual(new Error(message));
+
     form.setError(new Error(message + ' newer'));
+
     expect(form.error).toBeInstanceOf(Error);
     expect(form.error).toEqual(new Error(message + ' newer'));
     expect(form.errorMessage).toBe(message + ' newer');
