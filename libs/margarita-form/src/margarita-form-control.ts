@@ -44,7 +44,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
   public changes: BehaviorSubject<ControlChange>;
   public field: FIELD;
   public subscriptions: Subscription[] = [];
-  public works = true;
+  public error: Error | undefined;
 
   constructor(
     public _field: FIELD,
@@ -767,6 +767,22 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
   };
 
   // Misc
+
+  public get errorMessage(): string | undefined {
+    return this.error?.message;
+  }
+
+  public setError = (error: Error | string | undefined) => {
+    if (!error) this.error = undefined;
+    else if (typeof error === 'string') this.error = new Error(error);
+    else this.error = error;
+  };
+
+  public get allErrors(): { error: Error; control: MFC }[] {
+    const childErrors = this.controls.map((control) => control.allErrors).flat();
+    const ownError = this.error ? { error: this.error, control: this } : undefined;
+    return ownError ? [ownError, ...childErrors] : childErrors;
+  }
 
   public resetValue: ControlLike<FIELD>['resetValue'] = (
     setDirtyAs: boolean | undefined = undefined,
