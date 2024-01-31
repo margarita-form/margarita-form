@@ -38,7 +38,7 @@ Goal of margarita form is to help you to create, extend and validate forms easil
 
 #### Install the [React package](https://www.npmjs.com/package/@margarita-form/react):
 
-```
+```bash
 npm install @margarita-form/react
 ```
 
@@ -159,7 +159,7 @@ export function CustomForm() {
 
 #### Install the [Angular package](https://www.npmjs.com/package/@margarita-form/angular):
 
-```
+```bash
 npm install @margarita-form/angular
 ```
 
@@ -275,10 +275,16 @@ export class ReadmeExampleComponent {
 
 ### HTML and JS
 
-#### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
+#### Add the standalone browser script for latest release
 
+```html
+<script src="https://unpkg.com/@margarita-form/core/margarita-form.min.js"></script>
 ```
-npm install @margarita-form/core
+
+or for specific version
+
+```html
+<script src="https://unpkg.com/@margarita-form/core@VERSION/margarita-form.min.js"></script>
 ```
 
 #### Example dynamic form with HTML and JS
@@ -419,7 +425,7 @@ The plan is to make more framework specific libraries but even now you can use @
 
 #### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
 
-```
+```bash
 npm install @margarita-form/core
 ```
 
