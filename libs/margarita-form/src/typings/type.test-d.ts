@@ -385,3 +385,11 @@ const namedFieldsFormDolorControl = namedFieldsForm.getControl('dolor');
 if (!namedFieldsFormDolorControl) throw new Error('Control not found');
 expectType<MFC<DolorField>>(namedFieldsFormDolorControl);
 expectType<number>(namedFieldsFormDolorControl.value);
+
+const dolorAsSiblingControl1 = namedFieldsFormLoremControl.getSibling('dolor');
+if (!dolorAsSiblingControl1) throw new Error('Control not found');
+expectType<MFC<MFGF<FieldParams>>>(dolorAsSiblingControl1); // Sibling type is not usually known
+
+const dolorAsSiblingControl2 = namedFieldsFormLoremControl.getSibling<DolorField>('dolor');
+if (!dolorAsSiblingControl2) throw new Error('Control not found');
+expectType<MFC<DolorField>>(dolorAsSiblingControl2); // Sibling type is known when specified
