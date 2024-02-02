@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { FieldName, MFF, MFGF } from './margarita-form-types';
 

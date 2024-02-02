@@ -258,8 +258,10 @@ const advField: AdvRootField = {
 };
 
 expectType<AdvRootField>(advField);
-expectNotType<AdvField>(advField.fields![0]);
-expectType<FieldChild<AdvField>>(advField.fields![0]);
+const firstField = advField.fields && advField.fields[0];
+if (!firstField) throw new Error('Field not found');
+expectNotType<AdvField>(firstField);
+expectType<FieldChild<AdvField>>(firstField);
 
 const advForm = createMargaritaForm<AdvRootField>(advField);
 
