@@ -6,7 +6,7 @@ Start creating extendable reactive forms with any framework today.
 
 Goal of margarita form is to help you to create, extend and validate forms easily. Margarita form provides methods to conditionally enable, transform and observe your form, it's value, state and everything related to it.
 
-## Packages
+## Get started
 
 - [React](#react) → `npm install @margarita-form/react` → [View React example](#example-dynamic-form-with-react)
 - [Angular](#angular) → `npm install @margarita-form/angular` → [View Angular example](#example-dynamic-form-with-angular)
@@ -32,17 +32,15 @@ Goal of margarita form is to help you to create, extend and validate forms easil
 
 3. **Handle form submission.** Saving form data is easy. Before user can submit the form, margarita form validates all active controls. If form is valid, a callback you defined get run with a form context and saving data to any target can be handled with native Promise api.
 
-## Get started
+## React
 
-### React
-
-#### Install the [React package](https://www.npmjs.com/package/@margarita-form/react):
+### Install the [React package](https://www.npmjs.com/package/@margarita-form/react):
 
 ```bash
 npm install @margarita-form/react
 ```
 
-#### Example dynamic form with React
+### Example dynamic form with React
 
 **Component** / [readme-example.tsx](https://github.com/margarita-form/margarita-form/blob/main/apps/react-demos/src/app/readme-example/readme-example.tsx)
 
@@ -150,20 +148,20 @@ export function CustomForm() {
 
 **[View full React example app](https://github.com/margarita-form/margarita-form/tree/main/apps/react-demos/src/app)**
 
-#### More resources
+### More resources
 
 - [React reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_react.html)
 - [Even more dynamic form example that is used for testing stuff out](https://github.com/margarita-form/margarita-form/blob/main/apps/baking-oven/src/app/app.tsx)
 
-### Angular
+## Angular
 
-#### Install the [Angular package](https://www.npmjs.com/package/@margarita-form/angular):
+### Install the [Angular package](https://www.npmjs.com/package/@margarita-form/angular):
 
 ```bash
 npm install @margarita-form/angular
 ```
 
-#### Example dynamic form with Angular
+### Example dynamic form with Angular
 
 **Component** / [readme-example.component.ts](https://github.com/margarita-form/margarita-form/blob/main/apps/angular-demos/src/app/readme-example/readme-example.component.ts)
 
@@ -415,21 +413,21 @@ or for specific version
 
 **[View full example file](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos/src/vanilla-html-js.html)**
 
-#### More resources
+### More resources
 
 - [Core reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_core.html)
 
-### Other frameworks
+## Other frameworks
 
 The plan is to make more framework specific libraries but even now you can use @margarita-form/core to implement the form logic into any project!
 
-#### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
+### Install the [Core package](https://www.npmjs.com/package/@margarita-form/core):
 
 ```bash
 npm install @margarita-form/core
 ```
 
-#### Example dynamic form with other frameworks
+### Example dynamic form with other frameworks
 
 **Example TypeScript** / [vanilla-typescript.ts](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos/src/app/vanilla-typescript/vanilla-typescript.ts)
 
@@ -576,11 +574,11 @@ form.controls.forEach((control) => {
 
 **[View full example app with Vite server](https://github.com/margarita-form/margarita-form/blob/main/apps/frameworkless-demos)**
 
-#### More resources
+### More resources
 
 - [Core reference docs (WIP)](https://margarita-form.github.io/margarita-form/modules/_margarita_form_core.html)
 
-### Read more
+## Read more
 
 Proper documentation is coming soon!
 For now you can check [reference documentation](https://margarita-form.github.io/margarita-form/index.html) and the following examples!
