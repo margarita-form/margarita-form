@@ -63,12 +63,6 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
     this._constructManagers();
     this.uid = this._resolveUid();
 
-    if (this.isRoot) {
-      this._startPrepareLoop();
-      this._startOnInitializeLoop();
-      this._startAfterInitializeLoop();
-      this.managers.value.refreshSync();
-    }
     if (this.field.onCreate) resolve({ getter: this.field.onCreate, control: this });
     if (this.isRoot) this.initialize();
   }
@@ -111,18 +105,11 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
     });
   };
 
-  private initialize(initial = true, after = true) {
-    if (initial) {
-      Object.values(this.managers).forEach((manager: any) => manager.onInitialize());
-      this.controls.forEach((control) => control.initialize(true, false));
-    }
-    if (after) {
-      this.activeExtensions.forEach(({ afterReady }) => {
-        if (afterReady) afterReady(this);
-      });
-      Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
-      this.controls.forEach((control) => control.initialize(false, true));
-    }
+  public initialize() {
+    this._startPrepareLoop();
+    this._startOnInitializeLoop();
+    this._startAfterInitializeLoop();
+    this.managers.value.refreshSync();
   }
 
   /**
@@ -130,7 +117,8 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
    */
   public reInitialize: ControlLike<FIELD>['reInitialize'] = () => {
     this.cleanup();
-    this.initialize();
+    this._startOnInitializeLoop();
+    this._startAfterInitializeLoop();
   };
 
   public emitChange: ControlLike<FIELD>['emitChange'] = (name, change, origin = this) => {
@@ -892,32 +880,24 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
 
   public _startPrepareLoop = () => {
     if (!this.prepared) {
-      this.prepared = true;
       Object.values(this.managers).forEach((manager: any) => manager.prepare());
     }
-    this.controls.forEach((control) => {
-      control._startPrepareLoop();
-    });
+    this.controls.forEach((control) => control._startPrepareLoop());
+    this.prepared = true;
   };
 
   public _startOnInitializeLoop = () => {
-    if (!this.initialized) {
-      this.initialized = true;
-      Object.values(this.managers).forEach((manager: any) => manager.onInitialize());
-    }
-    this.controls.forEach((control) => {
-      control._startOnInitializeLoop();
-    });
+    Object.values(this.managers).forEach((manager: any) => manager.onInitialize());
+
+    this.controls.forEach((control) => control._startOnInitializeLoop());
+    this.initialized = true;
   };
 
   public _startAfterInitializeLoop = () => {
-    if (!this.ready) {
-      this.ready = true;
-      Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
-    }
-    this.controls.forEach((control) => {
-      control._startAfterInitializeLoop();
-    });
+    Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
+
+    this.controls.forEach((control) => control._startAfterInitializeLoop());
+    this.ready = true;
   };
 
   // Static
