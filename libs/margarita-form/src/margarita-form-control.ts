@@ -879,25 +879,24 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
   };
 
   public _startPrepareLoop = () => {
-    if (!this.prepared) {
-      Object.values(this.managers).forEach((manager: any) => manager.prepare());
-    }
+    if (!this.prepared) Object.values(this.managers).forEach((manager: any) => manager.prepare());
     this.controls.forEach((control) => control._startPrepareLoop());
     this.prepared = true;
   };
 
   public _startOnInitializeLoop = () => {
     Object.values(this.managers).forEach((manager: any) => manager.onInitialize());
-
     this.controls.forEach((control) => control._startOnInitializeLoop());
     this.initialized = true;
   };
 
   public _startAfterInitializeLoop = () => {
     Object.values(this.managers).forEach((manager: any) => manager.afterInitialize());
-
     this.controls.forEach((control) => control._startAfterInitializeLoop());
     this.ready = true;
+    this.activeExtensions.forEach(({ afterReady }) => {
+      if (afterReady) afterReady(this);
+    });
   };
 
   // Static
