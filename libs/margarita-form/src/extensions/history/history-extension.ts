@@ -33,7 +33,7 @@ export class HistoryExtension extends ExtensionBase {
   }
 
   public override afterReady = () => {
-    const valueChanges = this.root.valueChanges.pipe(debounceTime(1000)).subscribe(() => this.addHistoryEntry());
+    const valueChanges = this.root.valueChanges.pipe(debounceTime(500)).subscribe(() => this.addHistoryEntry());
     this.subscriptions.push(valueChanges);
 
     const ctrlZListener = fromEvent<KeyboardEvent>(window, 'keydown').subscribe((event) => {
