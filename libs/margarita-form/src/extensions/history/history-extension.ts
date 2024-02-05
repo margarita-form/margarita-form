@@ -1,7 +1,8 @@
 import { Subscription, debounceTime, fromEvent } from 'rxjs';
 import { ExtensionName, MFC, MargaritaFormState } from '../../typings/margarita-form-types';
 import { ExtensionBase } from '../base/extension-base';
-import { toHash } from '../../light';
+import { MargaritaFormControl } from '../../margarita-form-control';
+import { toHash } from '../../helpers/to-hash';
 
 export class HistoryEntry {
   public timestamp: number = Date.now();
@@ -30,6 +31,14 @@ export class HistoryExtension extends ExtensionBase {
 
   constructor(public override root: MFC) {
     super(root);
+
+    MargaritaFormControl.extend({
+      get history(): HistoryEntry[] {
+        return this.extensions.history.history;
+      },
+      undo: () => this.undo(),
+      redo: () => this.redo(),
+    });
   }
 
   public override afterReady = () => {

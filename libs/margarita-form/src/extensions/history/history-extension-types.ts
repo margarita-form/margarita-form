@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { HistoryExtension } from './history-extension';
+import { MFF } from '../../typings/margarita-form-types';
+import { HistoryEntry, HistoryExtension } from './history-extension';
 
 declare module '../../typings/expandable-types' {
   export interface Extensions {
     history: HistoryExtension;
+  }
+
+  export interface ControlBase<FIELD extends MFF> {
+    get history(): HistoryEntry[];
+    undo: () => void;
+    redo: () => void;
   }
 }
