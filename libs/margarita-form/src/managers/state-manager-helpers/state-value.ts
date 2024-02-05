@@ -36,9 +36,22 @@ const defaultStateFactories = [
     return interacted && validated && invalid;
   }),
   createState(DerivedState, 'parentIsActive', (state) => {
-    const { active } = state.toJSON(true);
-    if (state.control.isRoot) return active;
-    return state.control.parent.state.active;
+    if (state.control.isRoot) {
+      const { active } = state.toJSON(true);
+      return active;
+    }
+    const parentActiveState = state.control.parent.managers.state.findState('active');
+    if (!parentActiveState) return false;
+    return parentActiveState.currentValue;
+  }),
+  createState(DerivedState, 'focusWithin', (state) => {
+    const { focus } = state.toJSON(true);
+    if (focus || !state.control.expectChildControls) return focus;
+    return state.control.controls.some((ctrl) => {
+      const focusWihinState = ctrl.managers.state.findState('focusWithin');
+      if (!focusWihinState) return false;
+      return focusWihinState.currentValue;
+    });
   }),
 ];
 

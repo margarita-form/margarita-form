@@ -100,6 +100,7 @@ export interface MargaritaFormState extends UserDefinedStates<boolean> {
   dirty: boolean;
   untouched: boolean;
   focus: boolean;
+  focusWithin: boolean;
   touched: boolean;
   valueChanged: boolean;
   validating: boolean;
