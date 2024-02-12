@@ -72,6 +72,10 @@
       "import": "./managers/value-manager.js",
       "require": "./managers/value-manager.cjs"
     },
+    "./extensions/base/extension-base": {
+      "import": "./extensions/extensions/base/extension-base.js",
+      "require": "./extensions/extensions/base/extension-base.cjs"
+    },
     "./extensions/field-modifiers/field-modifiers-extension": {
       "import": "./extensions/field-modifiers/field-modifiers-extension.js",
       "require": "./extensions/field-modifiers/field-modifiers-extension.cjs"

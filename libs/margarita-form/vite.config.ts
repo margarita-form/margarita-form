@@ -42,6 +42,7 @@ export default defineConfig({
         'managers/state-manager': 'src/managers/state-manager.ts',
         'managers/value-manager': 'src/managers/value-manager.ts',
         /* Extensions */
+        'extensions/base/extension-base': 'src/extensions/base/extension-base.ts',
         'extensions/i18n/i18n-extension': 'src/extensions/i18n/i18n-extension.ts',
         'extensions/field-modifiers/field-modifiers-extension': 'src/extensions/field-modifiers/field-modifiers-extension.ts',
         'extensions/storage/storage-extension-base': 'src/extensions/storage/storage-extension-base.ts',
