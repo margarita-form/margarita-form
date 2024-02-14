@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "rootDir": ".",
+    "outDir": "../dist/build",
+    "esModuleInterop": true,
+    "types": ["vitest"]
+  },
+  "include": ["./*.ts"],
+  "exclude": ["node_modules"]
+}

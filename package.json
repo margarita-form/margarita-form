@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "description": "Modern form library made with TypeScript",
+  "type": "module",
   "keywords": [
     "Form",
     "Forms",
@@ -23,7 +24,8 @@
     "test:angular": "nx run margarita-form-angular:lint && npm run build:angular && npm run build:angular-demos",
     "test:all": "npm run test:core && npm run test:react && npm run test:angular",
     "pretty": "prettier --write \"libs/**/*.{js,jsx,ts,tsx,json,md}\"",
-    "build:core": "nx run margarita-form:build-minified && nx run margarita-form:build",
+    "build:core": "npm run build:core-min && nx run margarita-form:build",
+    "build:core-min": "tsc -p build/tsconfig.json && node dist/build/index.js",
     "build:frameworkless-demos": "nx run frameworkless-demos:build",
     "build:react": "nx run margarita-form-react:build",
     "build:angular": "nx run margarita-form-angular:build",
