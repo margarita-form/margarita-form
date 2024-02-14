@@ -91,6 +91,7 @@ export class HTMLTemplateExtension extends ExtensionBase {
       const target = node.querySelector<HTMLElement>('[mf-template-target]');
       if (target) this.appendHTMLTemplate(control, target);
     }
+    this.appendChildControls(control);
   };
 
   public override afterReady = (control: MFC) => {
@@ -98,7 +99,6 @@ export class HTMLTemplateExtension extends ExtensionBase {
       const rootTarget = document.querySelector<HTMLElement>('[mf-root]');
       if (rootTarget) control.setRef(rootTarget);
     }
-    this.appendChildControls(control);
   };
 }
 
