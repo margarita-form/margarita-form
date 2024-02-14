@@ -28,9 +28,16 @@ const promises = buildEntries.map(async ({ main, globalName, src, outfile }) => 
       external: [],
     });
   } else {
+    const _globalName = `_${globalName}`;
+    const footer = `var ${globalName} = ${_globalName}.${globalName};`;
+
     await build({
       ...commonOptions,
+      globalName: _globalName,
       external: ['rxjs', 'nanoid'],
+      footer: {
+        js: footer || '',
+      },
     });
   }
 });
