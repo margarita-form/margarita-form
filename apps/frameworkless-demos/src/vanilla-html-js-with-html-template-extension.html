@@ -57,7 +57,7 @@
 
       const form = MargaritaForm.createMargaritaForm({
         name: 'my-form', // Name for each form should be unique
-        extensions: [HTMLTemplateExtension.HTMLTemplateExtension],
+        extensions: [HTMLTemplateExtension],
         resolvers: {
           appendControl: ({ control }) => {
             control.appendControl();
