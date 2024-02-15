@@ -35,6 +35,8 @@ export type MargaritaFormFieldAttributes = CommonRecord<any | MargaritaFormResol
 export interface MargaritaFormValidatorResult {
   valid: boolean;
   error?: unknown;
+  warning?: unknown;
+  message?: string;
 }
 
 export type MargaritaFormValidator<PARAMS = any, VALUE = any> = ContextFunction<
