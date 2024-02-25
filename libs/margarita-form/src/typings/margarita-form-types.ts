@@ -245,7 +245,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get activeControls(): MFC<CHILD_FIELD>[];
   get visibleControls(): MFC<CHILD_FIELD>[];
 
-  getControls<FIELD extends MFF = CHILD_FIELD>(states: string | string[]): MFC<FIELD>[];
+  getControls<FIELD extends MFF = CHILD_FIELD>(states?: string | string[]): MFC<FIELD>[];
   getSiblings<SIBLING_FIELD extends MFF = MFGF>(): MFC<SIBLING_FIELD>[];
   getActiveSiblings<SIBLING_FIELD extends MFF = MFGF>(): MFC<SIBLING_FIELD>[];
   getSibling<SIBLING_FIELD extends MFF = MFGF>(identifier: ControlIdentifier): MFC<SIBLING_FIELD>;
