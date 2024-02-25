@@ -550,6 +550,21 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
   }
 
   /**
+   * Get all visible controls as an array
+   */
+  public get visibleControls(): ControlLike<FIELD>['visibleControls'] {
+    return this.managers.controls.array.filter((control) => control.state.visible);
+  }
+
+  /**
+   * Get all controls that match required states
+   */
+  public getControls: ControlLike<FIELD>['getControls'] = (states = []) => {
+    const _states = Array.isArray(states) ? states : [states];
+    return this.managers.controls.array.filter((control) => _states.every((state) => control.state[state])) as MFC<any>[];
+  };
+
+  /**
    * Get all sibling controls as an array
    * @returns Array of sibling controls
    * @throws Error if control is root
