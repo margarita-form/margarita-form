@@ -6,7 +6,6 @@ export interface StorageExtensionConfig {
   clearStorageOnSuccessfullSubmit?: boolean;
   storageKey?: 'key' | 'name' | GenerateKeyFunction;
   storageStrategy?: 'start' | 'end' | 'manual';
-  resolveInitialValuesFromSearchParams?: boolean;
   saveDefaultValue?: boolean;
 }
 

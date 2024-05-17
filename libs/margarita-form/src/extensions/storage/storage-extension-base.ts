@@ -11,7 +11,6 @@ export const storageExtensionDefaultConfig: StorageExtensionConfig = {
   clearStorageOnSuccessfullSubmit: true,
   storageKey: 'key',
   storageStrategy: 'start',
-  resolveInitialValuesFromSearchParams: false,
   saveDefaultValue: false,
 };
 
