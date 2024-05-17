@@ -34,7 +34,7 @@ class ValueStorage extends StorageExtensionBase {
 describe('storage extension testing', () => {
   const fieldNameInitialValue = 'Hello world';
 
-  const commonField: MargaritaFormField<{ value: string; fields: MFF }> = {
+  const commonField: MargaritaFormField<{ value: string; fields: MFF; name: string }> = {
     name: 'fieldName',
     initialValue: fieldNameInitialValue,
   };
@@ -142,6 +142,7 @@ describe('storage extension testing', () => {
   });
 
   it('should save end values if strategy is set as "end"', async () => {
+    const newStorageValue = 'new-storage-value';
     const formName = nanoid();
     const withEnd = ValueStorage.withConfig({ storageStrategy: 'end', storageKey: 'name' });
     const form = createMargaritaForm<MFF>({
@@ -157,11 +158,41 @@ describe('storage extension testing', () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     expect(commonControl.value).toBe(commonField.initialValue);
     await new Promise((resolve) => setTimeout(resolve, 100));
-    commonControl.setValue(storageValue);
+    commonControl.setValue(newStorageValue);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     expect(storage[commonField.name]).not.toBeUndefined();
-    expect(storage[commonField.name]).toBe(storageValue);
+    expect(storage[commonField.name]).toBe(newStorageValue);
     expect(storage[formName]).toBeUndefined();
     form.cleanup();
+  });
+
+  it('should not save value that is default value', async () => {
+    const formName = nanoid();
+    const defaultValue = nanoid();
+    const notDefaultValue = nanoid();
+    const saveDefaultValueFalse = ValueStorage.withConfig({ saveDefaultValue: false, storageKey: 'name' });
+
+    const form = createMargaritaForm<MFF>({
+      name: formName,
+      defaultValue,
+      extensions: [saveDefaultValueFalse],
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(form.value).toEqual(defaultValue);
+    expect(form.isDefaultValue).toBe(true);
+    expect(storage[formName]).toBeUndefined();
+
+    form.setValue(notDefaultValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(form.value).toEqual(notDefaultValue);
+    expect(form.isDefaultValue).toBe(false);
+    expect(storage[formName]).toBe(notDefaultValue);
+
+    form.setValue(defaultValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    expect(form.value).toEqual(defaultValue);
+    expect(form.isDefaultValue).toBe(true);
+    expect(storage[formName]).toBeUndefined();
   });
 });

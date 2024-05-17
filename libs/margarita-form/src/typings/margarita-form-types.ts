@@ -203,6 +203,8 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   get value(): VALUE;
   set value(value: VALUE);
   get valueChanges(): Observable<VALUE>;
+  get isInitialValue(): boolean;
+  get isDefaultValue(): boolean;
 
   setValue(value: VALUE | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): void;
   patchValue(value: Partial<VALUE> | undefined | null, setAsDirty?: boolean, emitEvent?: boolean): void;

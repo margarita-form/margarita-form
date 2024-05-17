@@ -12,6 +12,7 @@ export const storageExtensionDefaultConfig: StorageExtensionConfig = {
   storageKey: 'key',
   storageStrategy: 'start',
   resolveInitialValuesFromSearchParams: false,
+  saveDefaultValue: false,
 };
 
 export class StorageExtensionBase extends ExtensionBase {
@@ -94,7 +95,8 @@ export class StorageExtensionBase extends ExtensionBase {
 
   public override handleValueUpdate = (control = this.root, value: any): void => {
     const key = this.getStorageKey(control);
-    if (!valueExists(value)) return this.clearStorageValue(key);
+    const clear = !valueExists(value) || (!this.config.saveDefaultValue && control.isDefaultValue);
+    if (clear) return this.clearStorageValue(key);
 
     try {
       if (typeof value === 'object') {

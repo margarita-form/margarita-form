@@ -131,6 +131,12 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       if (valueExists(result) && !valueIsAsync(result)) return result;
     }
 
+    return this.getDefaultValue();
+  }
+
+  public getDefaultValue() {
+    const { field, config } = this.control;
+    const { allowValueToBeFunction } = config;
     return allowValueToBeFunction ? field.defaultValue : coreResolver(field.defaultValue, this.control);
   }
 

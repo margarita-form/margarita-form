@@ -7,6 +7,7 @@ export interface StorageExtensionConfig {
   storageKey?: 'key' | 'name' | GenerateKeyFunction;
   storageStrategy?: 'start' | 'end' | 'manual';
   resolveInitialValuesFromSearchParams?: boolean;
+  saveDefaultValue?: boolean;
 }
 
 declare module '../../typings/expandable-types' {

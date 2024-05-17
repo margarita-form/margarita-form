@@ -335,6 +335,18 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
     this.managers.value.updateValue(value);
   }
 
+  /** Check if the control's value is the same as the initial value. Warning: this works properly only in the root level. Use defaultValue and isDefaultValue to add checks for child controls */
+  public get isInitialValue(): ControlLike<FIELD>['isInitialValue'] {
+    const _initialValue = this.managers.value._getInitialValue(false);
+    return isEqual(this.value, _initialValue);
+  }
+
+  /** Check if the control's value is the same as the default value */
+  public get isDefaultValue(): ControlLike<FIELD>['isDefaultValue'] {
+    const _defaultValue = this.managers.value.getDefaultValue();
+    return isEqual(this.value, _defaultValue);
+  }
+
   /**
    * Listen to value changes of the control
    */
