@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { GenerateKeyFunction, MFF, FieldParams } from '../../typings/margarita-form-types';
 import { StorageExtensionBase } from './storage-extension-base';
+export type __FORCE_IMPORT_FIELD_PARAMS = FieldParams; // This is used to force import FieldParams type from the typings
 
 export interface StorageExtensionConfig {
   clearStorageOnSuccessfullSubmit?: boolean;

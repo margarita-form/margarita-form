@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CommonRecord, MFC, MFF, MFGF, FieldParams } from '../../typings/margarita-form-types';
 import { I18NExtension } from './i18n-extension';
+export type __FORCE_IMPORT_FIELD_PARAMS = FieldParams; // This is used to force import FieldParams type from the typings
 
 export interface I18NExtensionConfig {
   localizationOutput?: 'object' | 'array';
