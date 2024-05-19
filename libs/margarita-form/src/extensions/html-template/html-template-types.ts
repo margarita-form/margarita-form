@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FieldParams } from '../../typings/margarita-form-types';
 import { HTMLTemplateExtension } from './html-template-extension';
 
 declare module '@margarita-form/core' {

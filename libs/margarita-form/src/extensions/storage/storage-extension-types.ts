@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { GenerateKeyFunction, MFF } from '../../typings/margarita-form-types';
+import { GenerateKeyFunction, MFF, FieldParams } from '../../typings/margarita-form-types';
 import { StorageExtensionBase } from './storage-extension-base';
 
 export interface StorageExtensionConfig {
