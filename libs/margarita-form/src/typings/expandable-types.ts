@@ -26,9 +26,9 @@ export interface Extensions {
 }
 
 export interface Configs {
-  //
+  // Empty by default
 }
 
 export class ControlBase<FIELD extends MFF> {
-  //
+  // Empty by default
 }

@@ -42,7 +42,7 @@ export type I18NField<I18NType extends object> = {
   };
 };
 
-declare module '../../typings/expandable-types' {
+declare module '@margarita-form/core' {
   export interface Extensions {
     localization: I18NExtension;
   }

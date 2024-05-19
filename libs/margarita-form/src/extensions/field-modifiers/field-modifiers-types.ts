@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CoreGetterContext } from '../../helpers/core-resolver';
-import { MFGF } from '../../typings/margarita-form-types';
+import { FieldParams, MFGF } from '../../typings/margarita-form-types';
 import { FieldModifiersExtension } from './field-modifiers-extension';
 
 export type ModifierConditionFn = (context: CoreGetterContext) => boolean;
@@ -15,7 +15,7 @@ export type FieldModifier =
 
 export type FieldModifiers = FieldModifier[];
 
-declare module '../../typings/expandable-types' {
+declare module '@margarita-form/core' {
   export interface Extensions {
     fieldModifiers: FieldModifiersExtension;
   }

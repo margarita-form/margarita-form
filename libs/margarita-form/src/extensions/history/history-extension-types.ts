@@ -2,7 +2,7 @@
 import { MFF } from '../../typings/margarita-form-types';
 import { HistoryEntry, HistoryExtension } from './history-extension';
 
-declare module '../../typings/expandable-types' {
+declare module '@margarita-form/core' {
   export interface Extensions {
     history: HistoryExtension;
   }

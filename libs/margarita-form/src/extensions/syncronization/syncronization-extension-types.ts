@@ -13,7 +13,7 @@ export interface BroadcasterMessage<DATA = unknown> {
   requestSend?: boolean;
 }
 
-declare module '../../typings/expandable-types' {
+declare module '@margarita-form/core' {
   export interface ControlBase<FIELD extends MFF> {
     get syncronization(): Extensions['syncronization'];
   }

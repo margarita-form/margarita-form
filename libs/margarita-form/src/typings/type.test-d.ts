@@ -2,9 +2,12 @@
 import { expectType, expectNotType, expectAssignable } from 'tsd';
 import { FieldChild, FieldParams, MFC, MFCA, MFF, MFGF, WithValue, createMargaritaForm } from '../index';
 
-declare module './expandable-types' {
+declare module '@margarita-form/core' {
   export interface ControlBase<FIELD extends MFF> {
-    newMethod2(): void;
+    newMethod(): void;
+  }
+  export interface FieldBase<PARAMS extends FieldParams> {
+    customFieldValue?: 'totally-custom';
   }
 }
 
@@ -58,7 +61,10 @@ const level4Control = level3Control.getControl('level-4');
 if (!level4Control) throw new Error('Control not found');
 expectType<VanillaFieldType>(level4Control);
 
-expectType<() => void>(vanillaForm.newMethod2);
+expectType<() => void>(vanillaForm.newMethod);
+
+// Custom check
+expectType<'totally-custom' | undefined>(vanillaForm.field.customFieldValue);
 
 interface Address {
   street: string;

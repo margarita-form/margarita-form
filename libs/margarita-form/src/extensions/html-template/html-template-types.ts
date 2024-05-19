@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HTMLTemplateExtension } from './html-template-extension';
 
-declare module '../../typings/expandable-types' {
+declare module '@margarita-form/core' {
   export interface Extensions {
     htmlTemplate: HTMLTemplateExtension;
   }

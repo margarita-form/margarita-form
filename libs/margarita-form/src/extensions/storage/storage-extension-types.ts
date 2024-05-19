@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Extensions, GenerateKeyFunction, MFF, MFGF } from '../../typings/margarita-form-types';
+import { GenerateKeyFunction, MFF } from '../../typings/margarita-form-types';
 import { StorageExtensionBase } from './storage-extension-base';
 
 export interface StorageExtensionConfig {
@@ -9,7 +9,7 @@ export interface StorageExtensionConfig {
   saveDefaultValue?: boolean;
 }
 
-declare module '../../typings/expandable-types' {
+declare module '@margarita-form/core' {
   export interface ControlBase<FIELD extends MFF> {
     get storage(): Extensions['storage'];
   }
@@ -21,7 +21,6 @@ declare module '../../typings/expandable-types' {
   export interface Extensions {
     storage: StorageExtensionBase;
   }
-
   export interface Configs {
     storage: StorageExtensionConfig;
   }
