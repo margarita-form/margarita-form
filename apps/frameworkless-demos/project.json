@@ -51,7 +51,8 @@
         "production": {
           "buildTarget": "frameworkless-demos:build:production"
         }
-      }
+      },
+      "dependsOn": ["build"]
     },
     "lint": {
       "executor": "@nx/eslint:lint",
