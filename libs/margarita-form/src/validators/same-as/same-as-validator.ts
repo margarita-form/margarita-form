@@ -1,6 +1,6 @@
 import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../../typings/margarita-form-types';
-import { valueIsDefined } from '@margarita-form/core';
+import { valueIsDefined } from '../../helpers/check-value';
 
 declare module '../../typings/resolver-types' {
   export interface Validators {
