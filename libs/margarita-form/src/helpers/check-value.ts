@@ -1,4 +1,4 @@
-const invalidValues = ['', null, undefined, NaN] as unknown[];
+const invalidValues = ['', null, undefined, NaN, Infinity] as unknown[];
 
 export const valueIsDefined = (value: unknown) => {
   try {
