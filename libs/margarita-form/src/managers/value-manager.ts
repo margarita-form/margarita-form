@@ -2,7 +2,7 @@ import { debounceTime, skip } from 'rxjs';
 import _get from 'lodash.get';
 import { BaseManager, ManagerName } from './base-manager';
 import { CommonRecord, MFC, MFF } from '../typings/margarita-form-types';
-import { valueExists } from '../helpers/check-value';
+import { valueIsDefined } from '../helpers/check-value';
 import { nanoid } from 'nanoid';
 import { resolve, getResolverOutputObservable } from '../helpers/resolve-function-outputs';
 import { valueIsAsync } from '../helpers/async-checks';
@@ -25,7 +25,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
 
   public override prepare() {
     const initialValue = this._getInitialValue();
-    if (valueExists(initialValue)) {
+    if (valueIsDefined(initialValue)) {
       this._setValue(initialValue, this.control.config.runTransformersForInitialValues);
     }
     this.initialized = true;
@@ -116,7 +116,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     const { allowValueToBeFunction } = config;
     const inheritedValue = this._getInheritedValue();
     if (inheritedValue !== undefined) return inheritedValue;
-    if (valueExists(this.control.field.initialValue)) {
+    if (valueIsDefined(this.control.field.initialValue)) {
       return allowValueToBeFunction ? field.initialValue : coreResolver(field.initialValue, this.control);
     }
 
@@ -124,11 +124,11 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       const snapshots = activeExtensions.map(({ getValueSnapshot }) => getValueSnapshot);
 
       const result = snapshots.reduce((acc, snapshot) => {
-        if (valueExists(acc)) return acc;
+        if (valueIsDefined(acc)) return acc;
         if (!snapshot) return acc;
         return snapshot(this.control);
       }, undefined as unknown);
-      if (valueExists(result) && !valueIsAsync(result)) return result;
+      if (valueIsDefined(result) && !valueIsAsync(result)) return result;
     }
 
     return this.getDefaultValue();
@@ -255,7 +255,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     const { hasControls, expectArray, controls } = this.control;
 
     // console.debug('Sync upstream value:', currentValue);
-    const exists = valueExists(currentValue);
+    const exists = valueIsDefined(currentValue);
     if (!exists && hasControls) {
       // Clear or remove all controls
       const copy = [...controls];
@@ -275,13 +275,13 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
       copy.forEach((control, index) => {
         if (isArray) {
           const value = currentValue[index];
-          const exists = valueExists(value);
+          const exists = valueIsDefined(value);
           if (!exists && isArray) {
             control.parent.managers.controls.removeControl(control.key, false);
           }
         } else if (isMap) {
           const value = (currentValue as CommonRecord)[control.name];
-          const exists = valueExists(value);
+          const exists = valueIsDefined(value);
           if (!exists && !patch) {
             control.managers.value.updateValue(undefined, setAsDirty, emitEvent, false, false, true);
           }
@@ -336,7 +336,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     const { expectFlat } = childControl;
     this.control.updateKey();
 
-    const exists = valueExists(childControl.value);
+    const exists = valueIsDefined(childControl.value);
     const value = exists ? childControl.value : this.getUndefinedValue(childControl);
     const key = expectArray ? childControl.index : childControl.name;
 
@@ -366,7 +366,7 @@ class ValueManager<CONTROL extends MFC> extends BaseManager<CONTROL['value']> {
     if (!hasActiveControls) return undefined;
 
     const entries = activeControls.reduce((acc, child) => {
-      const exists = valueExists(child.value);
+      const exists = valueIsDefined(child.value);
       const key = expectArray ? child.index : child.name;
       if (!exists) {
         const val = this.getUndefinedValue(child);

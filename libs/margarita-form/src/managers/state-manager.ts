@@ -14,7 +14,7 @@ import {
   MFGF,
 } from '../typings/margarita-form-types';
 import { BaseManager, ManagerName } from './base-manager';
-import { isEqual, valueExists } from '../helpers/check-value';
+import { isEqual, valueIsDefined } from '../helpers/check-value';
 import {
   getResolverOutputMapObservable,
   getResolverOutputMapPromise,
@@ -104,7 +104,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormState> 
       switchMap(() => {
         const state = fieldStateKeys.reduce((acc, key) => {
           const value = this.control.field[key];
-          if (valueExists(value)) acc[key] = value;
+          if (valueIsDefined(value)) acc[key] = value;
           return acc;
         }, {} as CommonRecord);
         return getResolverOutputMapObservable(state, this.control);
@@ -206,7 +206,7 @@ class StateManager<CONTROL extends MFC> extends BaseManager<MargaritaFormState> 
   private get _mappedFieldState() {
     const stateEntries: ([] | [string, unknown])[] = fieldStateKeys.map((key) => {
       const value = this.control.field[key];
-      if (!valueExists(value)) return [];
+      if (!valueIsDefined(value)) return [];
       return [key, value];
     });
     const state = Object.fromEntries(stateEntries);

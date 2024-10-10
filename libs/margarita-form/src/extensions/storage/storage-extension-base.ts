@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import './storage-extension-types';
 import { Observable, filter, map } from 'rxjs';
-import { valueExists } from '../../helpers/check-value';
+import { valueIsDefined } from '../../helpers/check-value';
 import { ExtensionName, Extensions, MFC } from '../../typings/margarita-form-types';
 import { MargaritaFormControl } from '../../margarita-form-control';
 import { ExtensionBase } from '../base/extension-base';
@@ -69,7 +69,7 @@ export class StorageExtensionBase extends ExtensionBase {
 
   public transformFromStorageValue = <TYPE = any>(value: any): TYPE | undefined => {
     try {
-      if (!valueExists(value)) return undefined;
+      if (!valueIsDefined(value)) return undefined;
       if (typeof value === 'string' && /^[{[].+[}\]]$/g.test(value)) return JSON.parse(value);
       return value as TYPE;
     } catch (error) {
@@ -86,7 +86,7 @@ export class StorageExtensionBase extends ExtensionBase {
   public override getValueObservable = <TYPE = any>(control = this.root): Observable<TYPE | undefined> => {
     const key = this.getStorageKey(control);
     try {
-      return this.listenToChanges<TYPE>(key).pipe(filter(valueExists), map(this.transformFromStorageValue));
+      return this.listenToChanges<TYPE>(key).pipe(filter(valueIsDefined), map(this.transformFromStorageValue));
     } catch (error) {
       throw { message: `Could not get value!`, error };
     }
@@ -94,7 +94,7 @@ export class StorageExtensionBase extends ExtensionBase {
 
   public override handleValueUpdate = (control = this.root, value: any): void => {
     const key = this.getStorageKey(control);
-    const clear = !valueExists(value) || (!this.config.saveDefaultValue && control.isDefaultValue);
+    const clear = !valueIsDefined(value) || (!this.config.saveDefaultValue && control.isDefaultValue);
     if (clear) return this.clearStorageValue(key);
 
     try {
@@ -103,7 +103,7 @@ export class StorageExtensionBase extends ExtensionBase {
         return this.handleValueUpdate(control, stringified);
       }
 
-      const validValid = valueExists(value);
+      const validValid = valueIsDefined(value);
       if (!validValid) return this.clearStorageValue(key);
       if (value === '{}') return this.clearStorageValue(key);
 

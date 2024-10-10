@@ -2,7 +2,7 @@ import { combineLatest, firstValueFrom, from, map, Observable, of } from 'rxjs';
 import { CommonRecord, MargaritaFormResolver, ResolverOutput, MFC, ResolverParams } from '../typings/margarita-form-types';
 import { valueIsAsync } from './async-checks';
 import { Resolver } from '../classes/resolver';
-import { valueExists } from './check-value';
+import { valueIsDefined } from './check-value';
 
 const stringMatcher = /\$\$([^:]+):?([^:]*)?:?([^:]*)/gi;
 
@@ -38,7 +38,7 @@ export const resolve = <OUTPUT>({
   const context = control.generateContext(undefined, contextData);
   if (getter instanceof Resolver) {
     strict = false;
-    const hasSnapshot = valueExists(getter.snapshotValue);
+    const hasSnapshot = valueIsDefined(getter.snapshotValue);
     if (snapshot && hasSnapshot) getter = getter.snapshotValue;
     else getter = getter.value;
   }

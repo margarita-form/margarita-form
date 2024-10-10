@@ -1,5 +1,5 @@
 import { ControlContext, MFC, MFGF, OrT } from '../typings/margarita-form-types';
-import { valueExists } from './check-value';
+import { valueIsDefined } from './check-value';
 
 export type CoreGetterContext = { parent?: MFC; field?: MFGF } & Partial<ControlContext>;
 export type CoreGetterFn<OUTPUT> = (context: CoreGetterContext) => OUTPUT;
@@ -16,9 +16,9 @@ export const coreResolver = <OUTPUT = any>(
   const context: CoreGetterContext = { parent, ...controlContext };
   if (typeof getter === 'function') {
     const result = getter(context);
-    if (!valueExists(result)) return defaultValue as OUTPUT;
+    if (!valueIsDefined(result)) return defaultValue as OUTPUT;
     return result;
   }
-  if (!valueExists(getter)) return defaultValue as OUTPUT;
+  if (!valueIsDefined(getter)) return defaultValue as OUTPUT;
   return getter as OUTPUT;
 };

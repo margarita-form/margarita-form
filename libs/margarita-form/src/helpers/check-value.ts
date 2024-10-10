@@ -1,6 +1,6 @@
 const invalidValues = ['', null, undefined, NaN] as unknown[];
 
-export const valueExists = (value: unknown) => {
+export const valueIsDefined = (value: unknown) => {
   try {
     if (invalidValues.includes(value)) return false;
     if (value instanceof Promise) return true;
@@ -19,7 +19,7 @@ export const valueExists = (value: unknown) => {
 };
 
 export const isObject = (value: unknown): boolean => {
-  const validValue = valueExists(value);
+  const validValue = valueIsDefined(value);
   if (!validValue) return false;
   return typeof value === 'object';
 };

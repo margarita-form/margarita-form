@@ -24,7 +24,7 @@ import {
 } from './typings/margarita-form-types';
 import { BehaviorSubject, Observable, Subscription, debounceTime, distinctUntilChanged, filter, map, shareReplay } from 'rxjs';
 import { ConfigManager } from './managers/config-manager';
-import { isEqual, isIncluded, valueExists } from './helpers/check-value';
+import { isEqual, isIncluded, valueIsDefined } from './helpers/check-value';
 import { toHash } from './helpers/to-hash';
 import { removeFormFromCache } from './create-margarita-form';
 import { ManagerLike } from './managers/base-manager';
@@ -179,7 +179,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
 
   private _constructExtensions = () => {
     const fieldExtensions = this.field.extensions;
-    const hasExistingExtensions = valueExists(this.extensions);
+    const hasExistingExtensions = valueIsDefined(this.extensions);
     if (!hasExistingExtensions || fieldExtensions) {
       const _globalExtensions = hasExistingExtensions ? [] : [...MargaritaFormControl.extensions];
       const _fieldExtensions = this.field.extensions || [];

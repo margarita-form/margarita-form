@@ -1,4 +1,4 @@
-import { valueExists } from '../../helpers/check-value';
+import { valueIsDefined } from '../../helpers/check-value';
 import { MFC } from '../../typings/margarita-form-types';
 import { StateManager } from '../state-manager';
 import { BooleanPairState, DerivedState, GeneralState } from './state-classes';
@@ -29,7 +29,7 @@ const defaultStateFactories = [
   createState(BooleanPairState, 'visible', 'hidden', false),
 
   // Derived states
-  createState(DerivedState, 'hasValue', (state) => valueExists(state.control.value)),
+  createState(DerivedState, 'hasValue', (state) => valueIsDefined(state.control.value)),
   createState(DerivedState, 'shouldShowError', (state) => {
     const { touched, dirty, focus, validated, invalid } = state.toJSON(true);
     const interacted = touched || (dirty && !focus);

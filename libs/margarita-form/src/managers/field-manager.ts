@@ -1,7 +1,7 @@
 import { BaseManager, ManagerName } from './base-manager';
 import { MFC, MFF, MFGF } from '../typings/margarita-form-types';
 import { coreResolver } from '../helpers/core-resolver';
-import { valueExists } from '../helpers/check-value';
+import { valueIsDefined } from '../helpers/check-value';
 
 // Extends types
 declare module '../typings/expandable-types' {
@@ -47,7 +47,7 @@ class FieldManager<CONTROL extends MFC> extends BaseManager<CONTROL['field']> {
         if (typeof field === 'function') return coreResolver<MFF>(field, this.control, true);
         return field;
       })
-      .filter(valueExists);
+      .filter(valueIsDefined);
 
     return resolvedFields as FIELD[];
   };
