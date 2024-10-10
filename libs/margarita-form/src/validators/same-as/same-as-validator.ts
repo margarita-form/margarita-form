@@ -1,5 +1,6 @@
 import { combineLatest, map } from 'rxjs';
 import { MargaritaFormValidator } from '../../typings/margarita-form-types';
+import { valueIsDefined } from '@margarita-form/core';
 
 declare module '../../typings/resolver-types' {
   export interface Validators {
@@ -15,7 +16,7 @@ export const sameAsValidator: (_params?: SameAsValidatorParams, errorMessage?: s
     try {
       const parentControls = control.parent.controls;
 
-      if (!params || !parentControls || !value) return { valid: true };
+      if (!params || !parentControls || !valueIsDefined(value)) return { valid: true };
 
       const siblings = parentControls.filter((sibling) => {
         const { key, name } = sibling;
