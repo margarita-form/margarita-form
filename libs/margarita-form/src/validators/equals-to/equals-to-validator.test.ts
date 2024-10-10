@@ -1,14 +1,14 @@
 import { createMargaritaForm } from '../../index';
-import { eaqualsToValidator } from './eaquals-to-validator';
+import { equalsToValidator } from './equals-to-validator';
 
-const validator = eaqualsToValidator('requiredValue', 'Value does not equal to required value!');
+const validator = equalsToValidator('requiredValue', 'Value does not equal to required value!');
 
-describe('eaqualsToValidator', () => {
+describe('equalsToValidator', () => {
   it('should return valid for empty value when not required', async () => {
     const form = createMargaritaForm({
-      name: 'eaquals-to-validator-test-form',
+      name: 'equals-to-validator-test-form',
       initialValue: undefined,
-      validation: { required: false, eaqualsTo: validator },
+      validation: { required: false, equalsTo: validator },
     });
     await form.validate();
     const { valid, errors } = form.state;
@@ -19,9 +19,9 @@ describe('eaqualsToValidator', () => {
 
   it('should return valid for matching value', async () => {
     const form = createMargaritaForm({
-      name: 'eaquals-to-validator-test-form',
+      name: 'equals-to-validator-test-form',
       initialValue: 'requiredValue',
-      validation: { required: true, eaqualsTo: validator },
+      validation: { required: true, equalsTo: validator },
     });
     await form.validate();
     const { valid, errors } = form.state;
@@ -32,14 +32,14 @@ describe('eaqualsToValidator', () => {
 
   it('should return invalid for non-matching value', async () => {
     const form = createMargaritaForm({
-      name: 'eaquals-to-validator-test-form',
+      name: 'equals-to-validator-test-form',
       initialValue: 'notRequiredValue',
-      validation: { required: true, eaqualsTo: validator },
+      validation: { required: true, equalsTo: validator },
     });
     await form.validate();
     const { valid, errors } = form.state;
     expect(valid).toBe(false);
-    expect(errors).toEqual({ eaqualsTo: 'Value does not equal to required value!' });
+    expect(errors).toEqual({ equalsTo: 'Value does not equal to required value!' });
     form.cleanup();
   });
 });

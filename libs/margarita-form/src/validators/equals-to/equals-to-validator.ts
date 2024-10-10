@@ -2,13 +2,13 @@ import { MargaritaFormValidator } from '../../typings/margarita-form-types';
 
 declare module '../../typings/resolver-types' {
   export interface Validators {
-    eaqualsTo: ReturnType<typeof eaqualsToValidator>;
+    equalsTo: ReturnType<typeof equalsToValidator>;
   }
 }
 
-type EaqualsToValidatorParams = unknown;
+type equalsToValidatorParams = unknown;
 
-export const eaqualsToValidator: (_params?: EaqualsToValidatorParams, errorMessage?: string) => MargaritaFormValidator<unknown> =
+export const equalsToValidator: (_params?: equalsToValidatorParams, errorMessage?: string) => MargaritaFormValidator<unknown> =
   (_params = undefined, defaultErrorMessage = 'Value does not eaqual to required value!') =>
   ({ value, params = _params, errorMessage = defaultErrorMessage }) => {
     if (!params || !value) return { valid: true };

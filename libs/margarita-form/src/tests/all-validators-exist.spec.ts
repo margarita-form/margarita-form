@@ -13,7 +13,7 @@ describe('All validator testing', () => {
     expect(form.validators).toHaveProperty('color');
     expect(form.validators).toHaveProperty('date');
     expect(form.validators).toHaveProperty('email');
-    expect(form.validators).toHaveProperty('eaqualsTo');
+    expect(form.validators).toHaveProperty('equalsTo');
     expect(form.validators).toHaveProperty('max');
     expect(form.validators).toHaveProperty('min');
     expect(form.validators).toHaveProperty('controlNameCase');

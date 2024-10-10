@@ -4,7 +4,7 @@ export * from './case/case-validator';
 export * from './color/color-validator';
 export * from './date/date-validator';
 export * from './email/email-validator';
-export * from './eaquals-to/eaquals-to-validator';
+export * from './equals-to/equals-to-validator';
 export * from './min-max/min-max-validators';
 export * from './number/number-validator';
 export * from './password/password-validator';
