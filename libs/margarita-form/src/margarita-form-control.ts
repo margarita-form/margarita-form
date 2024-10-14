@@ -791,6 +791,7 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
     if (!error) this.error = undefined;
     else if (typeof error === 'string') this.error = new Error(error);
     else this.error = error;
+    this.updateSyncId();
     this.emitChange('error', this.error);
   };
 
