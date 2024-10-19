@@ -1,5 +1,5 @@
 import { BaseManager, ManagerName } from './base-manager';
-import { MFC, ControlContext } from '../typings/margarita-form-types';
+import { MFC, ControlContext, MargaritaFormSubmitHandler } from '../typings/margarita-form-types';
 import { resolve, getResolverOutputPromise } from '../helpers/resolve-function-outputs';
 import { SubmitError } from '../classes/submit-error';
 
@@ -44,7 +44,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
         const handleValidSubmit = async () => {
           try {
             await this._handleBeforeSubmit();
-            const submitOutput = await this._resolveValidSubmitHandler(params);
+            const submitOutput = await this._resolveValidSubmit(params);
             if (submitOutput instanceof SubmitError) {
               await updateState({ submitResult: 'error', disabled: false });
               return submitOutput.value;
@@ -94,7 +94,7 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
       }
 
       // Handle invalid submit
-      const submitOutput = await this._resolveInvalidSubmitHandler(params);
+      const submitOutput = await this._resolveInvalidSubmit(params);
       const submits = state.submits || 0;
       await updateState({
         submitting: false,
@@ -114,34 +114,39 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
     }
   };
 
-  private async _resolveValidSubmitHandler<T>(params: T): Promise<any> {
+  private async _handleSubmitResolution<T>(submitHandler: string | MargaritaFormSubmitHandler<any>, params: T) {
+    const context = this.control.generateContext(params) as ControlContext<any>;
+    if (typeof submitHandler === 'function') return await Promise.resolve(submitHandler(context));
+    if (typeof submitHandler === 'string' && /^http.+|^\/.+/gi.test(submitHandler)) return await this._resolvePostHandler(submitHandler);
+    const resolver = resolve({ getter: submitHandler, control: this.control, strict: true });
+    if (resolver) return await getResolverOutputPromise('handleSubmit', resolver, this.control);
+    console.error('Submit handler is invalid!', { submit: submitHandler, context });
+    throw 'Submit handler is invalid!';
+  }
+
+  private async _resolveValidSubmit<T>(params: T): Promise<any> {
     const { field, managers } = this.control;
     const { handleSubmit } = field;
     if (!handleSubmit) {
       const action = managers.ref.formAction;
-      if (action) return await this._resolveValidSubmitPostHandler(action);
+      if (action) return await this._resolvePostHandler(action);
       const useNativeSubmit = managers.ref.useNativeSubmit;
       if (useNativeSubmit) return managers.ref.nativeSubmit();
       throw 'No submit handler for valid submit!';
     }
-
-    const context = this.control.generateContext(params) as ControlContext<any>;
-
-    if (typeof handleSubmit === 'function') return await Promise.resolve(handleSubmit(context));
-
-    if (typeof handleSubmit === 'string' && /^http.+|^\/.+/gi.test(handleSubmit))
-      return await this._resolveValidSubmitPostHandler(handleSubmit);
-
-    if (typeof handleSubmit === 'object' && handleSubmit.valid) return await Promise.resolve(handleSubmit.valid(context));
-
-    const resolver = resolve({ getter: handleSubmit, control: this.control, strict: true });
-
-    if (resolver) return await getResolverOutputPromise('handleSubmit', resolver, this.control);
-
-    throw 'Submit handler (handleSubmit) is invalid!';
+    if (typeof handleSubmit === 'object' && handleSubmit) return this._handleSubmitResolution(handleSubmit.valid, params);
+    return this._handleSubmitResolution(handleSubmit, params);
   }
 
-  private async _resolveValidSubmitPostHandler(url: string) {
+  private async _resolveInvalidSubmit<T>(params: T): Promise<any> {
+    const { handleSubmit } = this.control.field;
+    const defaultHandler = () => console.log('Form is invalid!', { form: this });
+    if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
+    if (handleSubmit.invalid) return await this._handleSubmitResolution(handleSubmit.invalid, params);
+    return console.log('Form is invalid!', { form: this });
+  }
+
+  private async _resolvePostHandler(url: string) {
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(this.control.value),
@@ -151,17 +156,6 @@ class EventsManager<CONTROL extends MFC = MFC> extends BaseManager {
     });
     if (!response.ok) return new SubmitError('error-on-submit', response);
     return response;
-  }
-
-  private async _resolveInvalidSubmitHandler<T>(params: T): Promise<any> {
-    const { handleSubmit } = this.control.field;
-    const context = this.control.generateContext(params) as ControlContext<any>;
-    const defaultHandler = () => console.log('Form is invalid!', { form: this });
-    if (!handleSubmit || typeof handleSubmit === 'string' || typeof handleSubmit === 'function') return defaultHandler();
-    if (handleSubmit.invalid) return await Promise.resolve(handleSubmit.invalid(context));
-    return console.log('Form is invalid!', {
-      form: this,
-    });
   }
 
   /**

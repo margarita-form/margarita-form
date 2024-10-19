@@ -79,6 +79,6 @@ export type MargaritaFormSubmitHandler<FIELD extends MFF<any> = MFGF, PARAMS = a
 ) => unknown | Promise<unknown>;
 
 export interface MargaritaFormSubmitHandlers<FIELD extends MFF<any> = MFGF> {
-  valid: MargaritaFormSubmitHandler<FIELD>;
-  invalid?: MargaritaFormSubmitHandler<FIELD>;
+  valid: string | MargaritaFormSubmitHandler<FIELD>;
+  invalid?: string | MargaritaFormSubmitHandler<FIELD>;
 }

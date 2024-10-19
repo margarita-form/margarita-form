@@ -149,6 +149,87 @@ describe('Form submit testing', () => {
     form.cleanup();
   });
 
+  it('Check that form submit with post url for valid and invalid works', async () => {
+    const port = 4422;
+    let responseCode = 200;
+    let responseText = 'success';
+
+    const listener: RequestListener<typeof IncomingMessage, typeof ServerResponse> = async (req, res) => {
+      expect(req.method).toBe('POST');
+      expect(req.url).toBe('/api/submit');
+      expect(req.headers['content-type']).toBe('application/json');
+
+      await new Promise((resolve) => {
+        req.on('data', (chunk) => {
+          expect(chunk.toString()).toBe(JSON.stringify({ fieldName: fieldNameInitialValue }));
+
+          resolve(null);
+        });
+      });
+
+      res.statusCode = responseCode;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end(responseText);
+    };
+
+    const server = createServer(vitest.fn(listener));
+
+    server.listen(port, () => {
+      console.log(`Testing server running on port ${port}`);
+    });
+
+    // Wait for server to start
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const form = createMargaritaForm<MFF>({
+      name: nanoid(),
+      fields: [commonField],
+      handleSubmit: {
+        valid: `http://localhost:${port}/api/submit`,
+        invalid: `http://localhost:${port}/api/submit`,
+      },
+    });
+
+    const commonControl = form.getControl([commonField.name]);
+    if (!commonControl) throw 'No control found!';
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(0);
+    expect(form.state.submitResult).toBe('not-submitted');
+    expect(form.state.submitted).toBe(false);
+    expect(form.state.disabled).toBe(false);
+
+    const successResponse: Response = await form.submit();
+    const successResponseCode = successResponse.status;
+    const successResponseText = await successResponse.text();
+
+    expect(successResponseCode).toBe(200);
+    expect(successResponseText).toBe('success');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(1);
+    expect(form.state.submitResult).toBe('success');
+    expect(form.state.submitted).toBe(true);
+    expect(form.state.disabled).toBe(true);
+
+    responseCode = 500;
+    responseText = 'error';
+
+    const errorResponse: Response = await form.submit();
+    const errorResponseCode = errorResponse.status;
+    const errorResponseText = await errorResponse.text();
+
+    expect(errorResponseCode).toBe(500);
+    expect(errorResponseText).toBe('error');
+
+    expect(form.state.submitting).toBe(false);
+    expect(form.state.submits).toBe(2);
+    expect(form.state.submitResult).toBe('error');
+    expect(form.state.submitted).toBe(true);
+
+    form.cleanup();
+  });
+
   it('Should respect current disabled resolver after submit is done', async () => {
     const form1 = createMargaritaForm<MFF>({
       name: nanoid(),
