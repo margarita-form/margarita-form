@@ -288,6 +288,7 @@ export interface ControlLike<FIELD extends MFF = MFF, VALUE = ControlValue<FIELD
   moveToIndex(index: number): void;
 
   setRef(ref: any): void;
+  get currentRef(): MargaritaFormBaseElement | null;
 
   get onSubmit(): Observable<MFC<FIELD>>;
   submit<OUTPUT, PARAMS = object>(params?: PARAMS): Promise<OUTPUT>;

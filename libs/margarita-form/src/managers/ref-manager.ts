@@ -67,6 +67,12 @@ class RefManager<CONTROL extends MFC> extends BaseManager<RefEntry<CONTROL>[]> {
     return formElement;
   }
 
+  public get currentRef() {
+    if (this.value.length > 1) throw new Error('Cannot get current ref when multiple refs are set');
+    const [firstRef] = this.value;
+    return firstRef?.node;
+  }
+
   public get formAction() {
     const formElement = this.formElement;
     if (!formElement) return undefined;

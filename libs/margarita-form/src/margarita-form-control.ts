@@ -760,6 +760,13 @@ export class MargaritaFormControl<FIELD extends MFF<any> = MFGF> extends Control
     return this.managers.ref.addRef(ref);
   };
 
+  /**
+   * Get the control's reference to a HTML element
+   */
+  public get currentRef(): ControlLike<FIELD>['currentRef'] {
+    return this.managers.ref.currentRef;
+  }
+
   // Submit
 
   public get onSubmit(): ControlLike<FIELD>['onSubmit'] {
