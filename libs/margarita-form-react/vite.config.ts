@@ -59,11 +59,12 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'rxjs', 'nanoid', '@margarita-form/core', '@margarita-form/core/light'],
+      external: ['react', 'react-dom', 'react/jsx-runtime', 'rxjs', 'nanoid', '@margarita-form/core', '@margarita-form/core/light'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          'react/jsx-runtime': 'jsxRuntime',
         },
       },
     },
