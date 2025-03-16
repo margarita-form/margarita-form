@@ -3,7 +3,8 @@ import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarit
 import { MargaritaFormService } from './margarita-form.service';
 
 @Directive({
-  selector: '[mfControl], [mfForm]',
+    selector: '[mfControl], [mfForm]',
+    standalone: false
 })
 export class MargaritaFormControlDirective implements OnInit {
   @Input() mfControl?: MFC | DeepControlIdentifier<MFF>;

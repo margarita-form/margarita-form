@@ -17,11 +17,10 @@ type RootField = MargaritaFormField<{ value: MyFormValue; fields: MyFormField }>
 
 // Create form component
 @Component({
-  selector: 'app-readme-example',
-  standalone: true,
-  imports: [CommonModule, MargaritaFormModule],
-  styleUrl: './readme-example.component.scss',
-  templateUrl: './readme-example.component.html',
+    selector: 'app-readme-example',
+    imports: [CommonModule, MargaritaFormModule],
+    styleUrl: './readme-example.component.scss',
+    templateUrl: './readme-example.component.html'
 })
 export class ReadmeExampleComponent {
   private formService = inject(MargaritaFormService);

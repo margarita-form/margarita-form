@@ -3,7 +3,8 @@ import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarit
 import { MargaritaFormService } from './margarita-form.service';
 
 @Pipe({
-  name: 'getControl',
+    name: 'getControl',
+    standalone: false
 })
 export class GetControlPipe implements PipeTransform {
   constructor(private mfService: MargaritaFormService) {}

@@ -21,7 +21,8 @@
             "prefix": "mf",
             "style": "kebab-case"
           }
-        ]
+        ],
+        "@angular-eslint/prefer-standalone": "off"
       }
     },
     {
@@ -32,9 +33,7 @@
     {
       "files": ["*.json"],
       "parser": "jsonc-eslint-parser",
-      "rules": {
-        // "@nx/dependency-checks": "error"
-      }
+      "rules": {}
     }
   ]
 }
