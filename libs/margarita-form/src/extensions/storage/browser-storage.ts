@@ -36,7 +36,7 @@ export class BrowserStorageBase extends StorageExtensionBase {
     this.storage.removeItem(key);
   }
 
-  public override listenToChanges<DATA>(key: string): Observable<DATA> {
+  public override listenToChanges<DATA>(key: string): Observable<DATA | undefined> {
     return new Observable((subscriber) => {
       if (typeof window === 'undefined') return;
       const listener = () => {
