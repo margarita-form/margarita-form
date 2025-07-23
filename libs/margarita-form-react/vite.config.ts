@@ -12,6 +12,7 @@ export default defineConfig({
     dts({
       entryRoot: 'src',
       tsconfigPath: join(__dirname, 'tsconfig.lib.json'),
+      pathsToAliases: false,
     }),
     /*
     viteTsConfigPaths({
@@ -58,7 +59,15 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'react/jsx-runtime', 'rxjs', 'nanoid', '@margarita-form/core', '@margarita-form/core/light'],
+      external: [
+        //
+        'react',
+        /react\/jsx.*/,
+        /react-dom\/.*/,
+        'rxjs',
+        'nanoid',
+        /@margarita-form\/.+/,
+      ],
       output: {
         globals: {
           react: 'React',
