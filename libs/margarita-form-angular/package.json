@@ -1,6 +1,6 @@
 {
   "name": "@margarita-form/angular",
-  "version": "0.6.38",
+  "version": "0.6.39",
   "license": "MIT",
   "private": false,
   "publishConfig": {
@@ -13,6 +13,7 @@
   "peerDependencies": {
     "@angular/common": ">=14.x",
     "@angular/core": ">=14.x",
+    "@margarita-form/core": "0.6.x",
     "nanoid": "^3.2.0 || 4.x || 5.x",
     "react": ">=18.x",
     "rxjs": ">=7.x"
