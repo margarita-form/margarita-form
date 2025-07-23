@@ -40,7 +40,7 @@ export const FormElement = (props: FormElementProps) => {
   const { form, children, ...attr } = props;
   return (
     <FormProvider form={form}>
-      <form ref={form.setRef} {...attr}>
+      <form {...attr} ref={form.setRef}>
         {children}
       </form>
     </FormProvider>

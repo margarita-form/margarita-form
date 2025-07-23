@@ -6,5 +6,5 @@ interface InputComponentProps<FIELD extends MFF = MFF> extends InputHTMLAttribut
 }
 
 export const Input = ({ control, ...rest }: InputComponentProps) => {
-  return <input ref={control.setRef} {...rest} />;
+  return <input {...rest} ref={control.setRef} />;
 };
