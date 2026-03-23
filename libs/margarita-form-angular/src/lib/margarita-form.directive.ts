@@ -1,15 +1,16 @@
-import { Directive, ElementRef, Input, OnInit } from '@angular/core';
+import { Directive, ElementRef, inject, Input, OnInit } from '@angular/core';
 import { DeepControlIdentifier, MFC, MFF, MargaritaFormControl } from '@margarita-form/core';
 import { MargaritaFormService } from './margarita-form.service';
 
 @Directive({
-    selector: '[mfControl], [mfForm]',
-    standalone: false
+  selector: '[mfControl], [mfForm]',
+  standalone: false,
 })
 export class MargaritaFormControlDirective implements OnInit {
   @Input() mfControl?: MFC | DeepControlIdentifier<MFF>;
 
-  constructor(private el: ElementRef, private mfService: MargaritaFormService) {}
+  public mfService = inject(MargaritaFormService);
+  public el = inject(ElementRef);
 
   ngOnInit(): void {
     if (!this.mfControl) throw 'Value for [mfControl] is required!';

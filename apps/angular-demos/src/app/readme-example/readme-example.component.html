@@ -4,18 +4,24 @@
 
 <!-- Render the form -->
 <h2>Form</h2>
-<form *ngIf="form" [mfControl]="form">
-  <!-- Map controls and connect to inputs -->
-  <div class="field-wrapper" *ngFor="let control of form.controls">
-    <label [for]="control.uid">{{ control.field.title }}</label>
-
-    <!-- Use switch to render different types of fields -->
-    <ng-container [ngSwitch]="control.field.type">
-      <textarea *ngSwitchCase="'textarea'" [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control"></textarea>
-      <input *ngSwitchDefault [id]="control.uid" [name]="control.uid" [type]="control.field.type" [mfControl]="control" />
-    </ng-container>
-  </div>
-
-  <!-- Submit the form -->
-  <button type="submit">Submit</button>
-</form>
+@if (form) {
+  <form [mfControl]="form">
+    <!-- Map controls and connect to inputs -->
+    @for (control of form.controls; track control) {
+      <div class="field-wrapper">
+        <label [for]="control.uid">{{ control.field.title }}</label>
+        <!-- Use switch to render different types of fields -->
+        @switch (control.field.type) {
+          @case ('textarea') {
+            <textarea [id]="control.uid" [name]="control.uid" type="text" [mfControl]="control"></textarea>
+          }
+          @default {
+            <input [id]="control.uid" [name]="control.uid" [type]="control.field.type" [mfControl]="control" />
+          }
+        }
+      </div>
+    }
+    <!-- Submit the form -->
+    <button type="submit">Submit</button>
+  </form>
+}

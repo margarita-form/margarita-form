@@ -10,15 +10,14 @@
       "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "options": {
-        "project": "libs/margarita-form-angular/ng-package.json"
+        "project": "libs/margarita-form-angular/ng-package.json",
+        "tsConfig": "libs/margarita-form-angular/tsconfig.lib.json"
       },
       "configurations": {
         "production": {
           "tsConfig": "libs/margarita-form-angular/tsconfig.lib.prod.json"
         },
-        "development": {
-          "tsConfig": "libs/margarita-form-angular/tsconfig.lib.json"
-        }
+        "development": {}
       },
       "defaultConfiguration": "production"
     },

@@ -6,7 +6,7 @@
     "rootDir": ".",
     "outDir": "../dist/build",
     "esModuleInterop": true,
-    "types": ["vitest"]
+    "types": ["vitest", "node"]
   },
   "include": ["./*.ts"],
   "exclude": ["node_modules"]

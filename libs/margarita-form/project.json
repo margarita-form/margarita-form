@@ -28,7 +28,7 @@
       "dependsOn": ["build"]
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/libs/margarita-form"],
       "options": {
         "passWithNoTests": true,
