@@ -24,7 +24,7 @@
       "outputs": ["{workspaceRoot}/coverage/libs/margarita-form-react"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/libs/margarita-form-react"
+        "reportsDirectory": "{projectRoot}/../../coverage/libs/margarita-form-react"
       }
     },
     "lint": {

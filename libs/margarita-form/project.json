@@ -32,7 +32,7 @@
       "outputs": ["{workspaceRoot}/coverage/libs/margarita-form"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/libs/margarita-form"
+        "reportsDirectory": "{projectRoot}/../../coverage/libs/margarita-form"
       }
     },
     "lint": {

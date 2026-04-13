@@ -59,7 +59,7 @@
       "outputs": ["{workspaceRoot}/coverage/apps/baking-oven"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/apps/baking-oven"
+        "reportsDirectory": "{projectRoot}/../../coverage/apps/baking-oven"
       }
     },
     "lint": {
